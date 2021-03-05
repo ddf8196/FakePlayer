@@ -1,12 +1,7 @@
-package com.ddf.fakeplayer;
+package com.ddf.fakeplayer.util;
 
-import com.ddf.fakeplayer.util.KeyUtil;
 import com.nukkitx.protocol.bedrock.BedrockPacketCodec;
-import com.nukkitx.protocol.bedrock.v390.Bedrock_v390;
-import com.nukkitx.protocol.bedrock.v407.Bedrock_v407;
 import com.nukkitx.protocol.bedrock.v408.Bedrock_v408;
-import com.nukkitx.protocol.bedrock.v419.Bedrock_v419;
-import com.nukkitx.protocol.bedrock.v422.Bedrock_v422;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -22,26 +17,27 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.*;
-import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
 public class Config {
-    private static final Yaml yaml;
+    private static final Yaml YAML;
 
-    //private boolean useGUI = false;
     private boolean configured = false;
-    private int protocolVersion = 408;
+    private int defaultProtocolVersion = 408;
     private String serverAddress = "localhost";
     private int serverPort = 19132;
     private String serverPublicKey = "";
     private String serverPrivateKey = "";
     private boolean autoReconnect = true;
-    private long reconnectDelay = 1000;
-    private long playerConnectionDelay = 1000;
+    private long reconnectDelay = 3000;
+    private long playerConnectionDelay = 100;
+    private boolean webSocketEnabled = false;
+    private int webSocketPort = 54321;
+    private String webSocketPassword = "";
     private List<PlayerData> players = new ArrayList<>();
     private transient KeyPair serverKeyPair;
     private transient Path configPath;
-    private transient BedrockPacketCodec packetCodec = Bedrock_v408.V408_CODEC;
+    private transient BedrockPacketCodec defaultPacketCodec = Bedrock_v408.V408_CODEC;
 
     static {
         LoaderOptions loaderOptions = new LoaderOptions();
@@ -65,50 +61,51 @@ public class Config {
             }
         };
         representer.setPropertyUtils(pu);
-        yaml = new Yaml(new Constructor(), representer, dumperOptions, loaderOptions);
+        YAML = new Yaml(new Constructor(), representer, dumperOptions, loaderOptions);
     }
 
-    public static Config load(Path path) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+    public static Config load(Path path) throws IOException {
         if (Files.notExists(path) || !Files.isRegularFile(path)) {
             Config config = new Config();
             config.setConfigPath(path);
-            KeyPair keyPair = KeyUtil.generateKeyPair();
-            config.serverKeyPair = keyPair;
-            config.serverPublicKey = KeyUtil.encodeKeyToBase64(keyPair.getPublic());
-            config.serverPrivateKey = KeyUtil.encodeKeyToBase64(keyPair.getPrivate());
+            config.generateKeyPair();
             config.save();
             return config;
         } else {
             String str = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
-            Config config = yaml.loadAs(str, Config.class);
+            Config config = YAML.loadAs(str, Config.class);
             config.setConfigPath(path);
-            PublicKey publicKey = KeyUtil.decodePublicKey(config.getServerPublicKey());
-            PrivateKey privateKey = KeyUtil.decodePrivateKey(config.getServerPrivateKey());
-            config.serverKeyPair = new KeyPair(publicKey, privateKey);
-            switch (config.protocolVersion) {
-                case 390:
-                    config.packetCodec = Bedrock_v390.V390_CODEC;
-                    break;
-                case 407:
-                    config.packetCodec = Bedrock_v407.V407_CODEC;
-                    break;
-                case 408:
-                    config.packetCodec = Bedrock_v408.V408_CODEC;
-                    break;
-                case 419:
-                    config.packetCodec = Bedrock_v419.V419_CODEC;
-                    break;
-                case 422:
-                    config.packetCodec = Bedrock_v422.V422_CODEC;
-                    break;
+            try {
+                PublicKey publicKey = KeyUtil.decodePublicKey(config.getServerPublicKey());
+                PrivateKey privateKey = KeyUtil.decodePrivateKey(config.getServerPrivateKey());
+                config.serverKeyPair = new KeyPair(publicKey, privateKey);
+            } catch (Exception e) {
+                e.printStackTrace();
+                config.generateKeyPair();
+                config.save();
+            }
+            try {
+                config.defaultPacketCodec = ProtocolVersionUtil.getPacketCodec(config.defaultProtocolVersion);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
             }
             return config;
         }
     }
 
+    private void generateKeyPair() {
+        serverKeyPair = KeyUtil.generateKeyPair();
+        serverPublicKey = KeyUtil.encodeKeyToBase64(serverKeyPair.getPublic());
+        serverPrivateKey = KeyUtil.encodeKeyToBase64(serverKeyPair.getPrivate());
+    }
+
     public void save() throws IOException {
-        String dump = yaml.dumpAsMap(this);
-        Files.write(configPath, dump.getBytes(StandardCharsets.UTF_8),
+        save(configPath);
+    }
+
+    public void save(Path path) throws IOException {
+        String dump = YAML.dumpAsMap(this);
+        Files.write(path, dump.getBytes(StandardCharsets.UTF_8),
                 StandardOpenOption.CREATE,
                 StandardOpenOption.WRITE,
                 StandardOpenOption.TRUNCATE_EXISTING);
@@ -122,21 +119,12 @@ public class Config {
         this.configured = configured;
     }
 
-    public void setUseGUI(boolean useGUI) {
-        //this.useGUI = useGUI;
+    public int getDefaultProtocolVersion() {
+        return defaultProtocolVersion;
     }
 
-    public boolean isUseGUI() {
-        //return useGUI;
-        return false;
-    }
-
-    public int getProtocolVersion() {
-        return protocolVersion;
-    }
-
-    public void setProtocolVersion(int protocolVersion) {
-        this.protocolVersion = protocolVersion;
+    public void setDefaultProtocolVersion(int protocolVersion) {
+        this.defaultProtocolVersion = protocolVersion;
     }
 
     public void setServerAddress(String serverAddress) {
@@ -195,6 +183,30 @@ public class Config {
         this.playerConnectionDelay = playerConnectionDelay;
     }
 
+    public boolean isWebSocketEnabled() {
+        return webSocketEnabled;
+    }
+
+    public void setWebSocketEnabled(boolean webSocketEnabled) {
+        this.webSocketEnabled = webSocketEnabled;
+    }
+
+    public int getWebSocketPort() {
+        return webSocketPort;
+    }
+
+    public void setWebSocketPort(int webSocketPort) {
+        this.webSocketPort = webSocketPort;
+    }
+
+    public String getWebSocketPassword() {
+        return webSocketPassword;
+    }
+
+    public void setWebSocketPassword(String webSocketPassword) {
+        this.webSocketPassword = webSocketPassword;
+    }
+
     public void setPlayers(List<PlayerData> players) {
         this.players = players;
     }
@@ -215,6 +227,15 @@ public class Config {
         players.removeIf(playerData -> playerData.getName().equals(name));
     }
 
+    public PlayerData getPlayerData(String name) {
+        for (PlayerData playerData : players) {
+            if (playerData.getName().equals(name)) {
+                return playerData;
+            }
+        }
+        return null;
+    }
+
     public KeyPair getServerKeyPair() {
         return serverKeyPair;
     }
@@ -227,12 +248,8 @@ public class Config {
         this.configPath = configPath;
     }
 
-    public BedrockPacketCodec getPacketCodec() {
-        return packetCodec;
-    }
-
-    public void setPacketCodec(BedrockPacketCodec packetCodec) {
-        this.packetCodec = packetCodec;
+    public BedrockPacketCodec getDefaultPacketCodec() {
+        return defaultPacketCodec;
     }
 
     public static class PlayerData {
@@ -255,5 +272,4 @@ public class Config {
             return skin;
         }
     }
-
 }

@@ -1,21 +1,11 @@
 package com.ddf.fakeplayer.entity;
 
-import com.nukkitx.protocol.bedrock.data.AttributeData;
-
 public class Attribute {
     private float base;
     private float current;
     private float max;
     private String name;
 
-    public Attribute() {}
-
-    public Attribute(AttributeData data) {
-        base = data.getMinimum();
-        current = data.getValue();
-        max = data.getMaximum();
-        name = data.getName();
-    }
     public float getBase() {
         return base;
     }

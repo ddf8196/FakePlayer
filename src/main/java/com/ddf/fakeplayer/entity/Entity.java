@@ -1,7 +1,6 @@
 package com.ddf.fakeplayer.entity;
 
 import com.nukkitx.math.vector.Vector3f;
-import com.nukkitx.protocol.bedrock.data.AttributeData;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -89,15 +88,17 @@ public class Entity {
     }
 
     public float getAttributeValue(String name) {
-        return attributes.get(name).getCurrent();
+        return getAttribute(name).getCurrent();
     }
 
     public Attribute getAttribute(String name) {
-        return attributes.get(name);
-    }
-
-    public void setAttribute(Attribute attribute) {
-        attributes.put(attribute.getName(), attribute);
+        Attribute attribute = attributes.get(name);
+        if (attribute == null) {
+            attribute = new Attribute();
+            attribute.setName(name);
+            attributes.put(name, attribute);
+        }
+        return attribute;
     }
 
     public void setAttribute(String name, float current) {

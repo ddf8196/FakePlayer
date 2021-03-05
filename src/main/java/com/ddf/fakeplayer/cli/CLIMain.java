@@ -1,56 +1,70 @@
 package com.ddf.fakeplayer.cli;
 
 import com.ddf.fakeplayer.Client;
-import com.ddf.fakeplayer.Config;
-import com.ddf.fakeplayer.Resources;
+import com.ddf.fakeplayer.util.Config;
+import com.ddf.fakeplayer.Main;
+import com.ddf.fakeplayer.util.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.time.LocalDateTime;
 
-public class CLIMain {
+public class CLIMain extends Main {
     private boolean stopped = false;
-    private final List<Client> clients = new ArrayList<>();
-    private final Config config;
+    private final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-    public CLIMain(Config config) {
-        this.config = config;
+    private CLIMain(Config config) throws IOException {
+        super(config);
+        logger.log("配置文件已加载: " + config.getConfigPath().toRealPath().toString());
+    }
+
+    @Override
+    public void initLogger() {
+        Logger.init(new Logger() {
+            @Override
+            public synchronized void log(String log) {
+                System.out.println(LocalDateTime.now().format(Logger.FORMATTER) + log);
+            }
+        });
     }
 
     public void start() throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         if (!config.isConfigured()) {
-            System.out.println("请输入服务器地址，默认localhost，按回车键结束输入: ");
-            String address = reader.readLine();
-            if (!address.isEmpty()) {
+            logger.log("请输入服务器地址，默认localhost，按回车键结束输入: ");
+            String address = readLine();
+            if (address == null) {
+                return;
+            } else if (!address.isEmpty()) {
                 config.setServerAddress(address);
             }
-            System.out.println("请输入服务器端口，默认19132，按回车键结束输入: ");
-            String port = reader.readLine();
-            if (!port.isEmpty()) {
+            logger.log("请输入服务器端口，默认19132，按回车键结束输入: ");
+            String port = readLine();
+            if (port == null) {
+                return;
+            } else if (!port.isEmpty()) {
                 config.setServerPort(Integer.parseInt(port));
             }
-            System.out.println("请输入服务器协议版本，默认408，按回车键结束输入: ");
-            String protocolVersion = reader.readLine();
-            if (!protocolVersion.isEmpty()) {
-                config.setProtocolVersion(Integer.parseInt(protocolVersion));
-            }
-            System.out.println("配置完成");
-            System.out.println("请将以下配置添加到BDS的server.properties中并重启BDS, 再重新运行假人客户端: ");
+
+            logger.log("配置完成");
+            logger.log("请将以下配置添加到BDS的server.properties中并重启BDS: ");
             System.out.println("trusted-key=" + config.getServerPublicKey());
             config.setConfigured(true);
             config.save();
-            return;
         }
 
         config.getPlayers().forEach(playerData -> addClient(playerData.getName(), playerData.getSkin()));
-        System.out.println("启动完成，输入help或?可查看帮助");
+        clients.forEach(client -> client.connect(config.getServerAddress(), config.getServerPort()));
+
+        setWebSocketEnabled(config.isWebSocketEnabled());
+        logger.log("启动完成，输入help或?可查看帮助");
 
         while (!isStopped()) {
-            String[] string = reader.readLine().split(" ");
+            String line = readLine();
+            if (line == null) {
+                return;
+            }
+            String[] string = line.split(" ");
             if (string.length <= 0) {
                 continue;
             }
@@ -58,12 +72,14 @@ public class CLIMain {
                 case "？":
                 case "?":
                 case "help":
-                    System.out.println("add [假人名称] - 添加一个假人");
-                    System.out.println("remove [假人名称] - 移除一个假人");
-                    System.out.println("list - 列出所有假人");
-                    System.out.println("publicKey - 显示当前使用的公钥");
-                    System.out.println("stop - 断开所有连接并停止运行");
-                    System.out.println("help - 显示此帮助信息");
+                    logger.log("add 假人名称 - 添加一个假人");
+                    logger.log("remove 假人名称 - 移除一个假人");
+                    logger.log("list - 列出所有假人");
+                    logger.log("publicKey - 显示当前使用的公钥");
+                    logger.log("stop - 断开所有连接并停止运行");
+                    logger.log("enableWebSocket - 启用WebSocket");
+                    logger.log("disableWebSocket - 禁用WebSocket");
+                    logger.log("help - 显示此帮助信息");
                     break;
                 case "add":
                     if (string.length >= 2) {
@@ -80,58 +96,45 @@ public class CLIMain {
                     }
                     break;
                 case "list":
-                    System.out.println("目前共有 " + clients.size() + " 个假人: ");
-                    clients.forEach(client -> System.out.println(client.getPlayerName()));
+                    logger.log("目前共有 " + clients.size() + " 个假人: ");
+                    clients.forEach(client -> logger.log(client.getPlayerName()));
                     break;
                 case "publicKey":
-                    System.out.println(config.getServerPublicKey());
+                    logger.log(config.getServerPublicKey());
                     break;
                 case "stop":
-                    System.out.println("正在停止...");
+                    logger.log("正在停止...");
                     stop();
+                    break;
+                case "enableWebSocket":
+                    setWebSocketEnabled(true);
+                    break;
+                case "disableWebSocket":
+                    setWebSocketEnabled(false);
                     break;
             }
         }
-        System.out.println("已停止");
+        logger.log("已停止");
     }
 
-    public void addClient(String name, String skin) {
-        Client client = new Client(name, config.getServerKeyPair());
-        client.setPacketCodec(config.getPacketCodec());
-        switch (skin) {
-            case "steve":
-                client.setSkinDataJson(Resources.SKIN_DATA_STEVE_JSON);
-                break;
-            case "alex":
-                client.setSkinDataJson(Resources.SKIN_DATA_ALEX_JSON);
-                break;
-        }
-        client.setAutoReconnect(config.isAutoReconnect());
-        client.setReconnectDelay(config.getReconnectDelay());
-        client.connect(config.getServerAddress(), config.getServerPort());
-        clients.add(client);
+    private String readLine() throws IOException {
+        return reader.readLine();
+    }
+
+    @Override
+    public Client addClient(String name, String skin) {
+        Client client = super.addClient(name, skin);
         try {
             Thread.sleep(config.getPlayerConnectionDelay());
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        } catch (InterruptedException ignored) {}
+        return client;
     }
 
-    public void removeClient(String name) {
-        Iterator<Client> iterator = clients.iterator();
-        while (iterator.hasNext()) {
-            Client client = iterator.next();
-            if (client.getPlayerName().equals(name)) {
-                client.shutdown();
-                iterator.remove();
-            }
-        }
-    }
 
     public void stop() {
-        for (Client client : clients) {
-            client.shutdown();
-        }
+        clients.forEach(client -> client.setStop(true));
+        clients.forEach(client -> client.stop(true));
+        stopWebSocket();
         stopped = true;
     }
 

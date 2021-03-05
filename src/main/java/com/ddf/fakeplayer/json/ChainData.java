@@ -13,22 +13,22 @@ public class ChainData {
     private static final Random rand = new Random();
 
     @Stage({0, 1, 2})
-    public long exp;
+    private long exp;
     @Stage({0, 1, 2})
-    public long nbf;
+    private long nbf;
     @Stage({1, 2})
-    public String iss;
+    private String iss;
     @Stage({1, 2})
-    public long iat;
+    private long iat;
 
     @Stage({0, 1})
-    public boolean certificateAuthority;
+    private boolean certificateAuthority;
     @Stage({0, 1, 2})
-    public String identityPublicKey;
+    private String identityPublicKey;
     @Stage({1, 2})
-    public long randomNonce;
+    private long randomNonce;
     @Stage(2)
-    public ExtraData extraData;
+    private ExtraData extraData;
 
     public static ChainData createChainData(){
         ChainData chainData = new ChainData();
@@ -88,9 +88,68 @@ public class ChainData {
         return gson.toJson(this);
     }
 
-    @Override
-    public String toString() {
-        return "ChainData{}";
+    public long getExp() {
+        return exp;
+    }
+
+    public void setExp(long exp) {
+        this.exp = exp;
+    }
+
+    public long getNbf() {
+        return nbf;
+    }
+
+    public void setNbf(long nbf) {
+        this.nbf = nbf;
+    }
+
+    public String getIss() {
+        return iss;
+    }
+
+    public void setIss(String iss) {
+        this.iss = iss;
+    }
+
+    public long getIat() {
+        return iat;
+    }
+
+    public void setIat(long iat) {
+        this.iat = iat;
+    }
+
+    public boolean isCertificateAuthority() {
+        return certificateAuthority;
+    }
+
+    public void setCertificateAuthority(boolean certificateAuthority) {
+        this.certificateAuthority = certificateAuthority;
+    }
+
+    public String getIdentityPublicKey() {
+        return identityPublicKey;
+    }
+
+    public void setIdentityPublicKey(String identityPublicKey) {
+        this.identityPublicKey = identityPublicKey;
+    }
+
+    public long getRandomNonce() {
+        return randomNonce;
+    }
+
+    public void setRandomNonce(long randomNonce) {
+        this.randomNonce = randomNonce;
+    }
+
+    public ExtraData getExtraData() {
+        return extraData;
+    }
+
+    public void setExtraData(ExtraData extraData) {
+        this.extraData = extraData;
     }
 
     @Target(ElementType.FIELD)

@@ -1,10 +1,10 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '5.2.0'
+    id 'application'
 }
 
-group 'org.ddf'
-version '1.0-SNAPSHOT'
+group 'com.ddf'
+version '0.2.0-SNAPSHOT'
 
 repositories {
     maven {
@@ -29,6 +29,9 @@ dependencies {
     implementation 'com.nukkitx.protocol:bedrock-v422:2.6.1-SNAPSHOT'
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'org.yaml:snakeyaml:1.27'
+    implementation 'com.formdev:flatlaf:1.0'
+    implementation 'org.java-websocket:Java-WebSocket:1.5.1'
+    implementation 'org.slf4j:slf4j-nop:1.7.25'
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_8
@@ -36,6 +39,18 @@ targetCompatibility = JavaVersion.VERSION_1_8
 
 compileJava.options.encoding = 'UTF-8'
 compileTestJava.options.encoding = 'UTF-8'
+mainClassName = 'com.ddf.fakeplayer.Main'
+
+run {
+    standardInput = System.in
+    jvmArgs += '-Dfakeplayer.gui=false'
+}
+
+task runGUI(type: JavaExec) {
+    classpath = run.classpath
+    main = run.main
+    jvmArgs += '-Dfakeplayer.gui=true'
+}
 
 jar {
     manifest {
@@ -43,9 +58,21 @@ jar {
     }
 }
 
-shadowJar {
-    archiveClassifier = "all"
-    manifest {
-        attributes 'Main-Class': 'com.ddf.fakeplayer.Main'
+startScripts {
+    defaultJvmOpts = ['-Dfakeplayer.gui=false']
+}
+
+task guiStartScripts(type: CreateStartScripts) {
+    applicationName = startScripts.applicationName + '-GUI'
+    classpath = startScripts.classpath
+    mainClassName = startScripts.mainClassName
+    outputDir = startScripts.outputDir
+    defaultJvmOpts = ['-Dfakeplayer.gui=true']
+    doLast {
+        def windowsScriptText = windowsScript.text.replaceAll('java\\.exe', 'javaw.exe')
+        windowsScriptText = windowsScriptText.replaceAll('"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS%', 'start "" /B "%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS%')
+        windowsScript.write(windowsScriptText)
     }
 }
+
+startScripts.dependsOn(guiStartScripts)

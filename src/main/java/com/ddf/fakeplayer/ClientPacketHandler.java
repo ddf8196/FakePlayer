@@ -1,11 +1,11 @@
 package com.ddf.fakeplayer;
 
-import com.ddf.fakeplayer.entity.Attribute;
 import com.ddf.fakeplayer.entity.Entity;
 import com.ddf.fakeplayer.entity.player.Player;
 import com.ddf.fakeplayer.json.*;
 import com.ddf.fakeplayer.util.JwtUtil;
 import com.ddf.fakeplayer.util.KeyUtil;
+import com.ddf.fakeplayer.util.Logger;
 import com.ddf.fakeplayer.world.World;
 import com.nimbusds.jwt.SignedJWT;
 import com.nukkitx.protocol.bedrock.data.AttributeData;
@@ -22,18 +22,19 @@ import java.text.ParseException;
 import java.util.Base64;
 
 public class ClientPacketHandler implements BedrockPacketHandler {
+    private Logger logger;
     private Client client;
     private World world;
     private Player player;
 
     public ClientPacketHandler(Client client) {
+        this.logger = Logger.getLogger();
         this.client = client;
         this.world = client.getWorld();
         this.player = client.getPlayer();
     }
 
     public void handleConnected(){
-        System.out.println(player.getName() + " 已连接");
         byte[] chainData = ChainData.createFullChainJson(
                 client.getClientKeyPair(),
                 client.getServerKeyPair(),
@@ -60,7 +61,7 @@ public class ClientPacketHandler implements BedrockPacketHandler {
             SecretKey key = EncryptionUtils.getSecretKey(client.getClientKeyPair().getPrivate(), serverPublicKey, salt);
             client.getSession().enableEncryption(key);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException | ParseException | InvalidKeyException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         ClientToServerHandshakePacket clientToServerHandshake = new ClientToServerHandshakePacket();
@@ -127,8 +128,7 @@ public class ClientPacketHandler implements BedrockPacketHandler {
             return false;
         }
         for (AttributeData data : packet.getAttributes()) {
-            Attribute attribute = new Attribute(data);
-            entity.setAttribute(attribute);
+            entity.setAttribute(data.getName(), data.getMinimum(), data.getValue(), data.getMaximum());
         }
         return false;
     }
@@ -138,6 +138,7 @@ public class ClientPacketHandler implements BedrockPacketHandler {
         if (packet.getRuntimeEntityId() == player.getRuntimeEntityId()) {
             player.setRotation(packet.getRotation());
             player.setPosition(packet.getPosition());
+            client.sendPacket(packet);
         }
         return false;
     }
@@ -185,6 +186,24 @@ public class ClientPacketHandler implements BedrockPacketHandler {
     @Override
     public boolean handle(DisconnectPacket packet) {
         client.disconnect();
+        logger.log(player.getName() + " 正在断开连接: " + packet.getKickMessage());
+        switch (packet.getKickMessage()) {
+            case "disconnectionScreen.outdatedClient":
+            case "disconnectionScreen.outdatedServer":
+                logger.log("协议版本错误");
+                client.stop();
+                break;
+            case "disconnectionScreen.notAuthenticated":
+                logger.log("请检查公钥是否已正确添加到服务器");
+                client.stop();
+                break;
+            case "disconnectionScreen.notAllowed":
+                logger.log("请检查是否已将 " + player.getName() + " 添加至白名单");
+                break;
+            case "disconnectionScreen.serverFull":
+                logger.log("服务器已满");
+                break;
+        }
         return false;
     }
 }

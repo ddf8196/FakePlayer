@@ -6,7 +6,6 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
-
 public class KeyUtil {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final KeyPairGenerator KEY_PAIR_GENERATOR;
@@ -16,23 +15,16 @@ public class KeyUtil {
             KEY_PAIR_GENERATOR = KeyPairGenerator.getInstance("EC");
             KEY_PAIR_GENERATOR.initialize(384, SECURE_RANDOM);
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
-
     }
 
     public static KeyPair generateKeyPair() {
-        try {
-            return KEY_PAIR_GENERATOR.generateKeyPair();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+        return KEY_PAIR_GENERATOR.generateKeyPair();
     }
 
     public static String encodeKeyToBase64(PublicKey publicKey) {
-        return Base64.getEncoder().encodeToString(publicKey.getEncoded());
+        return Base64.getEncoder().withoutPadding().encodeToString(publicKey.getEncoded());
     }
 
     public static String encodeKeyToBase64(PrivateKey privateKey) {

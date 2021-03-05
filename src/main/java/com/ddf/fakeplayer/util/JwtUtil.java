@@ -21,8 +21,7 @@ public class JwtUtil {
 
             return jws.serialize();
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException(e);
         }
     }
 

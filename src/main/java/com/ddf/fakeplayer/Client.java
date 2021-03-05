@@ -4,6 +4,8 @@ import com.ddf.fakeplayer.entity.player.Player;
 import com.ddf.fakeplayer.json.ExtraData;
 import com.ddf.fakeplayer.json.skin.SkinData;
 import com.ddf.fakeplayer.util.KeyUtil;
+import com.ddf.fakeplayer.util.Logger;
+import com.ddf.fakeplayer.util.ProtocolVersionUtil;
 import com.ddf.fakeplayer.world.World;
 import com.nukkitx.protocol.bedrock.*;
 import com.nukkitx.protocol.bedrock.v408.Bedrock_v408;
@@ -11,6 +13,8 @@ import com.nukkitx.protocol.bedrock.v408.Bedrock_v408;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -18,26 +22,26 @@ import java.util.concurrent.CountDownLatch;
 public class Client {
     private static final Random rand = new Random();
 
-    private volatile boolean stop = false;
+    private volatile boolean stop = true;
     private volatile boolean autoReconnect = true;
     private volatile long reconnectDelay = 1000;
     private volatile CountDownLatch latch;
+    private volatile BedrockClient bedrockClient;
     private volatile BedrockClientSession session;
+    private volatile BedrockPacketCodec packetCodec;
+    private volatile ClientPacketHandler packetHandler;
+    private volatile World world;
+    private volatile Player player;
 
-    private BedrockPacketCodec packetCodec = Bedrock_v408.V408_CODEC;
-    private ClientPacketHandler packetHandler;
-    private BedrockClient bedrockClient;
+    private Logger logger;
     private Thread thread;
-
-
+    private State state;
+    private List<StateChangedListener> stateChangedListeners = new ArrayList<>();
+    private BedrockPacketCodec defaultPacketCodec = Bedrock_v408.V408_CODEC;
     private String skinDataJson = Resources.SKIN_DATA_STEVE_JSON;
-
-    private World world;
-    private Player player;
-    private int chunkRadius = 8;
+    private int chunkRadius = 20;
     private String playerName;
     private UUID playerUUID;
-
     private final KeyPair clientKeyPair;
     private KeyPair serverKeyPair;
 
@@ -46,32 +50,49 @@ public class Client {
     }
 
     public Client(String playerName, UUID uuid, KeyPair serverKeyPair){
+        this.logger = Logger.getLogger();
         this.playerName = playerName;
         this.playerUUID = uuid;
 
         this.clientKeyPair = KeyUtil.generateKeyPair();
         this.serverKeyPair = serverKeyPair;
+        setState(State.STOPPED);
     }
 
-    public void connect(String address, int port) {
-        if (this.isConnected()) {
+    public synchronized void connect(String address, int port) {
+        if (this.isConnected() || this.getState() != State.STOPPED) {
             return;
         }
+        setState(State.CONNECTING);
+        this.stop = false;
         thread = new Thread(() -> {
             do {
                 try {
-                    this.stop = false;
+                    latch = new CountDownLatch(1);
                     this.world = new World();
                     this.player = new Player(playerName, playerUUID, this);
                     world.addEntity(player);
                     this.packetHandler = new ClientPacketHandler(this);
-
                     bedrockClient = new BedrockClient(new InetSocketAddress(0));
                     bedrockClient.bind().join();
                     final InetSocketAddress addressToConnect = new InetSocketAddress(address, port);
+                    bedrockClient.ping(addressToConnect).whenComplete((bedrockPong, throwable) -> {
+                        if (throwable != null) {
+                            packetCodec = null;
+                            return;
+                        }
+                        try {
+                            packetCodec = ProtocolVersionUtil.getPacketCodec(bedrockPong.getProtocolVersion());
+                        } catch (IllegalArgumentException e) {
+                            packetCodec = null;
+                        }
+                    }).join();
+                    if (packetCodec == null) {
+                        packetCodec = defaultPacketCodec;
+                        logger.log(playerName + " 协议版本获取失败,尝试使用默认协议版本(" + defaultPacketCodec.getProtocolVersion() + ")连接");
+                    }
                     bedrockClient.connect(addressToConnect).whenComplete((session, throwable) -> {
                         if (throwable != null) {
-                            throwable.printStackTrace();
                             return;
                         }
                         this.session = session;
@@ -80,29 +101,34 @@ public class Client {
                         packetHandler.handleConnected();
                     }).join();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    setState(State.DISCONNECTED);
+                    logger.log(e);
                 }
 
                 if(isConnected()) {
-                    latch = new CountDownLatch(1);
+                    setState(State.CONNECTED);
                     session.addDisconnectHandler(disconnectReason -> latch.countDown());
+                    logger.log(player.getName() + " 已连接");
                     try {
                         latch.await();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                    } catch (InterruptedException ignored) {}
                 }
-                System.out.println(playerName + " 已断开连接");
+
+                bedrockClient.close();
+                setState(State.DISCONNECTED);
+                logger.log(playerName + " 已断开连接");
                 
                 if (!stop && autoReconnect) {
                     try {
-                        Thread.sleep(reconnectDelay);
-                        System.out.println(playerName + " 重连中");
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                        Thread.sleep(reconnectDelay + nextLong(reconnectDelay));
+                    } catch (InterruptedException ignored) {}
+                    setState(State.RECONNECTING);
+                    logger.log(playerName + " 重连中");
                 }
+
             } while (!stop && autoReconnect);
+            setState(State.STOPPED);
+            logger.log(playerName + " 已停止");
         });
         thread.start();
     }
@@ -111,8 +137,8 @@ public class Client {
         session.sendPacket(packet);
     }
 
-    public String getHostName(){
-        return session.getAddress().getHostName();
+    public String getHostAddress(){
+        return session.getAddress().getAddress().getHostAddress();
     }
 
     public int getPort(){
@@ -123,52 +149,76 @@ public class Client {
         return session!= null && !session.isClosed();
     }
 
-    public void disconnect() {
+    public synchronized void disconnect() {
         if (isConnected()) {
-            session.disconnect();
+            setState(State.DISCONNECTING);
+            bedrockClient.close();
         }
     }
 
-    public void shutdown() {
+    public void stop() {
+        stop(false);
+    }
+
+    public void stop(boolean wait) {
+        if (getState() == State.STOPPED) {
+            return;
+        }
         stop = true;
         disconnect();
-        try {
-            if (latch != null) {
-                latch.countDown();
-            }
-            if (thread != null) {
+        setState(State.STOPPING);
+        if (latch != null) {
+            latch.countDown();
+        }
+        if (wait && thread != null) {
+            try {
                 thread.join();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            } catch (InterruptedException ignored) { }
         }
     }
 
     public ExtraData createExtraData() {
         ExtraData extraData = new ExtraData();
-        extraData.XUID = Long.toString(player.getUUID().getLeastSignificantBits());
-        extraData.displayName = player.getName();
-        extraData.identity = player.getUUID().toString();
+        extraData.setXUID(Long.toString(player.getUUID().getLeastSignificantBits()));
+        extraData.setDisplayName(player.getName());
+        extraData.setIdentity(player.getUUID().toString());
         return extraData;
     }
 
     public SkinData createSkinData(){
         SkinData skin = SkinData.createFromSkinJson(skinDataJson);
-        skin.ClientRandomId = rand.nextLong();
-        skin.CurrentInputMode = 0;
-        skin.DefaultInputMode = 0;
-        skin.DeviceId = "11111111111111111111111111111111";
-        skin.DeviceModel = "DeviceModel";
-        skin.DeviceOS = 0;
-        skin.GameVersion = packetCodec.getMinecraftVersion();
-        skin.GuiScale = 0;
-        skin.LanguageCode = "LanguageCode";
-        skin.PlatformOfflineId = "";
-        skin.PlatformOnlineId = "";
-        skin.SelfSignedId = player.getUUID().toString();
-        skin.ServerAddress = getHostName() + ":" + getPort();
-        skin.ThirdPartyName = player.getName();
+        skin.setClientRandomId(rand.nextLong());
+        skin.setCurrentInputMode(0);
+        skin.setDefaultInputMode(0);
+        skin.setDeviceId("11111111111111111111111111111111");
+        skin.setDeviceModel("DeviceModel");
+        skin.setDeviceOS(0);
+        skin.setGameVersion(packetCodec.getMinecraftVersion());
+        skin.setGuiScale(0);
+        skin.setLanguageCode("LanguageCode");
+        skin.setPlatformOfflineId("");
+        skin.setPlatformOnlineId("");
+        skin.setSelfSignedId(player.getUUID().toString());
+        skin.setServerAddress(getHostAddress() + ":" + getPort());
+        skin.setThirdPartyName(player.getName());
         return skin;
+    }
+
+    private long nextLong(long n) {
+        long bits, val;
+        do {
+            bits = (rand.nextLong() << 1) >>> 1;
+            val = bits % n;
+        } while (bits-val+(n-1) < 0L);
+        return val;
+    }
+
+    public boolean isStop() {
+        return stop;
+    }
+
+    public void setStop(boolean stop) {
+        this.stop = stop;
     }
 
     public boolean isAutoReconnect() {
@@ -191,8 +241,12 @@ public class Client {
         return packetCodec;
     }
 
-    public void setPacketCodec(BedrockPacketCodec packetCodec) {
-        this.packetCodec = packetCodec;
+    public BedrockPacketCodec getDefaultPacketCodec() {
+        return defaultPacketCodec;
+    }
+
+    public void setDefaultPacketCodec(BedrockPacketCodec defaultPacketCodec) {
+        this.defaultPacketCodec = defaultPacketCodec;
     }
 
     public ClientPacketHandler getPacketHandler() {
@@ -217,6 +271,34 @@ public class Client {
 
     public void setSession(BedrockClientSession session) {
         this.session = session;
+    }
+
+    public synchronized State getState() {
+        return state;
+    }
+
+    public synchronized void setState(State state) {
+        State oldState = this.state;
+        this.state = state;
+        if (oldState != state) {
+            getStateChangedListeners().forEach(listener -> {
+                if (listener != null) {
+                    listener.stateChanged(this, oldState, state);
+                }
+            });
+        }
+    }
+
+    public synchronized void addStateChangedListener(StateChangedListener listener) {
+        getStateChangedListeners().add(listener);
+    }
+
+    public synchronized void removeStateChangedListener(StateChangedListener listener) {
+        getStateChangedListeners().remove(listener);
+    }
+
+    public synchronized List<StateChangedListener> getStateChangedListeners() {
+        return stateChangedListeners;
     }
 
     public String getSkinDataJson() {
@@ -271,7 +353,17 @@ public class Client {
         this.chunkRadius = chunkRadius;
     }
 
-    public interface ConnectedListener {
+    public interface StateChangedListener {
+        void stateChanged(Client client, State oldState, State currentState);
+    }
 
+    public enum State {
+        CONNECTING,
+        CONNECTED,
+        DISCONNECTING,
+        DISCONNECTED,
+        RECONNECTING,
+        STOPPING,
+        STOPPED
     }
 }
