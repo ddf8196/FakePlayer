@@ -19,7 +19,7 @@ public class Player extends Entity {
     private UUID uuid;
 
     private Vector3i spawnPosition  = Vector3i.ZERO;
-    private boolean initialized = false;
+    private boolean spawned = false;
 
     private AuthoritativeMovementMode movementMode;
 
@@ -67,11 +67,11 @@ public class Player extends Entity {
         this.movementMode = movementMode;
     }
 
-    public void setInitialized(boolean initialized) {
-        this.initialized = initialized;
+    public void setSpawned(boolean spawned) {
+        this.spawned = spawned;
     }
 
-    public boolean isInitialized() {
-        return initialized;
+    public boolean isSpawned() {
+        return spawned;
     }
 }

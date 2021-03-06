@@ -52,7 +52,7 @@ public class GUIMain extends Main {
 
 	private GUIMain(Config config) throws IOException {
 		super(config);
-		frame = new JFrame("FakePlayer 0.2.0-SNAPSHOT");
+		frame = new JFrame("FakePlayer 0.2.1-SNAPSHOT");
 		frame.setSize(560, 480);
 		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -440,7 +440,6 @@ public class GUIMain extends Main {
 		autoReconnect.setSelected(config.isAutoReconnect());
 
 		webSocketEnabled.setSelected(config.isWebSocketEnabled());
-		setWebSocketEnabled(webSocketEnabled.isSelected());
 		webSocketPort.setDocument(new NumberDocument());
 		webSocketPort.setText(Integer.toString(config.getWebSocketPort()));
 	}
@@ -449,12 +448,6 @@ public class GUIMain extends Main {
 		Client client = getSelectedClient();
 		PlayerInfoDialog dialog = new PlayerInfoDialog(GUIMain.this, client.getPlayerName());
 		dialog.setVisible(true);
-	}
-
-	@Override
-	public void setWebSocketEnabled(boolean enabled) {
-		super.setWebSocketEnabled(enabled);
-		webSocketPort.setEnabled(enabled);
 	}
 
 	private Client getSelectedClient() {
@@ -493,6 +486,12 @@ public class GUIMain extends Main {
 	public void removeClient(String name) {
 		super.removeClient(name);
 		SwingUtilities.invokeLater(() -> playersTableModel.removeClientInfo(name));
+	}
+
+	@Override
+	public void setWebSocketEnabled(boolean enabled) {
+		super.setWebSocketEnabled(enabled);
+		webSocketPort.setEnabled(!enabled);
 	}
 
 	public void saveConfig() {

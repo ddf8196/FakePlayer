@@ -26,7 +26,7 @@ public class AboutDialog extends JDialog {
         JPanel content = new JPanel();
         JPanel about = new JPanel();
         JLabel name = new JLabel("FakePlayer");
-        version = new JLabel("版本 0.2.0-SNAPSHOT");
+        version = new JLabel("版本 0.2.1-SNAPSHOT");
         mainPage = new JLabel("<html><a href='https://github.com/ddf8196/FakePlayer'>项目主页</a></html>");
         JPanel spacer = new JPanel();
         JPanel buttonBar = new JPanel();

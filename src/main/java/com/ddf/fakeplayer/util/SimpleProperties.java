@@ -91,9 +91,9 @@ public class SimpleProperties {
                 setValue(line);
                 return;
             }
-            setKey(line.substring(0, index));
+            setKey(line.substring(0, index).trim());
             if (line.length() - 1 > index) {
-                setValue(line.substring(index + 1));
+                setValue(line.substring(index + 1).trim());
             } else {
                 setValue("");
             }

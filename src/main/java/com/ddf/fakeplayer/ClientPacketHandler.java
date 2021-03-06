@@ -8,6 +8,8 @@ import com.ddf.fakeplayer.util.KeyUtil;
 import com.ddf.fakeplayer.util.Logger;
 import com.ddf.fakeplayer.world.World;
 import com.nimbusds.jwt.SignedJWT;
+import com.nukkitx.math.vector.Vector3f;
+import com.nukkitx.math.vector.Vector3i;
 import com.nukkitx.protocol.bedrock.data.AttributeData;
 import com.nukkitx.protocol.bedrock.handler.BedrockPacketHandler;
 import com.nukkitx.protocol.bedrock.packet.*;
@@ -104,7 +106,7 @@ public class ClientPacketHandler implements BedrockPacketHandler {
             SetLocalPlayerAsInitializedPacket response = new SetLocalPlayerAsInitializedPacket();
             response.setRuntimeEntityId(player.getRuntimeEntityId());
             client.sendPacket(response);
-            player.setInitialized(true);
+            player.setSpawned(true);
         }
         return false;
     }
@@ -129,6 +131,28 @@ public class ClientPacketHandler implements BedrockPacketHandler {
         }
         for (AttributeData data : packet.getAttributes()) {
             entity.setAttribute(data.getName(), data.getMinimum(), data.getValue(), data.getMaximum());
+        }
+        return false;
+    }
+
+    @Override
+    public boolean handle(RespawnPacket packet) {
+        if (packet.getState() == RespawnPacket.State.SERVER_SEARCHING && player.isSpawned()) {
+            RespawnPacket response = new RespawnPacket();
+            response.setPosition(Vector3f.ZERO);
+            response.setState(RespawnPacket.State.CLIENT_READY);
+            response.setRuntimeEntityId(player.getRuntimeEntityId());
+            client.sendPacket(response);
+            player.setSpawned(false);
+        }
+        if (packet.getState() == RespawnPacket.State.SERVER_READY && !player.isSpawned()) {
+            PlayerActionPacket response = new PlayerActionPacket();
+            response.setRuntimeEntityId(player.getRuntimeEntityId());
+            response.setAction(PlayerActionPacket.Action.RESPAWN);
+            response.setBlockPosition(Vector3i.ZERO);
+            response.setFace(-1);
+            client.sendPacket(response);
+            player.setSpawned(true);
         }
         return false;
     }
