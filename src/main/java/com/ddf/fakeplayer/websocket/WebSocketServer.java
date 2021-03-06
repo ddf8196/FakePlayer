@@ -37,10 +37,14 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
         if (conn.getRemoteSocketAddress().getAddress().isAnyLocalAddress()) {
             conn.close();
         }
+        String remoteAddress = conn.getRemoteSocketAddress().getAddress().getHostAddress() + ":" + conn.getRemoteSocketAddress().getPort();
+        logger.log(remoteAddress + " 已连接到WebSocket");
     }
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+        String remoteAddress = conn.getRemoteSocketAddress().getAddress().getHostAddress() + ":" + conn.getRemoteSocketAddress().getPort();
+        logger.log(remoteAddress + " 已断开WebSocket连接");
     }
 
     @Override
