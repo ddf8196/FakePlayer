@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 public class Resources {
+    public static String VERSION = "0.2.2-SNAPSHOT";
     public static String SKIN_DATA_STEVE_JSON;
     public static String SKIN_DATA_ALEX_JSON;
     //public static URL ICON;

@@ -1,6 +1,7 @@
 package com.ddf.fakeplayer.gui;
 
 import com.ddf.fakeplayer.Client;
+import com.ddf.fakeplayer.Resources;
 import com.ddf.fakeplayer.util.Config;
 import com.ddf.fakeplayer.Main;
 import com.ddf.fakeplayer.gui.dialog.AboutDialog;
@@ -52,7 +53,7 @@ public class GUIMain extends Main {
 
 	private GUIMain(Config config) throws IOException {
 		super(config);
-		frame = new JFrame("FakePlayer 0.2.1-SNAPSHOT");
+		frame = new JFrame("FakePlayer " + Resources.VERSION);
 		frame.setSize(560, 480);
 		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -399,7 +400,10 @@ public class GUIMain extends Main {
 			dialog.setVisible(true);
 		});
 		autoReconnect.addChangeListener(e -> clients.forEach(client -> client.setAutoReconnect(autoReconnect.isSelected())));
-		saveAndReconnect.addActionListener(e -> new ReconnectAllWorker().execute());
+		saveAndReconnect.addActionListener(e -> {
+			saveConfig();
+			new ReconnectAllWorker().execute();
+		});
 		webSocketEnabled.addItemListener(e -> setWebSocketEnabled(webSocketEnabled.isSelected()));
 		webSocketPort.addFocusListener(new FocusAdapter() {
 			@Override

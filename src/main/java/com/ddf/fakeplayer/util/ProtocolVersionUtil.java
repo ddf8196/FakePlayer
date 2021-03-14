@@ -14,6 +14,7 @@ import com.nukkitx.protocol.bedrock.v407.Bedrock_v407;
 import com.nukkitx.protocol.bedrock.v408.Bedrock_v408;
 import com.nukkitx.protocol.bedrock.v419.Bedrock_v419;
 import com.nukkitx.protocol.bedrock.v422.Bedrock_v422;
+import com.nukkitx.protocol.bedrock.v428.Bedrock_v428;
 
 public class ProtocolVersionUtil {
     public static BedrockPacketCodec getPacketCodec(int protocolVersion) {
@@ -44,6 +45,8 @@ public class ProtocolVersionUtil {
                 return Bedrock_v419.V419_CODEC;
             case 422:
                 return Bedrock_v422.V422_CODEC;
+            case 428:
+                return Bedrock_v428.V428_CODEC;
             default:
                 throw new IllegalArgumentException("Unsupported protocol version: " + protocolVersion);
         }

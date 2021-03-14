@@ -51,7 +51,7 @@ public class PublicKeyDialog extends JDialog {
                 new Insets(0, 0, 5, 5), 0, 0));
         publicKey.setLineWrap(true);
         publicKey.setColumns(18);
-        publicKey.setRows(6);
+        publicKey.setRows(7);
         publicKey.setEditable(false);
         publicKeyScrollPane.setViewportView(publicKey);
         publicKeyPanel.add(publicKeyScrollPane, new GridBagConstraints(1, 0, 1, 4, 0.0, 1.0,

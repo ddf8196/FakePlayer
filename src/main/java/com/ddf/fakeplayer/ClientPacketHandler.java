@@ -11,6 +11,7 @@ import com.nimbusds.jwt.SignedJWT;
 import com.nukkitx.math.vector.Vector3f;
 import com.nukkitx.math.vector.Vector3i;
 import com.nukkitx.protocol.bedrock.data.AttributeData;
+import com.nukkitx.protocol.bedrock.data.PlayerActionType;
 import com.nukkitx.protocol.bedrock.handler.BedrockPacketHandler;
 import com.nukkitx.protocol.bedrock.packet.*;
 import com.nukkitx.protocol.bedrock.util.EncryptionUtils;
@@ -87,12 +88,17 @@ public class ClientPacketHandler implements BedrockPacketHandler {
         return false;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public boolean handle(StartGamePacket packet) {
         player.setUniqueEntityId(packet.getUniqueEntityId());
         player.setRuntimeEntityId(packet.getRuntimeEntityId());
         player.setPosition(packet.getPlayerPosition());
-        player.setMovementMode(packet.getAuthoritativeMovementMode());
+        if (packet.getPlayerMovementSettings() != null) {
+            player.setMovementMode(packet.getPlayerMovementSettings().getMovementMode());
+        } else {
+            player.setMovementMode(packet.getAuthoritativeMovementMode());
+        }
 
         RequestChunkRadiusPacket response = new RequestChunkRadiusPacket();
         response.setRadius(client.getChunkRadius());
@@ -148,7 +154,7 @@ public class ClientPacketHandler implements BedrockPacketHandler {
         if (packet.getState() == RespawnPacket.State.SERVER_READY && !player.isSpawned()) {
             PlayerActionPacket response = new PlayerActionPacket();
             response.setRuntimeEntityId(player.getRuntimeEntityId());
-            response.setAction(PlayerActionPacket.Action.RESPAWN);
+            response.setAction(PlayerActionType.RESPAWN);
             response.setBlockPosition(Vector3i.ZERO);
             response.setFace(-1);
             client.sendPacket(response);

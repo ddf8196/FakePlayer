@@ -5,8 +5,8 @@ Minecraft Bedrock Edition 假人客户端
 * Java8或更高
 
 ## 使用方法
-1. `unzip FakePlayer-0.2.0-SNAPSHOT.zip`
-2. `cd FakePlayer-0.2.0-SNAPSHOT/bin`
+1. `unzip FakePlayer-0.2.2-SNAPSHOT.zip`
+2. `cd FakePlayer-0.2.2-SNAPSHOT/bin`
 3. `./FakePlayer-GUI`(GUI模式) 或 `./FakePlayer`(命令行模式)
 4. 将公钥添加至server.properties
 5. 公钥添加完成后重启BDS即可使用
