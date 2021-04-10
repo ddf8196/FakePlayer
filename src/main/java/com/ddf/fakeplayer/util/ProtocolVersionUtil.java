@@ -15,40 +15,44 @@ import com.nukkitx.protocol.bedrock.v408.Bedrock_v408;
 import com.nukkitx.protocol.bedrock.v419.Bedrock_v419;
 import com.nukkitx.protocol.bedrock.v422.Bedrock_v422;
 import com.nukkitx.protocol.bedrock.v428.Bedrock_v428;
+import com.nukkitx.protocol.bedrock.v431.Bedrock_v431;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ProtocolVersionUtil {
+    private static Map<Integer, BedrockPacketCodec> codecMap;
+
+    static {
+        codecMap = new HashMap<>();
+        registerPacketCodec(Bedrock_v291.V291_CODEC);
+        registerPacketCodec(Bedrock_v313.V313_CODEC);
+        registerPacketCodec(Bedrock_v332.V332_CODEC);
+        registerPacketCodec(Bedrock_v340.V340_CODEC);
+        registerPacketCodec(Bedrock_v354.V354_CODEC);
+        registerPacketCodec(Bedrock_v361.V361_CODEC);
+        registerPacketCodec(Bedrock_v388.V388_CODEC);
+        registerPacketCodec(Bedrock_v389.V389_CODEC);
+        registerPacketCodec(Bedrock_v390.V390_CODEC);
+        registerPacketCodec(Bedrock_v407.V407_CODEC);
+        registerPacketCodec(Bedrock_v408.V408_CODEC);
+        registerPacketCodec(Bedrock_v419.V419_CODEC);
+        registerPacketCodec(Bedrock_v422.V422_CODEC);
+        registerPacketCodec(Bedrock_v428.V428_CODEC);
+        registerPacketCodec(Bedrock_v431.V431_CODEC);
+        codecMap = Collections.unmodifiableMap(codecMap);
+    }
+
+    private static void registerPacketCodec(BedrockPacketCodec codec) {
+        codecMap.put(codec.getProtocolVersion(), codec);
+    }
+
     public static BedrockPacketCodec getPacketCodec(int protocolVersion) {
-        switch (protocolVersion) {
-            case 291:
-                return Bedrock_v291.V291_CODEC;
-            case 313:
-                return Bedrock_v313.V313_CODEC;
-            case 332:
-                return Bedrock_v332.V332_CODEC;
-            case 340:
-                return Bedrock_v340.V340_CODEC;
-            case 354:
-                return Bedrock_v354.V354_CODEC;
-            case 361:
-                return Bedrock_v361.V361_CODEC;
-            case 388:
-                return Bedrock_v388.V388_CODEC;
-            case 389:
-                return Bedrock_v389.V389_CODEC;
-            case 390:
-                return Bedrock_v390.V390_CODEC;
-            case 407:
-                return Bedrock_v407.V407_CODEC;
-            case 408:
-                return Bedrock_v408.V408_CODEC;
-            case 419:
-                return Bedrock_v419.V419_CODEC;
-            case 422:
-                return Bedrock_v422.V422_CODEC;
-            case 428:
-                return Bedrock_v428.V428_CODEC;
-            default:
-                throw new IllegalArgumentException("Unsupported protocol version: " + protocolVersion);
+        BedrockPacketCodec codec = codecMap.get(protocolVersion);
+        if (codec == null) {
+            throw new IllegalArgumentException("Unsupported protocol version: " + protocolVersion);
         }
+        return codec;
     }
 }
