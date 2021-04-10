@@ -84,15 +84,13 @@ public class CLIMain extends Main {
                 case "add":
                     if (string.length >= 2) {
                         String playerName = string[1];
-                        config.addPlayerData(playerName, "steve");
-                        addClient(playerName, "steve");
+                        addPlayer(playerName, "steve");
                     }
                     break;
                 case "remove":
                     if (string.length >= 2) {
                         String playerName = string[1];
-                        config.removePlayerData(playerName);
-                        removeClient(playerName);
+                        removePlayer(playerName);
                     }
                     break;
                 case "list":

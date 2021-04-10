@@ -465,16 +465,6 @@ public class GUIMain extends Main {
 	}
 
 	@Override
-	public void addPlayer(String name, String skin) {
-		super.addPlayer(name, skin);
-	}
-
-	@Override
-	public void removePlayer(String name) {
-		super.removePlayer(name);
-	}
-
-	@Override
 	public Client addClient(String name, String skin) {
 		Client client = super.addClient(name, skin);
 		SwingUtilities.invokeLater(() -> playersTableModel.addClientInfo(name));
