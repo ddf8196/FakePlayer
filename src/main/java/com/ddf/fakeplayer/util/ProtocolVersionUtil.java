@@ -16,6 +16,7 @@ import com.nukkitx.protocol.bedrock.v419.Bedrock_v419;
 import com.nukkitx.protocol.bedrock.v422.Bedrock_v422;
 import com.nukkitx.protocol.bedrock.v428.Bedrock_v428;
 import com.nukkitx.protocol.bedrock.v431.Bedrock_v431;
+import com.nukkitx.protocol.bedrock.v440.Bedrock_v440;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,6 +42,7 @@ public class ProtocolVersionUtil {
         registerPacketCodec(Bedrock_v422.V422_CODEC);
         registerPacketCodec(Bedrock_v428.V428_CODEC);
         registerPacketCodec(Bedrock_v431.V431_CODEC);
+        registerPacketCodec(Bedrock_v440.V440_CODEC);
         codecMap = Collections.unmodifiableMap(codecMap);
     }
 
