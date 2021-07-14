@@ -29,7 +29,7 @@ Minecraft Bedrock Edition 假人客户端
 * 假人背包相关操作
 
 ## 支持的版本
-* 理论上支持1.7.0到1.17.1之间的所有版本
+* 理论上支持1.7.0到1.17.10之间的所有版本
 
 ## WebSocket API
 * FakePlayer提供WebSocket API以供其他插件/程序与FakePlayer进行通信，目前支持的操作有添加/删除假人，获取假人列表等
