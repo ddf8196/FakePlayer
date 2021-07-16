@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.ddf'
-version '0.2.5-SNAPSHOT'
+version '0.2.4-SNAPSHOT'
 
 repositories {
     maven {
@@ -26,7 +26,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.nukkitx.protocol:bedrock-v448:2.8.1-SNAPSHOT'
+    implementation 'com.nukkitx.protocol:bedrock-v440:2.8.1-SNAPSHOT'
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'org.yaml:snakeyaml:1.27'
     implementation 'com.formdev:flatlaf:1.0'
