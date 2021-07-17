@@ -3,7 +3,7 @@ Minecraft Bedrock Edition 假人客户端
 
 ***
 
-![License](https://img.shields.io/badge/license-MIT-blue)
+[![License](https://img.shields.io/badge/license-MIT-blue)](https://github.com/ddf8196/FakePlayer/blob/main/LICENSE)
 
 ## 简介
 为BDS开发的假人客户端，利用网络协议模拟真实玩家登录服务器，并可通过BDS的Xbox验证   
