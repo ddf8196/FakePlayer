@@ -1,6 +1,10 @@
 # FakePlayer
 Minecraft Bedrock Edition 假人客户端
 
+***
+
+![License](https://img.shields.io/badge/license-MIT-blue)
+
 ## 简介
 为BDS开发的假人客户端，利用网络协议模拟真实玩家登录服务器，并可通过BDS的Xbox验证   
 理论上也可在其他服务端及单人存档使用（暂时无法通过除BDS外的其他服务端的Xbox验证，单人存档使用需打开多人游戏）
@@ -29,7 +33,7 @@ Minecraft Bedrock Edition 假人客户端
 * 假人背包相关操作
 
 ## 支持的版本
-* 理论上支持1.7.0到1.17.1之间的所有版本
+* 理论上支持1.7.0到1.17.10之间的所有版本
 
 ## WebSocket API
 * FakePlayer提供WebSocket API以供其他插件/程序与FakePlayer进行通信，目前支持的操作有添加/删除假人，获取假人列表等
