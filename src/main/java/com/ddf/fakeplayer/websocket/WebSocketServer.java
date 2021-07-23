@@ -34,8 +34,9 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
-        if (conn.getRemoteSocketAddress().getAddress().isAnyLocalAddress()) {
+        if (!conn.getRemoteSocketAddress().getAddress().isLoopbackAddress()) {
             conn.close();
+            return;
         }
         String remoteAddress = conn.getRemoteSocketAddress().getAddress().getHostAddress() + ":" + conn.getRemoteSocketAddress().getPort();
         logger.log(remoteAddress + " 已连接到WebSocket");

@@ -91,6 +91,7 @@ public class Client {
                         packetCodec = defaultPacketCodec;
                         logger.log(playerName + " 协议版本获取失败,尝试使用默认协议版本(" + defaultPacketCodec.getProtocolVersion() + ")连接");
                     }
+                    bedrockClient.setRakNetVersion(ProtocolVersionUtil.getRakNetProtocolVersion(packetCodec));
                     bedrockClient.connect(addressToConnect).whenComplete((session, throwable) -> {
                         if (throwable != null) {
                             return;

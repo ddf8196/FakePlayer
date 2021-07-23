@@ -24,32 +24,34 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ProtocolVersionUtil {
-    private static Map<Integer, BedrockPacketCodec> codecMap;
+    private static Map<Integer, BedrockPacketCodec> codecMap = new HashMap<>();
+    private static Map<BedrockPacketCodec, Integer> rakNetVersionMap = new HashMap<>();
 
     static {
-        codecMap = new HashMap<>();
-        registerPacketCodec(Bedrock_v291.V291_CODEC);
-        registerPacketCodec(Bedrock_v313.V313_CODEC);
-        registerPacketCodec(Bedrock_v332.V332_CODEC);
-        registerPacketCodec(Bedrock_v340.V340_CODEC);
-        registerPacketCodec(Bedrock_v354.V354_CODEC);
-        registerPacketCodec(Bedrock_v361.V361_CODEC);
-        registerPacketCodec(Bedrock_v388.V388_CODEC);
-        registerPacketCodec(Bedrock_v389.V389_CODEC);
-        registerPacketCodec(Bedrock_v390.V390_CODEC);
-        registerPacketCodec(Bedrock_v407.V407_CODEC);
-        registerPacketCodec(Bedrock_v408.V408_CODEC);
-        registerPacketCodec(Bedrock_v419.V419_CODEC);
-        registerPacketCodec(Bedrock_v422.V422_CODEC);
-        registerPacketCodec(Bedrock_v428.V428_CODEC);
-        registerPacketCodec(Bedrock_v431.V431_CODEC);
-        registerPacketCodec(Bedrock_v440.V440_CODEC);
-        registerPacketCodec(Bedrock_v448.V448_CODEC);
+        registerPacketCodec(Bedrock_v291.V291_CODEC, 9);
+        registerPacketCodec(Bedrock_v313.V313_CODEC, 9);
+        registerPacketCodec(Bedrock_v332.V332_CODEC, 9);
+        registerPacketCodec(Bedrock_v340.V340_CODEC, 9);
+        registerPacketCodec(Bedrock_v354.V354_CODEC, 9);
+        registerPacketCodec(Bedrock_v361.V361_CODEC, 9);
+        registerPacketCodec(Bedrock_v388.V388_CODEC, 9);
+        registerPacketCodec(Bedrock_v389.V389_CODEC, 9);
+        registerPacketCodec(Bedrock_v390.V390_CODEC, 9);
+        registerPacketCodec(Bedrock_v407.V407_CODEC, 10);
+        registerPacketCodec(Bedrock_v408.V408_CODEC, 10);
+        registerPacketCodec(Bedrock_v419.V419_CODEC, 10);
+        registerPacketCodec(Bedrock_v422.V422_CODEC, 10);
+        registerPacketCodec(Bedrock_v428.V428_CODEC, 10);
+        registerPacketCodec(Bedrock_v431.V431_CODEC, 10);
+        registerPacketCodec(Bedrock_v440.V440_CODEC, 10);
+        registerPacketCodec(Bedrock_v448.V448_CODEC, 10);
         codecMap = Collections.unmodifiableMap(codecMap);
+        rakNetVersionMap = Collections.unmodifiableMap(rakNetVersionMap);
     }
 
-    private static void registerPacketCodec(BedrockPacketCodec codec) {
+    private static void registerPacketCodec(BedrockPacketCodec codec, int rakNetProtocolVersion) {
         codecMap.put(codec.getProtocolVersion(), codec);
+        rakNetVersionMap.put(codec, rakNetProtocolVersion);
     }
 
     public static BedrockPacketCodec getPacketCodec(int protocolVersion) {
@@ -58,5 +60,9 @@ public class ProtocolVersionUtil {
             throw new IllegalArgumentException("Unsupported protocol version: " + protocolVersion);
         }
         return codec;
+    }
+
+    public static int getRakNetProtocolVersion(BedrockPacketCodec codec) {
+        return rakNetVersionMap.get(codec);
     }
 }
