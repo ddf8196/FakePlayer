@@ -55,6 +55,19 @@ run {
     jvmArgs += '-Dfakeplayer.gui=false'
 }
 
+task generateVersionInfo {
+    def versionRegex = '\\$\\{VERSION\\}'
+    def templateFile = new File(projectDir, "src/main/java/com/ddf/fakeplayer/VersionInfo.java.template")
+    def text = templateFile.text
+    text = (text =~ /${versionRegex}/).replaceAll(version.toString())
+    def file = new File(projectDir, "src/main/java/com/ddf/fakeplayer/VersionInfo.java")
+    file.createNewFile()
+    file.write(text)
+}
+
+compileJava.dependsOn(generateVersionInfo)
+compileTestJava.dependsOn(generateVersionInfo)
+
 task runGUI(type: JavaExec) {
     classpath = run.classpath
     main = run.main

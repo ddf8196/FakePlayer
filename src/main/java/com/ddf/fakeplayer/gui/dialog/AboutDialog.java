@@ -1,6 +1,6 @@
 package com.ddf.fakeplayer.gui.dialog;
 
-import com.ddf.fakeplayer.Resources;
+import com.ddf.fakeplayer.VersionInfo;
 import com.ddf.fakeplayer.gui.GUIMain;
 import com.ddf.fakeplayer.util.Util;
 
@@ -27,7 +27,7 @@ public class AboutDialog extends JDialog {
         JPanel content = new JPanel();
         JPanel about = new JPanel();
         JLabel name = new JLabel("FakePlayer");
-        version = new JLabel("版本 " + Resources.VERSION);
+        version = new JLabel("版本 " + VersionInfo.VERSION);
         mainPage = new JLabel("<html><a href='https://github.com/ddf8196/FakePlayer'>项目主页</a></html>");
         JPanel spacer = new JPanel();
         JPanel buttonBar = new JPanel();

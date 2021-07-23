@@ -1,7 +1,7 @@
 package com.ddf.fakeplayer.gui;
 
 import com.ddf.fakeplayer.Client;
-import com.ddf.fakeplayer.Resources;
+import com.ddf.fakeplayer.VersionInfo;
 import com.ddf.fakeplayer.util.Config;
 import com.ddf.fakeplayer.Main;
 import com.ddf.fakeplayer.gui.dialog.AboutDialog;
@@ -53,7 +53,7 @@ public class GUIMain extends Main {
 
 	private GUIMain(Config config) throws IOException {
 		super(config);
-		frame = new JFrame("FakePlayer " + Resources.VERSION);
+		frame = new JFrame("FakePlayer " + VersionInfo.VERSION);
 		frame.setSize(560, 480);
 		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
