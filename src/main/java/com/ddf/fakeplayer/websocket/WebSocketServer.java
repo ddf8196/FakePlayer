@@ -51,9 +51,11 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
     @Override
     public void onMessage(WebSocket conn, String message) {
         Message msg = Message.fromJson(message);
+        String id = msg.getId();
         switch (msg.getType()) {
             case Message.TYPE_LIST: {
                 Message response = new Message(Message.TYPE_LIST);
+                if (id != null) { response.setId(id); }
                 List<String> nameList = new ArrayList<>();
                 main.getClients().forEach(client -> nameList.add(client.getPlayerName()));
                 response.getData().setList(nameList);
@@ -63,6 +65,7 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
             case Message.TYPE_ADD: {
                 Message response = new Message(Message.TYPE_ADD);
                 Message.Data data = msg.getData();
+                if (id != null) { response.setId(id); }
                 if (data == null) {
                     response.getData().setSuccess(false);
                     response.getData().setReason("data不能为空");
@@ -109,6 +112,7 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
             case Message.TYPE_REMOVE: {
                 Message response = new Message(Message.TYPE_REMOVE);
                 Message.Data data = msg.getData();
+                if (id != null) { response.setId(id); }
                 if (data == null) {
                     response.getData().setSuccess(false);
                     response.getData().setReason("data不能为空");
@@ -138,6 +142,7 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
             case Message.TYPE_GET_STATE: {
                 Message response = new Message(Message.TYPE_GET_STATE);
                 Message.Data data = msg.getData();
+                if (id != null) { response.setId(id); }
                 if (data == null) {
                     response.getData().setSuccess(false);
                     response.getData().setReason("data不能为空");
@@ -168,6 +173,7 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
             case Message.TYPE_DISCONNECT: {
                 Message response = new Message(Message.TYPE_DISCONNECT);
                 Message.Data data = msg.getData();
+                if (id != null) { response.setId(id); }
                 if (data == null) {
                     response.getData().setSuccess(false);
                     response.getData().setReason("data不能为空");
@@ -198,6 +204,7 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
             case Message.TYPE_CONNECT: {
                 Message response = new Message(Message.TYPE_CONNECT);
                 Message.Data data = msg.getData();
+                if (id != null) { response.setId(id); }
                 if (data == null) {
                     response.getData().setSuccess(false);
                     response.getData().setReason("data不能为空");
@@ -224,6 +231,52 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
                 response.getData().setReason("");
                 conn.send(response.toString());
                 break;
+            }
+            case Message.TYPE_REMOVE_ALL: {
+                Message response = new Message(Message.TYPE_REMOVE_ALL);
+                if (id != null) { response.setId(id); }
+                List<String> nameList = new ArrayList<>();
+                main.getClients().forEach(client -> nameList.add(client.getPlayerName()));
+                nameList.forEach(name -> main.removePlayer(name));
+                response.getData().setList(nameList);
+                response.getData().setSuccess(true);
+                response.getData().setReason("");
+                conn.send(response.toString());
+                break;
+            }
+            case Message.TYPE_CONNECT_ALL:{
+                Message response = new Message(Message.TYPE_CONNECT_ALL);
+                if (id != null) { response.setId(id); }
+                List<String> nameList = new ArrayList<>();
+                main.getClients().forEach(client ->{
+                    if (!client.isConnected()) {
+                        String name = client.getPlayerName();
+                        client.connect(main.getConfig().getServerAddress(),
+                                main.getConfig().getServerPort());
+                        nameList.add(name);
+                    }
+                });
+                response.getData().setList(nameList);
+                response.getData().setSuccess(true);
+                response.getData().setReason("");
+                conn.send(response.toString());
+                break;
+            }
+            case Message.TYPE_DISCONNECT_ALL:{
+                Message response = new Message(Message.TYPE_CONNECT_ALL);
+                if (id != null) { response.setId(id); }
+                List<String> nameList = new ArrayList<>();
+                main.getClients().forEach(client ->{
+                    if (client.isConnected()) {
+                        String name = client.getPlayerName();
+                        client.stop();
+                        nameList.add(name);
+                    }
+                });
+                response.getData().setList(nameList);
+                response.getData().setSuccess(true);
+                response.getData().setReason("");
+                conn.send(response.toString());
             }
         }
     }
