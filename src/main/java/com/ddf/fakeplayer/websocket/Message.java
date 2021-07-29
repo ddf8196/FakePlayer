@@ -11,7 +11,11 @@ public class Message {
     public static final String TYPE_GET_STATE = "getState";
     public static final String TYPE_DISCONNECT = "disconnect";
     public static final String TYPE_CONNECT = "connect";
+    public static final String TYPE_REMOVE_ALL = "remove_all";
+    public static final String TYPE_CONNECT_ALL = "connect_all";
+    public static final String TYPE_DISCONNECT_ALL = "disconnect_all";
 
+    private String id;
     private String type;
     private Data data;
 
@@ -29,6 +33,10 @@ public class Message {
     public String toString() {
         return GSON.toJson(this);
     }
+
+    public void setId(String id) { this.id = id; }
+
+    public String getId() { return id; }
 
     public void setType(String type) {
         this.type = type;
