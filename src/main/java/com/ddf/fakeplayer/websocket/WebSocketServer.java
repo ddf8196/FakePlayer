@@ -236,11 +236,8 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
                 Message response = new Message(Message.TYPE_REMOVE_ALL);
                 if (id != null) { response.setId(id); }
                 List<String> nameList = new ArrayList<>();
-                main.getClients().forEach(client ->{
-                    String name = client.getPlayerName();
-                    main.removePlayer(name);
-                    nameList.add(name);
-                });
+                main.getClients().forEach(client -> nameList.add(client.getPlayerName()));
+                nameList.forEach(name -> main.removePlayer(name));
                 response.getData().setList(nameList);
                 response.getData().setSuccess(true);
                 response.getData().setReason("");
