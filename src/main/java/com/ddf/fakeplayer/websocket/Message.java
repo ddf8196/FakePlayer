@@ -14,6 +14,7 @@ public class Message {
     public static final String TYPE_REMOVE_ALL = "remove_all";
     public static final String TYPE_CONNECT_ALL = "connect_all";
     public static final String TYPE_DISCONNECT_ALL = "disconnect_all";
+    public static final String TYPE_GET_VERSION = "getVersion";
 
     private String id;
     private String type;
@@ -60,7 +61,12 @@ public class Message {
         private Boolean success;
         private String reason;
         private Integer state;
+        private String version;
         private List<String> list;
+
+        public String getVersion() { return version; }
+
+        public void setVersion(String version) { this.version = version; }
 
         public String getName() {
             return name;

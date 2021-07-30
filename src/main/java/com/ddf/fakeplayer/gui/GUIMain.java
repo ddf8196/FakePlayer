@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.*;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.text.AttributeSet;
@@ -91,7 +93,7 @@ public class GUIMain extends Main {
 	private void initMenuBar() {
 		JMenuBar menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);
-		
+
 		JMenu fileMenu = new JMenu("文件");
 		menuBar.add(fileMenu);
 		JMenuItem exportConfig = new JMenuItem("导出配置");
