@@ -2,6 +2,7 @@ package com.ddf.fakeplayer.websocket;
 
 import com.ddf.fakeplayer.Client;
 import com.ddf.fakeplayer.Main;
+import com.ddf.fakeplayer.VersionInfo;
 import com.ddf.fakeplayer.util.Logger;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -239,8 +240,6 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
                 main.getClients().forEach(client -> nameList.add(client.getPlayerName()));
                 nameList.forEach(name -> main.removePlayer(name));
                 response.getData().setList(nameList);
-                response.getData().setSuccess(true);
-                response.getData().setReason("");
                 conn.send(response.toString());
                 break;
             }
@@ -257,26 +256,30 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
                     }
                 });
                 response.getData().setList(nameList);
-                response.getData().setSuccess(true);
-                response.getData().setReason("");
                 conn.send(response.toString());
                 break;
             }
             case Message.TYPE_DISCONNECT_ALL:{
-                Message response = new Message(Message.TYPE_CONNECT_ALL);
+                Message response = new Message(Message.TYPE_DISCONNECT_ALL);
                 if (id != null) { response.setId(id); }
                 List<String> nameList = new ArrayList<>();
-                main.getClients().forEach(client ->{
-                    if (client.isConnected()) {
+                main.getClients().forEach(client -> {
+                    if (!client.isStop()) {
                         String name = client.getPlayerName();
                         client.stop();
                         nameList.add(name);
                     }
                 });
                 response.getData().setList(nameList);
-                response.getData().setSuccess(true);
-                response.getData().setReason("");
                 conn.send(response.toString());
+                break;
+            }
+            case Message.TYPE_GET_VERSION:{
+                Message response = new Message(Message.TYPE_GET_VERSION);
+                if (id != null) { response.setId(id); }
+                response.getData().setVersion(VersionInfo.VERSION);
+                conn.send(response.toString());
+                break;
             }
         }
     }
