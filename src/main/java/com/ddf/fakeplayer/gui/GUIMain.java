@@ -66,7 +66,7 @@ public class GUIMain extends Main {
 		initListener();
 
         try {
-            logger.log("配置文件已加载: " + config.getConfigPath().toRealPath().toString());
+            logger.log("配置文件已加载: " + config.getConfigPath().toRealPath());
         } catch (IOException e) {
             e.printStackTrace();
             config.save();
@@ -111,7 +111,7 @@ public class GUIMain extends Main {
                 try {
                     config.save(Paths.get(path));
                 } catch (IOException ioException) {
-                    logger.log("配置文件导出失败: " + ioException.toString());
+                    logger.log("配置文件导出失败: " + ioException);
                     return;
                 }
                 logger.log("配置文件导出成功");
@@ -134,7 +134,7 @@ public class GUIMain extends Main {
                     clients.forEach(Client::stop);
                     initData();
                 } catch (IOException ioException) {
-                    logger.log("配置文件导入失败: " + ioException.toString());
+                    logger.log("配置文件导入失败: " + ioException);
                     return;
                 }
                 logger.log("配置文件导入成功");
@@ -153,9 +153,9 @@ public class GUIMain extends Main {
 		JMenu helpMenu = new JMenu("帮助");
 		menuBar.add(helpMenu);
 		JMenuItem showHelp = new JMenuItem("查看帮助");
-		showHelp.addActionListener(e -> {
-			Util.tryOpenBrowser("https://github.com/ddf8196/FakePlayer/wiki");
-		});
+		showHelp.addActionListener(e ->
+			Util.tryOpenBrowser("https://github.com/ddf8196/FakePlayer/wiki")
+		);
 		helpMenu.add(showHelp);
 		helpMenu.addSeparator();
 		JMenuItem about = new JMenuItem("关于");
@@ -470,11 +470,11 @@ public class GUIMain extends Main {
 	public Client addClient(String name, String skin) {
 		Client client = super.addClient(name, skin);
 		SwingUtilities.invokeLater(() -> playersTableModel.addClientInfo(name));
-		client.addStateChangedListener((client1, oldState, currentState) -> {
-			SwingUtilities.invokeLater(() -> {
-				playersTableModel.setClientState(client1.getPlayerName(), currentState);
-			});
-		});
+		client.addStateChangedListener((client1, oldState, currentState) ->
+			SwingUtilities.invokeLater(() ->
+				playersTableModel.setClientState(client1.getPlayerName(), currentState)
+			)
+		);
 		return client;
 	}
 
@@ -512,7 +512,7 @@ public class GUIMain extends Main {
 		try {
 			config.save();
 		} catch (IOException e) {
-			logger.log("配置保存失败: " + e.toString());
+			logger.log("配置保存失败: " + e);
 			e.printStackTrace();
 		}
 	}
