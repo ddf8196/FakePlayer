@@ -22,6 +22,7 @@ import java.util.*;
 public class Config {
     private static final Yaml YAML;
 
+    private boolean debug = true;
     private boolean configured = false;
     private int defaultProtocolVersion = 408;
     private String serverAddress = "localhost";
@@ -30,7 +31,6 @@ public class Config {
     private String serverPrivateKey = "";
     private boolean autoReconnect = true;
     private long reconnectDelay = 3000;
-    private long playerConnectionDelay = 100;
     private boolean webSocketEnabled = false;
     private int webSocketPort = 54321;
     private String webSocketPassword = "";
@@ -111,6 +111,14 @@ public class Config {
                 StandardOpenOption.TRUNCATE_EXISTING);
     }
 
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
+    }
+
     public boolean isConfigured() {
         return configured;
     }
@@ -175,14 +183,6 @@ public class Config {
         this.reconnectDelay = reconnectDelay;
     }
 
-    public long getPlayerConnectionDelay() {
-        return playerConnectionDelay;
-    }
-
-    public void setPlayerConnectionDelay(long playerConnectionDelay) {
-        this.playerConnectionDelay = playerConnectionDelay;
-    }
-
     public boolean isWebSocketEnabled() {
         return webSocketEnabled;
     }
@@ -215,10 +215,11 @@ public class Config {
         return players;
     }
 
-    public void addPlayerData(String name, String skin) {
+    public void addPlayerData(String name, String skin, boolean allowChatMessageControl) {
         PlayerData data = new PlayerData();
         data.setName(name);
         data.setSkin(skin);
+        data.setAllowChatMessageControl(allowChatMessageControl);
         players.removeIf(playerData -> playerData.getName().equals(name));
         players.add(data);
     }
@@ -255,6 +256,7 @@ public class Config {
     public static class PlayerData {
         private String name = "";
         private String skin = "steve";
+        private boolean allowChatMessageControl = false;
 
         public void setName(String name) {
             this.name = name;
@@ -270,6 +272,14 @@ public class Config {
 
         public String getSkin() {
             return skin;
+        }
+
+        public boolean isAllowChatMessageControl() {
+            return allowChatMessageControl;
+        }
+
+        public void setAllowChatMessageControl(boolean allowChatMessageControl) {
+            this.allowChatMessageControl = allowChatMessageControl;
         }
     }
 }

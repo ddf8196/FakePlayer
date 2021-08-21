@@ -30,7 +30,7 @@ public class ChainData {
     @Stage(2)
     private ExtraData extraData;
 
-    public static ChainData createChainData(){
+    public static ChainData createChainData() {
         ChainData chainData = new ChainData();
         chainData.nbf = Instant.now().getEpochSecond() - 100;
         chainData.exp = chainData.nbf + 100000;

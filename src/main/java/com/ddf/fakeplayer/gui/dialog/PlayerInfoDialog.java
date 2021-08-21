@@ -2,6 +2,7 @@ package com.ddf.fakeplayer.gui.dialog;
 
 import com.ddf.fakeplayer.util.Config;
 import com.ddf.fakeplayer.gui.GUIMain;
+import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -17,6 +18,7 @@ public class PlayerInfoDialog extends JDialog {
 
     private JTextField name;
     private JComboBox<String> skin;
+    private JCheckBox allowChatMessageControl;
     private JButton ok;
     private JButton cancel;
 
@@ -47,6 +49,7 @@ public class PlayerInfoDialog extends JDialog {
                 "steve",
                 "alex"
         });
+        allowChatMessageControl = new JCheckBox("允许聊天信息控制");
         JPanel buttonBar = new JPanel();
         ok = new JButton("确定");
         cancel = new JButton("取消");
@@ -54,37 +57,21 @@ public class PlayerInfoDialog extends JDialog {
         content.setBorder(new EmptyBorder(12, 12, 12, 12));
         content.setLayout(new BorderLayout());
         setContentPane(content);
-        GridBagLayout gridBagLayout = new GridBagLayout();
-        gridBagLayout.columnWidths = new int[] {0, 0, 0};
-        gridBagLayout.rowHeights = new int[] {0, 0, 0};
-        gridBagLayout.columnWeights = new double[] {0.0, 0.0, 1.0E-4};
-        gridBagLayout.rowWeights = new double[] {0.0, 0.0, 1.0E-4};
-        playerInfoPanel.setLayout(gridBagLayout);
-        playerInfoPanel.add(nameLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 5, 5), 0, 0));
-        playerInfoPanel.add(name, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 5, 0), 0, 0));
-        playerInfoPanel.add(skinLabel, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 0, 5), 0, 0));
-        playerInfoPanel.add(skin, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 0, 0), 0, 0));
+        playerInfoPanel.setLayout(new MigLayout("insets 0,hidemode 3", "[fill][grow,fill]", "[][][]"));
+        playerInfoPanel.add(nameLabel, "cell 0 0");
+        playerInfoPanel.add(name, "cell 1 0");
+        playerInfoPanel.add(skinLabel, "cell 0 1");
+        playerInfoPanel.add(skin, "cell 1 1");
+        playerInfoPanel.add(allowChatMessageControl, "cell 0 2 2 1");
         content.add(playerInfoPanel, BorderLayout.CENTER);
         buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
-        gridBagLayout = new GridBagLayout();
-        gridBagLayout.columnWidths = new int[] {85, 80};
-        buttonBar.setLayout(gridBagLayout);
-        buttonBar.add(ok, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 0, 5), 0, 0));
-        buttonBar.add(cancel, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                new Insets(0, 0, 0, 0), 0, 0));
+        buttonBar.setLayout(new MigLayout("insets 0,hidemode 3,gap 5 5", "[80,grow,fill][80,grow,fill]", "[fill]"));
+        buttonBar.add(ok, "cell 0 0");
+        buttonBar.add(cancel, "cell 1 0");
         content.add(buttonBar, BorderLayout.SOUTH);
+
         pack();
+        setMinimumSize(getSize());
         setLocationRelativeTo(getOwner());
     }
 
@@ -95,20 +82,15 @@ public class PlayerInfoDialog extends JDialog {
                 break;
             case TYPE_EDIT:
                 setTitle("编辑假人");
-                Config.PlayerData data =  main.getConfig().getPlayerData(playerName);
+                Config.PlayerData data = main.getConfig().getPlayerData(playerName);
                 name.setText(data.getName());
                 skin.setSelectedItem(data.getSkin());
+                allowChatMessageControl.setSelected(data.isAllowChatMessageControl());
                 break;
         }
-        name.addActionListener(e -> {
-            addOrEdit();
-        });
-        ok.addActionListener(e -> {
-            addOrEdit();
-        });
-        cancel.addActionListener(e -> {
-            dispose();
-        });
+        name.addActionListener(e -> addOrEdit());
+        ok.addActionListener(e -> addOrEdit());
+        cancel.addActionListener(e -> dispose());
     }
 
     private void addOrEdit() {
@@ -124,7 +106,7 @@ public class PlayerInfoDialog extends JDialog {
                     JOptionPane.showMessageDialog(main.getFrame(), "假人已存在");
                     return;
                 }
-                main.addPlayer(playerName, skin);
+                main.addPlayer(playerName, skin, allowChatMessageControl.isSelected());
                 dispose();
                 break;
             }
@@ -139,7 +121,7 @@ public class PlayerInfoDialog extends JDialog {
                     return;
                 }
                 main.removePlayer(playerName);
-                main.addPlayer(text, skin.getSelectedItem().toString());
+                main.addPlayer(text, skin.getSelectedItem().toString(), allowChatMessageControl.isSelected());
                 break;
             }
         }

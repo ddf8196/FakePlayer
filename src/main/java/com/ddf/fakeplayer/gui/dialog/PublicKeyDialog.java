@@ -76,6 +76,7 @@ public class PublicKeyDialog extends JDialog {
         content.add(buttonBar, BorderLayout.SOUTH);
         setTitle("服务器公钥");
         pack();
+        setMinimumSize(getSize());
         setLocationRelativeTo(getOwner());
     }
 

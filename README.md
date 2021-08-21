@@ -28,12 +28,11 @@ Minecraft Bedrock Edition 假人客户端
 * 假人死亡自动复活
 
 ## 正在开发中的功能
-* 假人投掷三叉戟
 * 假人睡觉
 * 假人背包相关操作
 
 ## 支持的版本
-* 理论上支持1.7.0到1.17.10之间的所有版本
+* 理论上支持1.7.0到1.17.11之间的所有版本
 
 ## WebSocket API
 * FakePlayer提供WebSocket API以供其他插件/程序与FakePlayer进行通信，目前支持的操作有添加/删除假人，获取假人列表等
@@ -41,9 +40,10 @@ Minecraft Bedrock Edition 假人客户端
 * WebSocket API仅为本地进程间通信设计，消息采用明文传输，不考虑安全性，因此请勿尝试远程连接WebSocket，也请不要对外开放WebSocket端口
 
 ## 使用的第三方库
-* [Protocol](https://github.com/CloudburstMC/Protocol)
-* [Gson](https://github.com/google/gson)
-* [FlatLaf](https://github.com/JFormDesigner/FlatLaf)
-* [Java-WebSocket](https://github.com/TooTallNate/Java-WebSocket)
-* SnakeYaml
-* slf4j-nop
+* [Protocol](https://github.com/CloudburstMC/Protocol) ([Apache License 2.0](https://github.com/CloudburstMC/Protocol/blob/develop/LICENSE))
+* [Gson](https://github.com/google/gson) ([Apache License 2.0](https://github.com/google/gson/blob/master/LICENSE))
+* [FlatLaf](https://github.com/JFormDesigner/FlatLaf) ([Apache License 2.0](https://github.com/JFormDesigner/FlatLaf/blob/main/LICENSE)) 
+* [Java-WebSocket](https://github.com/TooTallNate/Java-WebSocket) ([MIT License](https://github.com/TooTallNate/Java-WebSocket/blob/master/LICENSE))
+* [MiGLayout Swing](https://github.com/mikaelgrev/miglayout) ([BSD 3-Clause "New" or "Revised" license](http://www.debian.org/misc/bsd.license))
+* SnakeYaml ([Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt))
+* SLF4J NOP Binding ([MIT License](	http://www.opensource.org/licenses/mit-license.php))

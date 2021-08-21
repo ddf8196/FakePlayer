@@ -14,9 +14,5 @@ public abstract class Logger {
         return LOGGER;
     }
 
-    public abstract void log(String log);
-
-    public synchronized void log(Throwable throwable) {
-        log(throwable.toString());
-    }
+    public abstract void log(Object... log);
 }

@@ -1,6 +1,8 @@
 package com.ddf.fakeplayer.util;
 
 import java.awt.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URI;
 
 public class Util {
@@ -20,5 +22,24 @@ public class Util {
             } catch (Exception ignored) { }
         }
         return false;
+    }
+
+    public static boolean isNumber(String string) {
+        return string.matches("^-?\\d+$");
+    }
+
+    public static int toInt(String string) {
+        try {
+            return Integer.parseInt(string);
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            return Integer.MIN_VALUE;
+        }
+    }
+
+    public static String getStackTrace(Throwable throwable) {
+        StringWriter stringWriter = new StringWriter();
+        throwable.printStackTrace(new PrintWriter(stringWriter));
+        return stringWriter.toString();
     }
 }

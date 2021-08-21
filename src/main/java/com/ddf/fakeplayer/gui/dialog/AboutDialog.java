@@ -66,6 +66,7 @@ public class AboutDialog extends JDialog {
         content.add(buttonBar, BorderLayout.SOUTH);
         setTitle("关于");
         pack();
+        setMinimumSize(getSize());
         setLocationRelativeTo(getOwner());
     }
 

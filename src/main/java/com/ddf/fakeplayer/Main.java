@@ -1,7 +1,10 @@
 package com.ddf.fakeplayer;
 
+import com.ddf.fakeplayer.actor.attribute.SharedAttributes;
 import com.ddf.fakeplayer.cli.CLIMain;
 import com.ddf.fakeplayer.gui.GUIMain;
+import com.ddf.fakeplayer.item.BedrockItems;
+import com.ddf.fakeplayer.item.VanillaItems;
 import com.ddf.fakeplayer.util.Config;
 import com.ddf.fakeplayer.util.Logger;
 import com.ddf.fakeplayer.websocket.WebSocketServer;
@@ -34,7 +37,11 @@ public abstract class Main {
     public abstract void initLogger();
 
     public synchronized void addPlayer(String name, String skin) {
-        config.addPlayerData(name, skin);
+        addPlayer(name, skin, false);
+    }
+
+    public synchronized void addPlayer(String name, String skin, boolean allowChatMessageControl) {
+        config.addPlayerData(name, skin, allowChatMessageControl);
         addClient(name, skin).connect(config.getServerAddress(), config.getServerPort());
     }
 
@@ -56,7 +63,7 @@ public abstract class Main {
 
     public synchronized Client addClient(String name, String skin) {
         removeClient(name);
-        Client client = new Client(name, config.getServerKeyPair());
+        Client client = new Client(name, config.getServerKeyPair(), config);
         client.setDefaultPacketCodec(config.getDefaultPacketCodec());
         switch (skin) {
             case "steve":
@@ -76,9 +83,8 @@ public abstract class Main {
         synchronized (clients) {
             clients.removeIf(client -> {
                 boolean remove = client.getPlayerName().equals(name);
-                if (remove) {
-                    client.stop();
-                }
+                if (remove)
+                    client.close();
                 return remove;
             });
         }
@@ -130,7 +136,7 @@ public abstract class Main {
         if (webSocketServer != null) {
             try {
                 webSocketServer.stop();
-            } catch (IOException | InterruptedException ignored) {}
+            } catch (InterruptedException ignored) {}
             webSocketServer = null;
         }
     }
@@ -190,6 +196,10 @@ public abstract class Main {
         Files.createDirectories(configDir);
         Path configPath = configDir.resolve("config.yaml");
         Config config = Config.load(configPath);
+
+        BedrockItems.registerItems();
+        VanillaItems.registerItems();
+        SharedAttributes.init();
 
         if (System.getProperty("fakeplayer.gui", "false").equals("true")) {
             GUIMain.main(config);

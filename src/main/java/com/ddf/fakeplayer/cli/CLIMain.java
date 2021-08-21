@@ -4,6 +4,7 @@ import com.ddf.fakeplayer.Client;
 import com.ddf.fakeplayer.util.Config;
 import com.ddf.fakeplayer.Main;
 import com.ddf.fakeplayer.util.Logger;
+import com.ddf.fakeplayer.util.Util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,15 +17,23 @@ public class CLIMain extends Main {
 
     private CLIMain(Config config) throws IOException {
         super(config);
-        logger.log("配置文件已加载: " + config.getConfigPath().toRealPath().toString());
+        logger.log("配置文件已加载: ", config.getConfigPath().toRealPath().toString());
     }
 
     @Override
     public void initLogger() {
         Logger.init(new Logger() {
             @Override
-            public synchronized void log(String log) {
-                System.out.println(LocalDateTime.now().format(Logger.FORMATTER) + log);
+            public synchronized void log(Object... log) {
+                StringBuilder stringBuilder = new StringBuilder();
+                for (Object obj : log) {
+                    if (config.isDebug() && obj instanceof Throwable) {
+                        stringBuilder.append(Util.getStackTrace((Throwable) obj));
+                        continue;
+                    }
+                    stringBuilder.append(obj);
+                }
+                System.out.println(LocalDateTime.now().format(Logger.FORMATTER) + stringBuilder.toString());
             }
         });
     }
@@ -94,7 +103,7 @@ public class CLIMain extends Main {
                     }
                     break;
                 case "list":
-                    logger.log("目前共有 " + clients.size() + " 个假人: ");
+                    logger.log("目前共有 ", clients.size(), " 个假人: ");
                     clients.forEach(client -> logger.log(client.getPlayerName()));
                     break;
                 case "publicKey":
@@ -121,11 +130,7 @@ public class CLIMain extends Main {
 
     @Override
     public Client addClient(String name, String skin) {
-        Client client = super.addClient(name, skin);
-        try {
-            Thread.sleep(config.getPlayerConnectionDelay());
-        } catch (InterruptedException ignored) {}
-        return client;
+        return super.addClient(name, skin);
     }
 
 

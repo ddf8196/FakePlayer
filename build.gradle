@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.ddf'
-version '0.2.7-SNAPSHOT'
+version '0.4.0-Beta'
 
 repositories {
     maven {
@@ -27,11 +27,12 @@ repositories {
 
 dependencies {
     implementation 'com.nukkitx.protocol:bedrock-v448:2.8.1-SNAPSHOT'
-    implementation 'com.google.code.gson:gson:2.8.6'
-    implementation 'org.yaml:snakeyaml:1.27'
-    implementation 'com.formdev:flatlaf:1.0'
-    implementation 'org.java-websocket:Java-WebSocket:1.5.1'
-    implementation 'org.slf4j:slf4j-nop:1.7.25'
+    implementation 'com.google.code.gson:gson:2.8.7'
+    implementation 'org.yaml:snakeyaml:1.29'
+    implementation 'com.formdev:flatlaf:1.5'
+    implementation 'org.java-websocket:Java-WebSocket:1.5.2'
+    implementation 'org.slf4j:slf4j-nop:1.7.32'
+    implementation 'com.miglayout:miglayout-swing:5.3'
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_8

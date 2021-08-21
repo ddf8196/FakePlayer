@@ -10,9 +10,9 @@ import com.ddf.fakeplayer.gui.dialog.PublicKeyDialog;
 import com.ddf.fakeplayer.util.Logger;
 import com.ddf.fakeplayer.util.Pair;
 import com.ddf.fakeplayer.util.Util;
-import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
+import net.miginfocom.swing.MigLayout;
 
-import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.*;
-import javax.swing.event.MenuEvent;
-import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.text.AttributeSet;
@@ -41,7 +39,6 @@ public class GUIMain extends Main {
 	private JTextField serverPort;
 	private JButton publicKeyButton;
 	private JCheckBox autoReconnect;
-	private JButton saveAndReconnect;
 	private JPanel webSocketPanel;
 	private JCheckBox webSocketEnabled;
 	private JTextField webSocketPort;
@@ -66,7 +63,7 @@ public class GUIMain extends Main {
 		initListener();
 
         try {
-            logger.log("配置文件已加载: " + config.getConfigPath().toRealPath());
+            logger.log("配置文件已加载: ", config.getConfigPath().toRealPath());
         } catch (IOException e) {
             e.printStackTrace();
             config.save();
@@ -78,10 +75,18 @@ public class GUIMain extends Main {
 	public void initLogger() {
 		Logger.init(new Logger() {
 			@Override
-			public synchronized void log(String s) {
+			public synchronized void log(Object... objects) {
 				SwingUtilities.invokeLater(() -> {
+					StringBuilder stringBuilder = new StringBuilder();
+					for (Object obj : objects) {
+						if (config.isDebug() && obj instanceof Throwable) {
+							stringBuilder.append(Util.getStackTrace((Throwable) obj));
+							continue;
+						}
+						stringBuilder.append(obj);
+					}
 					String text = log.getText();
-					text += LocalDateTime.now().format(Logger.FORMATTER) + s + "\n";
+					text += LocalDateTime.now().format(Logger.FORMATTER) + stringBuilder.toString() + "\n";
 					log.setText(text);
 					log.setCaretPosition(log.getText().length());
 					logScrollPane.getVerticalScrollBar().setValue(logScrollPane.getVerticalScrollBar().getMaximum());
@@ -111,7 +116,7 @@ public class GUIMain extends Main {
                 try {
                     config.save(Paths.get(path));
                 } catch (IOException ioException) {
-                    logger.log("配置文件导出失败: " + ioException);
+                    logger.log("配置文件导出失败: ", ioException);
                     return;
                 }
                 logger.log("配置文件导出成功");
@@ -131,10 +136,10 @@ public class GUIMain extends Main {
                     conf.setConfigPath(config.getConfigPath());
                     setConfig(conf);
                     conf.save();
-                    clients.forEach(Client::stop);
+                    clients.forEach(Client::close);
                     initData();
                 } catch (IOException ioException) {
-                    logger.log("配置文件导入失败: " + ioException);
+                    logger.log("配置文件导入失败: ", ioException);
                     return;
                 }
                 logger.log("配置文件导入成功");
@@ -153,9 +158,7 @@ public class GUIMain extends Main {
 		JMenu helpMenu = new JMenu("帮助");
 		menuBar.add(helpMenu);
 		JMenuItem showHelp = new JMenuItem("查看帮助");
-		showHelp.addActionListener(e ->
-			Util.tryOpenBrowser("https://github.com/ddf8196/FakePlayer/wiki")
-		);
+		showHelp.addActionListener(e -> Util.tryOpenBrowser("https://github.com/ddf8196/FakePlayer/wiki"));
 		helpMenu.add(showHelp);
 		helpMenu.addSeparator();
 		JMenuItem about = new JMenuItem("关于");
@@ -231,7 +234,6 @@ public class GUIMain extends Main {
 		JLabel publicKeyLabel = new JLabel("服务器公钥");
 		publicKeyButton = new JButton("查看");
 		autoReconnect = new JCheckBox("自动重连");
-		saveAndReconnect = new JButton("保存配置并重新连接");
 		JSeparator separator1 = new JSeparator();
 		webSocketPanel = new JPanel();
 		webSocketEnabled = new JCheckBox("启用WebSocket");
@@ -241,108 +243,40 @@ public class GUIMain extends Main {
 		addFakePlayer = new JButton("添加假人");
 		connectAll = new JButton("全部连接");
 		disconnectAll = new JButton("全部断开");
-		JSeparator separator3 = new JSeparator();
 		logScrollPane = new JScrollPane();
 		log = new JTextArea();
-		JPanel spacer1 = new JPanel();
-		JPanel spacer2 = new JPanel();
 
-		content.setLayout(new GridLayout(1, 2));
+		content.setLayout(new MigLayout("hidemode 3", "[275,grow,fill][275,grow,fill]rel", "[275,grow,fill][125,grow,fill]"));
 		frame.setContentPane(content);
 		playersTable.setAutoCreateRowSorter(true);
 		playersTable.setShowHorizontalLines(false);
 		playersTable.setBorder(BorderFactory.createEmptyBorder());
 		playersTableScrollPane.setViewportView(playersTable);
-		content.add(playersTableScrollPane);
-		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[] {0, 0, 0};
-		gridBagLayout.rowHeights = new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		gridBagLayout.columnWeights = new double[] {0.0, 0.0, 0.0001};
-		gridBagLayout.rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0001};
-		right.setLayout(gridBagLayout);
-		gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[] {0, 0, 0};
-		gridBagLayout.rowHeights = new int[] {0, 0, 0, 0, 0, 0};
-		gridBagLayout.columnWeights = new double[] {0.0, 0.0, 0.0001};
-		gridBagLayout.rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0001};
-		configPanel.setLayout(gridBagLayout);
-		configPanel.add(serverAddressLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(5, 0, 5, 5), 0, 0));
-		configPanel.add(serverAddress, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(5, 0, 5, 0), 0, 0));
-		configPanel.add(serverPortLabel, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 5, 5), 0, 0));
-		configPanel.add(serverPort, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 5, 0), 0, 0));
-		configPanel.add(publicKeyLabel, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 5, 5), 0, 0));
-		configPanel.add(publicKeyButton, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 5, 0), 0, 0));
-		configPanel.add(autoReconnect, new GridBagConstraints(0, 3, 2, 1, 0.0, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 5, 0), 0, 0));
-		configPanel.add(saveAndReconnect, new GridBagConstraints(0, 4, 2, 1, 1.0, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 0, 0), 0, 0));
-		right.add(configPanel, new GridBagConstraints(0, 0, 2, 7, 0.0, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 5, 0), 0, 0));
-		right.add(separator1, new GridBagConstraints(0, 7, 2, 1, 0.0, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-				new Insets(0, 0, 5, 0), 0, 0));
-		gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[] {0, 0, 0};
-		gridBagLayout.rowHeights = new int[] {0, 0, 0};
-		gridBagLayout.columnWeights = new double[] {0.0, 0.0, 0.0001};
-		gridBagLayout.rowWeights = new double[] {0.0, 0.0, 0.0001};
-		webSocketPanel.setLayout(gridBagLayout);
-		webSocketPanel.add(webSocketEnabled, new GridBagConstraints(0, 0, 2, 1, 0.1, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 5, 0), 0, 0));
-		webSocketPanel.add(webSocketAddressLabel, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 5, 5), 0, 0));
-		webSocketPanel.add(webSocketPort, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 5, 0), 0, 0));
-		right.add(webSocketPanel, new GridBagConstraints(0, 8, 2, 1, 0.0, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 5, 0), 0, 0));
-		right.add(separator2, new GridBagConstraints(0, 9, 2, 1, 0.0, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-				new Insets(0, 0, 5, 0), 0, 0));
-		right.add(addFakePlayer, new GridBagConstraints(0, 10, 2, 1, 0.0, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 5, 0), 0, 0));
-		right.add(connectAll, new GridBagConstraints(0, 11, 1, 1, 0.0, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 5, 5), 0, 0));
-		right.add(disconnectAll, new GridBagConstraints(1, 11, 1, 1, 0.0, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 5, 0), 0, 0));
-		right.add(separator3, new GridBagConstraints(0, 12, 2, 1, 0.0, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
-				new Insets(0, 0, 5, 0), 0, 0));
+		content.add(playersTableScrollPane, "cell 0 0");
+		right.setLayout(new MigLayout("insets 0,hidemode 3", "[100,grow,fill][100,grow,fill]", "[][grow][][grow][][]"));
+		configPanel.setLayout(new MigLayout("insets 0,hidemode 3", "[fill][169,grow,fill]", "[][][][]"));
+		configPanel.add(serverAddressLabel, "cell 0 0");
+		configPanel.add(serverAddress, "cell 1 0");
+		configPanel.add(serverPortLabel, "cell 0 1");
+		configPanel.add(serverPort, "cell 1 1");
+		configPanel.add(publicKeyLabel, "cell 0 2");
+		configPanel.add(publicKeyButton, "cell 1 2");
+		configPanel.add(autoReconnect, "cell 0 3 2 1");
+		right.add(configPanel, "cell 0 0 2 1");
+		right.add(separator1, "cell 0 1 2 1");
+		webSocketPanel.setLayout(new MigLayout("insets 0,hidemode 3", "[fill][grow,fill]", "[][]"));
+		webSocketPanel.add(webSocketEnabled, "cell 0 0 2 1");
+		webSocketPanel.add(webSocketAddressLabel, "cell 0 1");
+		webSocketPanel.add(webSocketPort, "cell 1 1");
+		right.add(webSocketPanel, "cell 0 2 2 1");
+		right.add(separator2, "cell 0 3 2 1");
+		right.add(addFakePlayer, "cell 0 4 2 1");
+		right.add(connectAll, "cell 0 5");
+		right.add(disconnectAll, "cell 1 5");
+		content.add(right, "cell 1 0");
 		log.setEditable(false);
 		logScrollPane.setViewportView(log);
-		right.add(logScrollPane, new GridBagConstraints(0, 13, 2, 2, 0.0, 1.0,
-				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 0, 0), 0, 0));
-		spacer1.setLayout(new BorderLayout());
-		right.add(spacer1, new GridBagConstraints(0, 15, 1, 1, 1.0, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 0, 5), 0, 0));
-		spacer2.setLayout(new BorderLayout());
-		right.add(spacer2, new GridBagConstraints(1, 15, 1, 1, 1.0, 0.0,
-				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 0, 0), 0, 0));
-		content.add(right);
+		content.add(logScrollPane, "cell 0 1 2 1,growy");
 	}
 
 	private void initListener() {
@@ -354,7 +288,7 @@ public class GUIMain extends Main {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				synchronized (clients) {
-					clients.forEach(Client::stop);
+					clients.forEach(Client::close);
 				}
 				saveConfig();
 				stopWebSocket();
@@ -362,7 +296,7 @@ public class GUIMain extends Main {
 			@Override
 			public void windowClosed(WindowEvent e) {
 				synchronized (clients) {
-					clients.forEach(Client::stop);
+					clients.forEach(Client::close);
 				}
 				saveConfig();
 				stopWebSocket();
@@ -397,15 +331,33 @@ public class GUIMain extends Main {
 				}
 			}
 		});
+		serverAddress.addActionListener(e -> content.requestFocus());
+		serverAddress.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				String address = config.getServerAddress();
+				saveConfig();
+				if (!config.getServerAddress().equals(address)) {
+					new ReconnectAllWorker().execute();
+				}
+			}
+		});
+		serverPort.addActionListener(e -> content.requestFocus());
+		serverPort.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				int port = config.getServerPort();
+				saveConfig();
+				if (port != config.getServerPort()) {
+					new ReconnectAllWorker().execute();
+				}
+			}
+		});
 		publicKeyButton.addActionListener(e -> {
 			PublicKeyDialog dialog = new PublicKeyDialog(this);
 			dialog.setVisible(true);
 		});
 		autoReconnect.addChangeListener(e -> clients.forEach(client -> client.setAutoReconnect(autoReconnect.isSelected())));
-		saveAndReconnect.addActionListener(e -> {
-			saveConfig();
-			new ReconnectAllWorker().execute();
-		});
 		webSocketEnabled.addItemListener(e -> setWebSocketEnabled(webSocketEnabled.isSelected()));
 		webSocketPort.addFocusListener(new FocusAdapter() {
 			@Override
@@ -512,7 +464,7 @@ public class GUIMain extends Main {
 		try {
 			config.save();
 		} catch (IOException e) {
-			logger.log("配置保存失败: " + e);
+			logger.log("配置保存失败: ", e);
 			e.printStackTrace();
 		}
 	}
@@ -644,9 +596,6 @@ public class GUIMain extends Main {
 		protected Void doInBackground() {
 			new ArrayList<>(clients).forEach(client -> {
 				client.connect(config.getServerAddress(), config.getServerPort());
-				try {
-					Thread.sleep(config.getPlayerConnectionDelay());
-				} catch (InterruptedException ignored) {}
 			});
 			return null;
 		}
@@ -668,7 +617,7 @@ public class GUIMain extends Main {
     public static void main(Config config) {
 	    SwingUtilities.invokeLater(() -> {
 	        try {
-                FlatLightLaf.install();
+                FlatDarkLaf.setup();
                 GUIMain guiMain = new GUIMain(config);
                 guiMain.getFrame().setVisible(true);
             } catch (Exception e) {
