@@ -25,11 +25,18 @@ Minecraft Bedrock Edition 假人客户端
 
 ## 功能
 * 较为稳定的挂机
-* 假人死亡自动复活
+* 死亡自动复活
+* 投掷三叉戟
+* [游戏内聊天消息控制](https://github.com/ddf8196/FakePlayer/wiki/%E8%81%8A%E5%A4%A9%E6%B6%88%E6%81%AF%E6%8E%A7%E5%88%B6)
+* [WebSocket API](https://github.com/ddf8196/FakePlayer/wiki/WebSocket-API)
 
 ## 正在开发中的功能
-* 假人睡觉
-* 假人背包相关操作
+* 更多背包相关操作
+* 更加完善的物品注册
+* 方块注册
+* 实体注册
+* 实体交互
+* JavaScript API
 
 ## 支持的版本
 * 理论上支持1.7.0到1.17.11之间的所有版本
