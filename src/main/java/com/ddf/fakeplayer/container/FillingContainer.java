@@ -7,6 +7,7 @@ import com.ddf.fakeplayer.util.MathUtil;
 import com.ddf.fakeplayer.util.NotImplemented;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class FillingContainer extends Container {
     protected ArrayList<ItemStack> mItems = new ArrayList<>();
@@ -21,7 +22,7 @@ public class FillingContainer extends Container {
         mItems.trimToSize();
     }
 
-    void _release(int slot) {
+    private void _release(int slot) {
         if (this.mItems.get(slot) != null && this.mItems.get(slot).toBoolean())
             this.setItem(slot, ItemStack.EMPTY_ITEM);
     }
@@ -201,5 +202,9 @@ public class FillingContainer extends Container {
                 this.setContainerChanged(slot);
             }
         }
+    }
+
+    public final void swapSlots(int from, int to) {
+        Collections.swap(this.mItems, from, to);
     }
 }

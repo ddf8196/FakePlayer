@@ -1,7 +1,5 @@
 package com.ddf.fakeplayer.actor;
 
-import com.ddf.fakeplayer.actor.attribute.AttributeOperands;
-
 public enum ActorFlags {
     Unknown_25(0xFFFFFFFF),
     ONFIRE(0x0),

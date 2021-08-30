@@ -441,6 +441,69 @@ public class Actor {
         return this.mActorType;
     }
 
+    @NotImplemented
+    public boolean getInteraction(Player player, ActorInteraction interaction, final Vec3 location) {
+        return false;
+//        ItemStack selectedItem = player.getSelectedItem();
+//        if (selectedItem.toBoolean()
+//                && selectedItem.getItem().isDye()
+//                && this.mCurrentDescription != null
+//                && this.mCurrentDescription.mDyeable != null
+//                && this.getColor() != newColor
+//                && !this.getLevel().isClientSide()) {
+//            BlockColor newColor = BlockColorUtil.fromItemColor(DyeColorUtil.getItemColor(selectedItem.getAuxValue()));
+//            interaction.setInteractText((DyeableDescription)(this.mCurrentDescription.mDyeable).mInteractText);
+//            if (interaction.shouldCapture()) {
+//                interaction.capture(() -> {
+//                    ItemStack usedItem = new ItemStack(player.getSelectedItem());
+//                    if (usedItem.toBoolean()) {
+//                        EventPacket.Data packetData = new EventPacket.Data();
+//                        packetData.mType = Interaction;
+//                        packetData._anon_0.PortalUsed.mToDimension = 10;
+//                        ActorType entityId = this.getEntityTypeId();
+//                        packetData._anon_0.Interaction.mInteractedEntityType = ActorClassTree.getEntityTypeIdLegacy(entityId);
+//                        packetData._anon_0.Interaction.mInteractedEntityVariant = this.getVariant();
+//                        packetData._anon_0.Interaction.mInteractedEntityColor = usedItem.getAuxValue();
+//                        EventPacket packet = new EventPacket(player, packetData);
+//                        player.sendEventPacket(packet);
+//                        player.useItem(usedItem, 11L, 1L);
+//                        player.setSelectedItem(usedItem);
+//                    }
+//                    this.setColor(newColor);
+//                });
+//            }
+//            return true;
+//        } else {
+//            PlayerInteractionSystem system = this.getLevel().getEntitySystems().getPlayerInteractionSystem();
+//            if (system.getInteraction(this, player, interaction)) {
+//                return true;
+//            } else if (this.mEconomyTradeableComponent != null && this.mEconomyTradeableComponent.getInteraction(v15, interaction)) {
+//                return true;
+//            } else if (!this.canOpenContainer(player) || this.getStatusFlag(ActorFlags.CONTAINER_IS_PRIVATE)) {
+//                if (this.getLevel().isClientSide()) {
+//                    String text = player.getInteractText();
+//                    if (text.length() != 0)
+//                        return true;
+//                }
+//                return false;
+//            } else {
+//                if (interaction.shouldCapture()) {
+//                    interaction.capture(() -> {
+//                        this.openContainerComponent(player);
+//                    });
+//                }
+//                if (!ActorClassTree.isInstanceOf(this, ActorType.EquineAnimal) || player.isSneaking()) {
+//                    interaction.setInteractText("action.interact.opencontainer");
+//                }
+//                return true;
+//            }
+//        }
+    }
+
+    public final SynchedActorData getEntityData() {
+        return this.mEntityData;
+    }
+
     public boolean canChangeDimensions() {
         return true;
     }
@@ -680,6 +743,13 @@ public class Actor {
             this._onSizeUpdated();
             this.mLastPenetration = 0.0f;
         }
+    }
+
+    @NotImplemented
+    public final void setPersistent() {
+//        if (this.hasEntity()) {
+//            this.getEntity().addComponent<ActorFlagComponent<PersistentFlag>>();
+//        }
     }
 
     public void _onSizeUpdated() {

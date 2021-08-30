@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 public abstract class Main {
+    private static Path baseDir;
     protected Logger logger;
     protected Config config;
     protected final List<Client> clients;
@@ -32,6 +33,10 @@ public abstract class Main {
         logger = Logger.getLogger();
         this.config = config;
         this.clients = Collections.synchronizedList(new ArrayList<>());
+    }
+
+    public static Path getBaseDir() {
+        return Main.baseDir;
     }
 
     public abstract void initLogger();
@@ -183,7 +188,6 @@ public abstract class Main {
         if(System.getProperty("os.name").toLowerCase().startsWith("win")) {
             jarPath = jarPath.replaceFirst("/", "");
         }
-        Path baseDir;
         if (jarPath.endsWith(".jar")) {
             baseDir = Paths.get(jarPath)
                     .getParent()
@@ -201,10 +205,10 @@ public abstract class Main {
         VanillaItems.registerItems();
         SharedAttributes.init();
 
-        if (System.getProperty("fakeplayer.gui", "false").equals("true")) {
-            GUIMain.main(config);
-        } else {
+        if (System.getProperty("fakeplayer.nogui", "false").equals("true")) {
             CLIMain.main(config);
+        } else {
+            GUIMain.main(config);
         }
     }
 }

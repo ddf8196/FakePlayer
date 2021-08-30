@@ -455,6 +455,12 @@ public abstract class Player extends Mob {
         return this.mRespawnDimensionId;
     }
 
+    @NotImplemented
+    public String getInteractText() {
+        return "";
+//        return I18n.get(this.mEntityData.getString(ActorDataIDs.INTERACT_TEXT.ordinal()));
+    }
+
     public final void setBedRespawnPosition(final BlockPos bedPosition) {
         Vec3 spawnPosition = super.getStateVectorComponent().getPos();
         spawnPosition.y = this.getAABBShapeComponent().getAABB().min.y;
@@ -866,6 +872,18 @@ public abstract class Player extends Mob {
     @NotImplemented
     public void _fireDimensionChanged() {
     }
+
+    public final boolean interact(Actor entity, final Vec3 location) {
+        ActorInteraction interaction = new ActorInteraction(false);
+        if (entity.getInteraction(this, interaction, location)) {
+            interaction.interact();
+            if (entity.hasCategory(ActorCategory.Mob_0))
+                entity.setPersistent();
+            return true;
+        } else {
+            return false;
+        }
+    }
 //----------------------------------------------------------------------------------------------------------------------
 
     public String getName() {
@@ -874,6 +892,10 @@ public abstract class Player extends Mob {
 
     public UUID getClientUUID() {
         return mClientUUID;
+    }
+
+    public void setClientUUID(UUID uuid) {
+        this.mClientUUID = uuid;
     }
 
     public void setName(String name) {
