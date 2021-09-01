@@ -59,6 +59,8 @@ public class PlayerScript {
     }
 
     public void finish() {
+        if (finished)
+            return;
         finished = true;
         onFinish();
     }
