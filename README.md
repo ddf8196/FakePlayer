@@ -29,6 +29,7 @@ Minecraft Bedrock Edition 假人客户端
 * 投掷三叉戟
 * [游戏内聊天消息控制](https://github.com/ddf8196/FakePlayer/wiki/%E8%81%8A%E5%A4%A9%E6%B6%88%E6%81%AF%E6%8E%A7%E5%88%B6)
 * [WebSocket API](https://github.com/ddf8196/FakePlayer/wiki/WebSocket-API)
+* [JavaScript API](https://github.com/ddf8196/FakePlayer/wiki/JavaScript-API)
 
 ## 正在开发中的功能
 * 更多背包相关操作
@@ -36,7 +37,6 @@ Minecraft Bedrock Edition 假人客户端
 * 方块注册
 * 实体注册
 * 实体交互
-* JavaScript API
 
 ## 支持的版本
 * 理论上支持1.7.0到1.17.11之间的所有版本
@@ -52,5 +52,6 @@ Minecraft Bedrock Edition 假人客户端
 * [FlatLaf](https://github.com/JFormDesigner/FlatLaf) ([Apache License 2.0](https://github.com/JFormDesigner/FlatLaf/blob/main/LICENSE)) 
 * [Java-WebSocket](https://github.com/TooTallNate/Java-WebSocket) ([MIT License](https://github.com/TooTallNate/Java-WebSocket/blob/master/LICENSE))
 * [MiGLayout Swing](https://github.com/mikaelgrev/miglayout) ([BSD 3-Clause "New" or "Revised" license](http://www.debian.org/misc/bsd.license))
+* [Rhino](https://github.com/mozilla/rhino) ([Mozilla Public License 2.0](https://github.com/mozilla/rhino/blob/master/LICENSE.txt))
 * SnakeYaml ([Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt))
 * SLF4J NOP Binding ([MIT License](	http://www.opensource.org/licenses/mit-license.php))

@@ -6,6 +6,8 @@ import com.ddf.fakeplayer.container.inventory.transaction.ComplexInventoryTransa
 import com.ddf.fakeplayer.container.inventory.transaction.ItemUseInventoryTransaction;
 import com.ddf.fakeplayer.item.ItemStack;
 import com.ddf.fakeplayer.item.VanillaItems;
+import com.ddf.fakeplayer.js.JSLoader;
+import com.ddf.fakeplayer.js.PlayerScript;
 import com.ddf.fakeplayer.level.Level;
 import com.ddf.fakeplayer.network.NetworkBlockPosition;
 import com.ddf.fakeplayer.util.ColorFormat;
@@ -19,6 +21,7 @@ import com.nukkitx.protocol.bedrock.data.InputMode;
 import com.nukkitx.protocol.bedrock.packet.PlayerAuthInputPacket;
 import com.nukkitx.protocol.bedrock.packet.TextPacket;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,6 +32,7 @@ public class FakePlayer extends LocalPlayer {
     public boolean sync = false;
     public long syncRuntimeID = 0;
     private final List<FakePlayer.OnPlayerChatListener> onPlayerChatListeners = Collections.synchronizedList(new ArrayList<>());
+    private final List<PlayerScript> scripts = new ArrayList<>();
 
     public FakePlayer(Level level, String name, UUID uuid, Client client) {
         super(level, name, uuid, client);
@@ -53,7 +57,9 @@ public class FakePlayer extends LocalPlayer {
                             "dropSlot [0~35] - 丢弃假人背包中指定槽位中的物品\n" +
                             "dropAll - 丢弃假人背包中全部的物品\n" +
                             "sync start - 开始将假人的坐标和视角与玩家同步\n" +
-                            "sync stop - 停止将假人的坐标和视角与玩家同步"
+                            "sync stop - 停止将假人的坐标和视角与玩家同步\n" +
+                            "runScript [脚本路径] - 执行脚本\n" +
+                            "finishAllScripts - 停止执行全部脚本"
                     );
                     return;
                 }
@@ -131,14 +137,31 @@ public class FakePlayer extends LocalPlayer {
                         sync = false;
                         syncRuntimeID = 0;
                     }
+                } else if (lowerCaseCmd.startsWith("runScript".toLowerCase())) {
+                    if (cmd.length() < 10) return;
+                    String path = cmd.substring(10);
+                    runScript(path);
+                } else if (lowerCaseCmd.startsWith("finishAllScripts".toLowerCase())) {
+                    scripts.removeIf(playerScript -> {
+                        playerScript.finish();
+                        return true;
+                    });
                 }
             } catch (Throwable ignored) {}
         });
+        this.addOnPlayerChatListener((source, message, xuid, platformChatId) -> scripts.removeIf(playerScript -> {
+            playerScript.onPlayerChat(source, message, xuid, platformChatId);
+            return playerScript.isFinished();
+        }));
     }
 
     @Override
     public void normalTick() {
         super.normalTick();
+        scripts.removeIf(playerScript -> {
+            playerScript.onTick(getLevel().getCurrentTick());
+            return playerScript.isFinished();
+        });
         if (super.getLevel().isServerAuthoritativeMovement()) {
             sendPlayerAuthInput();
         }
@@ -192,6 +215,24 @@ public class FakePlayer extends LocalPlayer {
         this.sendNetworkPacket(packet);
     }
 
+    public void runScript(String path) {
+        PlayerScript script;
+        try {
+            script = JSLoader.loadScript(path, this);
+        } catch (IOException e) {
+            this.sendChatMessage(ColorFormat.RED + "脚本加载失败: " + e + ColorFormat.RESET);
+            return;
+        }
+        script.setOnEvaluateListener(playerScript ->
+                this.sendChatMessage("脚本" + playerScript.getPath() + "开始执行"));
+        script.setOnFinishListener(playerScript ->
+                this.sendChatMessage("脚本" + playerScript.getPath() + "结束执行"));
+        script.setOnErrorListener((playerScript, throwable) ->
+                this.sendChatMessage(ColorFormat.RED + "脚本" + playerScript.getPath() + "发生异常: " + throwable + ColorFormat.RESET));
+        scripts.add(script);
+        script.evaluate();
+    }
+
     public void onPlayerChat(String source, String message, String xuid, String platformChatId) {
         onPlayerChatListeners.forEach(listener -> listener.onPlayerChat(source, message, xuid, platformChatId));
     }
@@ -207,5 +248,10 @@ public class FakePlayer extends LocalPlayer {
     @FunctionalInterface
     public interface OnPlayerChatListener {
         void onPlayerChat(String source, String message, String xuid, String platformChatId);
+    }
+
+    @FunctionalInterface
+    public interface ChatCommandCallback {
+        void execute(String param);
     }
 }

@@ -5,6 +5,7 @@ import com.ddf.fakeplayer.cli.CLIMain;
 import com.ddf.fakeplayer.gui.GUIMain;
 import com.ddf.fakeplayer.item.BedrockItems;
 import com.ddf.fakeplayer.item.VanillaItems;
+import com.ddf.fakeplayer.js.JSLoader;
 import com.ddf.fakeplayer.util.Config;
 import com.ddf.fakeplayer.util.Logger;
 import com.ddf.fakeplayer.websocket.WebSocketServer;
@@ -205,6 +206,7 @@ public abstract class Main {
         VanillaItems.registerItems();
         SharedAttributes.init();
 
+        JSLoader.init();
         if (System.getProperty("fakeplayer.nogui", "false").equals("true")) {
             CLIMain.main(config);
         } else {
