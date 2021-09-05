@@ -388,6 +388,11 @@ public class GUIMain extends Main {
 	private void initData() {
 		clients.clear();
 		playersTableModel = new PlayersTableModel();
+
+		webSocketEnabled.setSelected(config.isWebSocketEnabled());
+		webSocketPort.setDocument(new NumberDocument());
+		webSocketPort.setText(Integer.toString(config.getWebSocketPort()));
+
 		config.getPlayers().forEach(playerData -> addClient(playerData.getName(), playerData.getSkin()));
 		playersTable.setModel(playersTableModel);
 		playersTable.getRowSorter().setSortKeys(Collections.singletonList(new RowSorter.SortKey(0, SortOrder.ASCENDING)));
@@ -396,10 +401,6 @@ public class GUIMain extends Main {
 		serverPort.setDocument(new NumberDocument());
 		serverPort.setText(Integer.toString(config.getServerPort()));
 		autoReconnect.setSelected(config.isAutoReconnect());
-
-		webSocketEnabled.setSelected(config.isWebSocketEnabled());
-		webSocketPort.setDocument(new NumberDocument());
-		webSocketPort.setText(Integer.toString(config.getWebSocketPort()));
 	}
 
 	private void showEditPlayerDialog() {

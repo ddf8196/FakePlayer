@@ -61,11 +61,11 @@ public class CLIMain extends Main {
             config.setConfigured(true);
             config.save();
         }
+        setWebSocketEnabled(config.isWebSocketEnabled());
 
         config.getPlayers().forEach(playerData -> addClient(playerData.getName(), playerData.getSkin()));
         clients.forEach(client -> client.connect(config.getServerAddress(), config.getServerPort()));
 
-        setWebSocketEnabled(config.isWebSocketEnabled());
         logger.log("启动完成，输入help或?可查看帮助");
 
         while (!isStopped()) {

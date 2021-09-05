@@ -42,12 +42,17 @@ public abstract class Main {
 
     public synchronized void addPlayer(String name, String skin, boolean allowChatMessageControl) {
         config.addPlayerData(name, skin, allowChatMessageControl);
-        addClient(name, skin).connect(config.getServerAddress(), config.getServerPort());
+        Client client = addClient(name, skin);
+        client.connect(config.getServerAddress(), config.getServerPort());
+        if (webSocketServer != null && config.isWebSocketEnabled())
+            webSocketServer.sendAddPlayerMessage(client);
     }
 
     public synchronized void removePlayer(String name) {
         removeClient(name);
         config.removePlayerData(name);
+        if (webSocketServer != null && config.isWebSocketEnabled())
+            webSocketServer.sendRemovePlayerMessage(name);
     }
 
     public Client getClient(String name) {
@@ -75,6 +80,7 @@ public abstract class Main {
         }
         client.setAutoReconnect(config.isAutoReconnect());
         client.setReconnectDelay(config.getReconnectDelay());
+        client.setWebSocketServer(webSocketServer);
         clients.add(client);
         return client;
     }
@@ -100,6 +106,10 @@ public abstract class Main {
 
     public List<Client> getClients() {
         return clients;
+    }
+
+    public WebSocketServer getWebSocketServer() {
+        return webSocketServer;
     }
 
     public boolean isWebSocketStarted() {
