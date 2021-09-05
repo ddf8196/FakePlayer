@@ -16,4 +16,12 @@ public class Vec2 {
         this.x = _x;
         this.y = _y;
     }
+
+    public Vec2 add(Vec2 vec2) {
+        return new Vec2(this.x + vec2.x, this.y + vec2.y);
+    }
+
+    public Vec2 add(float x, float y) {
+        return new Vec2(this.x + x, this.y + y);
+    }
 }

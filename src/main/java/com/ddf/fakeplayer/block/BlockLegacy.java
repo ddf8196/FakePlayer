@@ -79,7 +79,7 @@ public class BlockLegacy {
 
     @NotImplemented
     public BlockLegacy(final String nameId, int id, final Material material) {
-        if (nameId.isEmpty()) {
+        if (nameId == null || nameId.isEmpty()) {
             this.mDescriptionId = "";
         } else {
             this.mDescriptionId = BlockLegacy.BLOCK_DESCRIPTION_PREFIX + nameId;

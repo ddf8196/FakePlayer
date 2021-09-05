@@ -2,23 +2,19 @@ package com.ddf.fakeplayer.network;
 
 import com.ddf.fakeplayer.Client;
 import com.ddf.fakeplayer.actor.Actor;
+import com.ddf.fakeplayer.actor.ActorDataIDs;
+import com.ddf.fakeplayer.actor.SynchedActorData;
 import com.ddf.fakeplayer.actor.attribute.AttributeInstance;
 import com.ddf.fakeplayer.actor.attribute.AttributeOperands;
 import com.ddf.fakeplayer.actor.attribute.BaseAttributeMap;
 import com.ddf.fakeplayer.actor.attribute.SharedAttributes;
 import com.ddf.fakeplayer.actor.mob.Mob;
-import com.ddf.fakeplayer.actor.player.LocalPlayer;
-import com.ddf.fakeplayer.actor.player.Player;
-import com.ddf.fakeplayer.actor.player.PlayerRespawnState;
+import com.ddf.fakeplayer.actor.player.*;
 import com.ddf.fakeplayer.block.BlockPos;
-import com.ddf.fakeplayer.container.inventory.InventoryAction;
-import com.ddf.fakeplayer.container.inventory.InventorySource;
 import com.ddf.fakeplayer.container.inventory.PlayerInventoryProxy;
-import com.ddf.fakeplayer.actor.player.RemotePlayer;
 import com.ddf.fakeplayer.container.ContainerID;
 import com.ddf.fakeplayer.container.inventory.transaction.ComplexInventoryTransaction;
 import com.ddf.fakeplayer.container.inventory.transaction.InventoryTransactionError;
-import com.ddf.fakeplayer.item.ItemStack;
 import com.ddf.fakeplayer.json.*;
 import com.ddf.fakeplayer.level.GameType;
 import com.ddf.fakeplayer.level.Level;
@@ -26,8 +22,13 @@ import com.ddf.fakeplayer.level.MultiPlayerLevel;
 import com.ddf.fakeplayer.level.dimension.ChangeDimensionRequest;
 import com.ddf.fakeplayer.util.*;
 import com.nimbusds.jwt.SignedJWT;
+import com.nukkitx.math.vector.Vector3f;
+import com.nukkitx.math.vector.Vector3i;
+import com.nukkitx.nbt.NbtMap;
 import com.nukkitx.protocol.bedrock.data.AttributeData;
 import com.nukkitx.protocol.bedrock.data.AuthoritativeMovementMode;
+import com.nukkitx.protocol.bedrock.data.entity.EntityData;
+import com.nukkitx.protocol.bedrock.data.entity.EntityFlags;
 import com.nukkitx.protocol.bedrock.data.inventory.ItemData;
 import com.nukkitx.protocol.bedrock.handler.BedrockPacketHandler;
 import com.nukkitx.protocol.bedrock.packet.*;
@@ -39,18 +40,14 @@ import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Map;
 
 public class ClientPacketHandler implements BedrockPacketHandler {
     private Logger logger;
     private Client client;
     private MultiPlayerLevel level;
-    private LocalPlayer player;
-    private boolean sync = false;
-    private long runtimeID = 0;
+    private FakePlayer player;
 
     public ClientPacketHandler(Client client) {
         this.logger = Logger.getLogger();
@@ -119,6 +116,7 @@ public class ClientPacketHandler implements BedrockPacketHandler {
         level.setDefaultSpawn(DataConverter.blockPos(packet.getDefaultSpawn()));
         level.setLevelId(packet.getLevelId());
         level.getLevelData().setLevelName(packet.getLevelName());
+        level.getLevelData().setCurrentTick(packet.getCurrentTick());
         level.setFinishedInitializing();
 
         player.setUniqueID(packet.getUniqueEntityId());
@@ -196,110 +194,11 @@ public class ClientPacketHandler implements BedrockPacketHandler {
 
     @Override
     public boolean handle(TextPacket packet) {
-        if (!client.getConfig().getPlayerData(this.player.getName()).isAllowChatMessageControl()
-                || packet.getType() != TextPacket.Type.CHAT
-                || packet.getSourceName() == null || packet.getSourceName().isEmpty()
-                || packet.getMessage() == null || packet.getMessage().isEmpty()
-                || packet.getMessage().length() <= player.getName().length()
-                || !packet.getMessage().startsWith(player.getName())) {
-            return false;
+        if (packet.getType() == TextPacket.Type.CHAT
+                && packet.getSourceName() != null && !packet.getSourceName().isEmpty()
+                && packet.getMessage() != null && !packet.getMessage().isEmpty()){
+            this.player.onPlayerChat(packet.getSourceName(), packet.getMessage(), packet.getXuid(), packet.getPlatformChatId());
         }
-        String name = packet.getMessage().substring(0, packet.getMessage().indexOf(" "));
-        if (!name.equals(player.getName()))
-            return false;
-        try {
-            String cmd = packet.getMessage().substring(player.getName().length() + 1).trim();
-            if (cmd.equals("help")) {
-                player.sendChatMessage(
-                        "help - 查看帮助信息\n" +
-                        "getPos - 获取假人当前坐标\n" +
-                        "getInventory - 获取假人背包内容\n" +
-                        "getSelectedSlot - 获取假人当前选择的快捷栏槽位\n" +
-                        "selectSlot [0~8] - 设置假人选择的快捷栏槽位\n" +
-                        "dropSlot - 丢弃假人当前选择的物品\n" +
-                        "dropSlot [0~35] - 丢弃假人背包中指定槽位中的物品\n" +
-                        "dropAll - 丢弃假人背包中全部的物品\n" +
-                        "sync start - 开始将假人的坐标和视角与玩家同步\n" +
-                        "sync stop - 停止将假人的坐标和视角与玩家同步"
-                );
-                return false;
-            }
-            if (cmd.startsWith("getPos")) {
-                Vec3 pos = player.getPos();
-                player.sendChatMessage(ColorFormat.GREEN + "[" + player.getDimensionId() + "] " + ColorFormat.AQUA + (int)pos.x + ", " + (int)(pos.y - player.mHeightOffset) + ", " + (int)pos.z + ColorFormat.RESET);
-            } else if (cmd.startsWith("getInventory")) {
-                boolean empty = true, first = true;
-                StringBuilder builder = new StringBuilder("背包内容:\n");
-                ArrayList<ItemStack> slots = player.getSupplies().getSlots();
-                for (int i = 0, j = 0; i < player.getSupplies().getContainerSize(ContainerID.CONTAINER_ID_INVENTORY); i++) {
-                    if (slots.get(i).toBoolean()) {
-                        empty = false;
-                        if (first)
-                            first = false;
-                        else
-                            builder.append(ColorFormat.YELLOW)
-                                    .append(", ")
-                                    .append(ColorFormat.RESET);
-                        if (j % 2 == 0 && j != 0)
-                            builder.append("\n");
-                        builder.append(ColorFormat.GREEN)
-                                .append("[")
-                                .append(i)
-                                .append("]")
-                                .append(ColorFormat.YELLOW)
-                                .append("[")
-                                .append(ColorFormat.AQUA)
-                                .append(slots.get(i).getItem().getFullItemName())
-                                .append(ColorFormat.YELLOW)
-                                .append(", ")
-                                .append(ColorFormat.GREEN)
-                                .append(slots.get(i).getStackSize())
-                                .append(ColorFormat.YELLOW)
-                                .append("]")
-                                .append(ColorFormat.RESET);
-                        ++j;
-                    }
-                }
-                if (!empty) {
-                    player.sendChatMessage(builder.toString());
-                } else {
-                    player.sendChatMessage("空");
-                }
-            } else if (cmd.startsWith("getSelectedSlot")) {
-                player.sendChatMessage(Integer.toString(player.getSelectedItemSlot()));
-            } else if (cmd.startsWith("selectSlot")) {
-                if (cmd.length() < 12) return false;
-                int slot = Integer.parseInt(cmd.substring(11));
-                player.getSupplies().selectSlot(slot, ContainerID.CONTAINER_ID_INVENTORY);
-            } else if (cmd.startsWith("dropSlot")) {
-                int slot;
-                if (cmd.length() > 9)
-                    slot = MathUtil.clamp(Integer.parseInt(cmd.substring(9)), 0, 35);
-                else
-                    slot = player.getSelectedItemSlot();
-                player.getSupplies().dropSlot(slot, false, true, ContainerID.CONTAINER_ID_INVENTORY, false);
-            } else if (cmd.startsWith("dropAll")) {
-                ArrayList<ItemStack> slots = player.getSupplies().getSlots();
-                for (int i = 0; i < player.getSupplies().getContainerSize(ContainerID.CONTAINER_ID_INVENTORY); i++) {
-                    if (slots.get(i).toBoolean()) {
-                        player.getSupplies().dropSlot(i, false, true, ContainerID.CONTAINER_ID_INVENTORY, false);
-                    }
-                }
-            } else if (cmd.startsWith("sync")) {
-                if (cmd.length() < 6) return false;
-                String cmd2 = cmd.substring(5);
-                if (cmd2.equals("start")) {
-                    Player player = level.getPlayerByName(packet.getSourceName());
-                    if (player == null)
-                        return false;
-                    sync = true;
-                    runtimeID = player.getRuntimeID();
-                } else if (cmd2.equals("stop")) {
-                    sync = false;
-                    runtimeID = 0;
-                }
-            }
-        } catch (Throwable ignored) {}
         return false;
     }
 
@@ -426,7 +325,7 @@ public class ClientPacketHandler implements BedrockPacketHandler {
         actor.setPos(DataConverter.vec3(packet.getPosition()));
         actor.setRot(DataConverter.vec2(packet.getRotation()));
         ((Player) actor).setYHeadRot(packet.getRotation().getZ());
-        if (sync && actor.getRuntimeID() == runtimeID) {
+        if (player.sync && actor.getRuntimeID() == player.syncRuntimeID) {
             player.setPos(DataConverter.vec3(packet.getPosition()));
             player.setRot(DataConverter.vec2(packet.getRotation()));
             player.setYHeadRot(packet.getRotation().getZ());
@@ -462,6 +361,68 @@ public class ClientPacketHandler implements BedrockPacketHandler {
         player.setUniqueID(packet.getUniqueEntityId());
 
         client.getLevel().addEntity(player);
+        return false;
+    }
+
+    @Override
+    public boolean handle(SetEntityDataPacket packet) {
+        Actor actor = level.getEntityByRuntimeId(packet.getRuntimeEntityId());
+        if (actor == null)
+            return false;
+        for (Map.Entry<EntityData, Object> entry : packet.getMetadata().entrySet()) {
+            SynchedActorData entityData = actor.getEntityData();
+            Object data = entry.getValue();
+            ActorDataIDs actorDataIDs = DataConverter.actorDataIDs(entry.getKey());
+            if (actorDataIDs == null)
+                continue;
+            if (entry.getKey().isFlags() && data instanceof EntityFlags) {
+
+                continue;
+            }
+            switch (DataConverter.dataItemType(entry.getKey().getType())) {
+                case Byte:
+                    if (entityData._find(actorDataIDs.ordinal()) != null && data instanceof Byte)
+                        entityData.set(actorDataIDs.ordinal(), (Byte) data);
+                    break;
+                case Short:
+                    if (entityData._find(actorDataIDs.ordinal()) != null && data instanceof Short)
+                        entityData.set(actorDataIDs.ordinal(), (Short) data);
+                    break;
+                case Int_1:
+                    if (entityData._find(actorDataIDs.ordinal()) != null && data instanceof Integer)
+                        entityData.set(actorDataIDs.ordinal(), (Integer) data);
+                    break;
+                case Float_1:
+                    if (entityData._find(actorDataIDs.ordinal()) != null && data instanceof Float)
+                        entityData.set(actorDataIDs.ordinal(), (Float) data);
+                    break;
+                case String_0:
+                    if (entityData._find(actorDataIDs.ordinal()) != null && data instanceof String)
+                        entityData.set(actorDataIDs.ordinal(), (String) data);
+                    break;
+                case CompoundTag:
+                    if (entityData._find(actorDataIDs.ordinal()) != null && data instanceof NbtMap)
+                        entityData.set(actorDataIDs.ordinal(), DataConverter.compoundTag((NbtMap) data));
+                    break;
+                case Pos:
+                    if (entityData._find(actorDataIDs.ordinal()) != null && data instanceof Vector3i)
+                        entityData.set(actorDataIDs.ordinal(), DataConverter.blockPos((Vector3i) data));
+                    break;
+                case Int64:
+                    if (entityData._find(actorDataIDs.ordinal()) != null && data instanceof Long)
+                        entityData.set(actorDataIDs.ordinal(), (Long) data);
+                    break;
+                case Vec3:
+                    if (entityData._find(actorDataIDs.ordinal()) != null && data instanceof Vector3f)
+                        entityData.set(actorDataIDs.ordinal(), DataConverter.vec3((Vector3f) data));
+                    break;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean handle(SetEntityLinkPacket packet) {
         return false;
     }
 

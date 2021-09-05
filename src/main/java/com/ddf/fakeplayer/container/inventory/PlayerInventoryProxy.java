@@ -163,6 +163,10 @@ public class PlayerInventoryProxy implements ContainerSizeChangeListener, Contai
         }
     }
 
+    public final void swapSlots(int from, int to) {
+        this.mInventory.swapSlots(from, to);
+    }
+
     public final void tick() {
         if (this.mSelectedContainerId == ContainerID.CONTAINER_ID_INVENTORY) {
             this.mInventory.tick(this.mSelected);

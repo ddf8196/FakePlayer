@@ -1,14 +1,14 @@
 package com.ddf.fakeplayer.util;
 
+import com.ddf.fakeplayer.actor.ActorDataIDs;
+import com.ddf.fakeplayer.actor.ActorFlags;
+import com.ddf.fakeplayer.actor.DataItemType;
 import com.ddf.fakeplayer.actor.player.PlayerRespawnState;
 import com.ddf.fakeplayer.block.BlockPos;
 import com.ddf.fakeplayer.container.ContainerID;
 import com.ddf.fakeplayer.container.inventory.InventoryAction;
 import com.ddf.fakeplayer.container.inventory.InventorySource;
-import com.ddf.fakeplayer.container.inventory.transaction.ComplexInventoryTransaction;
-import com.ddf.fakeplayer.container.inventory.transaction.InventoryTransaction;
-import com.ddf.fakeplayer.container.inventory.transaction.ItemReleaseInventoryTransaction;
-import com.ddf.fakeplayer.container.inventory.transaction.ItemUseInventoryTransaction;
+import com.ddf.fakeplayer.container.inventory.transaction.*;
 import com.ddf.fakeplayer.item.ItemRegistry;
 import com.ddf.fakeplayer.item.ItemStack;
 import com.ddf.fakeplayer.level.GameType;
@@ -21,6 +21,8 @@ import com.nukkitx.nbt.NbtList;
 import com.nukkitx.nbt.NbtMap;
 import com.nukkitx.nbt.NbtMapBuilder;
 import com.nukkitx.nbt.NbtType;
+import com.nukkitx.protocol.bedrock.data.entity.EntityData;
+import com.nukkitx.protocol.bedrock.data.entity.EntityFlag;
 import com.nukkitx.protocol.bedrock.data.inventory.InventoryActionData;
 import com.nukkitx.protocol.bedrock.data.inventory.ItemData;
 import com.nukkitx.protocol.bedrock.data.inventory.TransactionType;
@@ -113,7 +115,14 @@ public class DataConverter {
             }
             break;
             case ItemUseOnEntityTransaction: {
+                ItemUseOnActorInventoryTransaction transaction = (ItemUseOnActorInventoryTransaction) complexInventoryTransaction;
                 packet.setTransactionType(TransactionType.ITEM_USE_ON_ENTITY);
+                packet.setItemInHand(itemData(transaction.getSelectedItem()));
+                packet.setHotbarSlot(transaction.getSelectedSlot());
+                packet.setActionType(transaction.getActionType().ordinal());
+                packet.setRuntimeEntityId(transaction.getEntityRuntimeId());
+                packet.setPlayerPosition(vector3f(transaction.getFromPosition()));
+                packet.setClickPosition(vector3f(transaction.getHitPosition()));
             }
             break;
             case ItemReleaseTransaction: {
@@ -510,5 +519,25 @@ public class DataConverter {
                         vec3(changeDimensionPacket.getPosition()),
                         true,
                         changeDimensionPacket.isRespawn());
+    }
+
+    public static ActorDataIDs actorDataIDs(EntityData entityData) {
+        if (entityData.ordinal() >= ActorDataIDs.values().length)
+            return null;
+        return ActorDataIDs.values()[entityData.ordinal()];
+    }
+
+    public static DataItemType dataItemType(EntityData.Type entityDataType) {
+        if (entityDataType == null)
+            return DataItemType.Unknown_23;
+        int index = entityDataType.ordinal() - 1;
+        if (index < 0)
+            index = DataItemType.values().length - 1;
+        return DataItemType.values()[index];
+    }
+
+    @NotImplemented
+    public static ActorFlags actorFlags(EntityFlag entityFlag) {
+        return null;
     }
 }

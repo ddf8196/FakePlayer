@@ -196,6 +196,10 @@ public class Item {
         return false;
     }
 
+    public boolean isDye() {
+        return false;
+    }
+
     public boolean isStackedByData() {
         return this.mIsStackedByData;
     }

@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 public abstract class Main {
+    private static Path baseDir;
     protected Logger logger;
     protected Config config;
     protected final List<Client> clients;
@@ -32,6 +33,10 @@ public abstract class Main {
         logger = Logger.getLogger();
         this.config = config;
         this.clients = Collections.synchronizedList(new ArrayList<>());
+    }
+
+    public static Path getBaseDir() {
+        return Main.baseDir;
     }
 
     public abstract void initLogger();
@@ -86,14 +91,12 @@ public abstract class Main {
     }
 
     public void removeClient(String name) {
-        synchronized (clients) {
-            clients.removeIf(client -> {
-                boolean remove = client.getPlayerName().equals(name);
-                if (remove)
-                    client.close();
-                return remove;
-            });
-        }
+        clients.removeIf(client -> {
+            boolean remove = client.getPlayerName().equals(name);
+            if (remove)
+                client.close();
+            return remove;
+        });
     }
 
     public synchronized Config getConfig() {
@@ -152,48 +155,10 @@ public abstract class Main {
     }
 
     public static void main(String[] args) throws IOException, URISyntaxException {
-        InternalLoggerFactory.setDefaultFactory(new InternalLoggerFactory() {
-            @Override
-            protected InternalLogger newInstance(String name) {
-                return new AbstractInternalLogger(name) {
-                    @Override public boolean isTraceEnabled() { return false; }
-                    @Override public void trace(String msg) {}
-                    @Override public void trace(String format, Object arg) {}
-                    @Override public void trace(String format, Object argA, Object argB) {}
-                    @Override public void trace(String format, Object... arguments) {}
-                    @Override public void trace(String msg, Throwable t) {}
-                    @Override public boolean isDebugEnabled() { return false; }
-                    @Override public void debug(String msg) {}
-                    @Override public void debug(String format, Object arg) {}
-                    @Override public void debug(String format, Object argA, Object argB) {}
-                    @Override public void debug(String format, Object... arguments) {}
-                    @Override public void debug(String msg, Throwable t) {}
-                    @Override public boolean isInfoEnabled() { return false; }
-                    @Override public void info(String msg) {}
-                    @Override public void info(String format, Object arg) {}
-                    @Override public void info(String format, Object argA, Object argB) {}
-                    @Override public void info(String format, Object... arguments) {}
-                    @Override public void info(String msg, Throwable t) {}
-                    @Override public boolean isWarnEnabled() { return false; }
-                    @Override public void warn(String msg) {}
-                    @Override public void warn(String format, Object arg) {}
-                    @Override public void warn(String format, Object... arguments) {}
-                    @Override public void warn(String format, Object argA, Object argB) {}
-                    @Override public void warn(String msg, Throwable t) {}
-                    @Override public boolean isErrorEnabled() { return false; }
-                    @Override public void error(String msg) {}
-                    @Override public void error(String format, Object arg) {}
-                    @Override public void error(String format, Object argA, Object argB) {}
-                    @Override public void error(String format, Object... arguments) {}
-                    @Override public void error(String msg, Throwable t) {}
-                };
-            }
-        });
         String jarPath = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
         if(System.getProperty("os.name").toLowerCase().startsWith("win")) {
             jarPath = jarPath.replaceFirst("/", "");
         }
-        Path baseDir;
         if (jarPath.endsWith(".jar")) {
             baseDir = Paths.get(jarPath)
                     .getParent()
@@ -211,10 +176,10 @@ public abstract class Main {
         VanillaItems.registerItems();
         SharedAttributes.init();
 
-        if (System.getProperty("fakeplayer.gui", "false").equals("true")) {
-            GUIMain.main(config);
-        } else {
+        if (System.getProperty("fakeplayer.nogui", "false").equals("true")) {
             CLIMain.main(config);
+        } else {
+            GUIMain.main(config);
         }
     }
 }

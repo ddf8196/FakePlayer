@@ -1,15 +1,13 @@
 package com.ddf.fakeplayer.level.gamemode;
 
+import com.ddf.fakeplayer.actor.Actor;
 import com.ddf.fakeplayer.actor.player.Player;
 import com.ddf.fakeplayer.container.inventory.PlayerInventoryProxy;
 import com.ddf.fakeplayer.block.*;
 import com.ddf.fakeplayer.container.ContainerID;
 import com.ddf.fakeplayer.container.inventory.InventoryAction;
 import com.ddf.fakeplayer.container.inventory.InventorySource;
-import com.ddf.fakeplayer.container.inventory.transaction.InventoryTransaction;
-import com.ddf.fakeplayer.container.inventory.transaction.InventoryTransactionManager;
-import com.ddf.fakeplayer.container.inventory.transaction.ItemReleaseInventoryTransaction;
-import com.ddf.fakeplayer.container.inventory.transaction.ItemUseInventoryTransaction;
+import com.ddf.fakeplayer.container.inventory.transaction.*;
 import com.ddf.fakeplayer.item.Item;
 import com.ddf.fakeplayer.item.ItemInstance;
 import com.ddf.fakeplayer.item.ItemStack;
@@ -132,10 +130,8 @@ public class GameMode {
             PlayerInventoryProxy supplies = this.mPlayer.getSupplies();
             supplies.createTransactionContext((container, slot, oldItem, newItem) -> {
                 InventoryAction action = new InventoryAction(InventorySource.fromContainerWindowID(ContainerID.CONTAINER_ID_INVENTORY), slot, oldItem, newItem);
-                InventoryTransactionManager transactionManager = this.mPlayer.getTransactionManager();
-                transactionManager.addExpectedAction(action);
-                InventoryTransaction InventoryTransaction = transaction.getInventoryTransaction();
-                InventoryTransaction.addAction(action);
+                this.mPlayer.getTransactionManager().addExpectedAction(action);
+                transaction.getInventoryTransaction().addAction(action);
             }, () -> {
                 ItemStack item = new ItemStack(SelectedItem);
                 transaction.setSelectedItem(item)
@@ -189,10 +185,8 @@ public class GameMode {
         ItemReleaseInventoryTransaction transaction = new ItemReleaseInventoryTransaction(this.mPlayer.getLevel().getItemRegistry());
         this.mPlayer.getSupplies().createTransactionContext((container, slot, oldItem, newItem) -> {
             InventoryAction action = new InventoryAction(InventorySource.fromContainerWindowID(ContainerID.CONTAINER_ID_INVENTORY), slot, oldItem, newItem);
-            InventoryTransactionManager transactionManager = this.mPlayer.getTransactionManager();
-            transactionManager.addExpectedAction(action);
-            InventoryTransaction inventoryTransaction = transaction.getInventoryTransaction();
-            inventoryTransaction.addAction(action);
+            this.mPlayer.getTransactionManager().addExpectedAction(action);
+            transaction.getInventoryTransaction().addAction(action);
         }, () -> {
             transaction.setSelectedItem(item)
                     .setSelectedSlot(mPlayer.getSupplies().getSelectedSlot().mSlot)
@@ -217,6 +211,30 @@ public class GameMode {
         if (this.mPlayer.getLevel().isClientSide()) {
             this.mPlayer.sendComplexInventoryTransaction(transaction);
         }
+    }
+
+    public boolean interact(Actor entity, final Vec3 location) {
+        boolean success = false;
+        ValueHolder<Boolean> successHolder = new ValueHolder<>(success);
+        ItemUseOnActorInventoryTransaction transaction = new ItemUseOnActorInventoryTransaction(this.mPlayer.getLevel().getItemRegistry());
+        this.mPlayer.getSupplies().createTransactionContext((container, slot, oldItem, newItem) -> {
+            InventoryAction action = new InventoryAction(InventorySource.fromContainerWindowID(ContainerID.CONTAINER_ID_INVENTORY), slot, oldItem, newItem);
+            this.mPlayer.getTransactionManager().addExpectedAction(action);
+            transaction.getInventoryTransaction().addAction(action);
+        }, () -> {
+            transaction.setSelectedItem(this.mPlayer.getSelectedItem())
+                    .setSelectedSlot(this.mPlayer.getSupplies().getSelectedSlot().mSlot)
+                    .setActionType(ItemUseOnActorInventoryTransaction.ActionType.Interact_1)
+                    .setEntityRuntimeId(entity.getRuntimeID())
+                    .setFromPosition(this.mPlayer.getPos())
+                    .setHitPosition(location);
+            successHolder.set(this.mPlayer.interact(entity, location));
+        });
+        success = successHolder.get();
+        if (this.mPlayer.getLevel().isClientSide()) {
+            this.mPlayer.sendComplexInventoryTransaction(transaction);
+        }
+        return success;
     }
 
     public void tick() {

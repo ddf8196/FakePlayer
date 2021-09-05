@@ -3,7 +3,7 @@ plugins {
     id 'application'
 }
 
-group 'com.ddf'
+group 'com.ddf.fakeplayer'
 version '0.4.0-Beta'
 
 repositories {
@@ -53,7 +53,7 @@ distributions {
 
 run {
     standardInput = System.in
-    jvmArgs += '-Dfakeplayer.gui=false'
+    jvmArgs += '-Dfakeplayer.nogui=true'
 }
 
 task generateVersionInfo {
@@ -72,11 +72,11 @@ compileTestJava.dependsOn(generateVersionInfo)
 task runGUI(type: JavaExec) {
     classpath = run.classpath
     main = run.main
-    jvmArgs += '-Dfakeplayer.gui=true'
+    jvmArgs += '-Dfakeplayer.nogui=false'
 }
 
 startScripts {
-    defaultJvmOpts = ['-Dfakeplayer.gui=false']
+    defaultJvmOpts = ['-Dfakeplayer.nogui=true']
 }
 
 task guiStartScripts(type: CreateStartScripts) {
@@ -84,7 +84,7 @@ task guiStartScripts(type: CreateStartScripts) {
     classpath = startScripts.classpath
     mainClassName = startScripts.mainClassName
     outputDir = startScripts.outputDir
-    defaultJvmOpts = ['-Dfakeplayer.gui=true']
+    defaultJvmOpts = ['-Dfakeplayer.nogui=false']
     doLast {
         def windowsScriptText = windowsScript.text.replaceAll('java\\.exe', 'javaw.exe')
         windowsScriptText = windowsScriptText.replaceAll('"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS%', 'start "" /B "%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS%')
