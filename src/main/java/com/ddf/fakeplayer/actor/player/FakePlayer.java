@@ -33,7 +33,7 @@ public class FakePlayer extends LocalPlayer {
     public FakePlayer(Level level, String name, UUID uuid, Client client) {
         super(level, name, uuid, client);
         this.addOnPlayerChatListener((source, message, xuid, platformChatId) -> {
-            if (!client.getConfig().getPlayerData(super.getName()).isAllowChatMessageControl()
+            if (!client.isAllowChatMessageControl()
                     || message.length() <= super.getName().length()
                     || !message.startsWith(super.getName())
                     || !message.substring(0, message.indexOf(" ")).equals(super.getName())) {

@@ -73,7 +73,9 @@ public abstract class Main {
 
     public synchronized Client addClient(String name, String skin) {
         removeClient(name);
-        Client client = new Client(name, config.getServerKeyPair(), config);
+        Client client = new Client(name, config.getServerKeyPair());
+        Config.PlayerData playerData = config.getPlayerData(name);
+        client.setAllowChatMessageControl(playerData != null && playerData.isAllowChatMessageControl());
         client.setDefaultPacketCodec(config.getDefaultPacketCodec());
         switch (skin) {
             case "steve":
@@ -85,7 +87,18 @@ public abstract class Main {
         }
         client.setAutoReconnect(config.isAutoReconnect());
         client.setReconnectDelay(config.getReconnectDelay());
-        client.setWebSocketServer(webSocketServer);
+        client.addStateChangedListener((client1, oldState, currentState) -> {
+            switch (currentState) {
+                case CONNECTED:
+                    if (webSocketServer != null && config.isWebSocketEnabled())
+                        webSocketServer.sendConnectPlayerMessage(client1);
+                    break;
+                case DISCONNECTED:
+                    if (webSocketServer != null && config.isWebSocketEnabled())
+                        webSocketServer.sendDisconnectPlayerMessage(client1);
+                    break;
+            }
+        });
         clients.add(client);
         return client;
     }
