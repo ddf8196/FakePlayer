@@ -1,5 +1,7 @@
 package com.ddf.fakeplayer;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,15 +10,15 @@ import java.net.URL;
 public class Resources {
     public static String SKIN_DATA_STEVE_JSON;
     public static String SKIN_DATA_ALEX_JSON;
-    //public static URL ICON;
+    public static BufferedImage ICON;
 
     static {
         try {
             SKIN_DATA_STEVE_JSON = getResAsString("/skin_data_steve.json");
             SKIN_DATA_ALEX_JSON = getResAsString("/skin_data_alex.json");
-            //ICON = getRes("/icon.png");
-        } catch (Exception e) {
-            e.printStackTrace();
+            ICON = ImageIO.read(getRes("/icon.png"));
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
     }
 
