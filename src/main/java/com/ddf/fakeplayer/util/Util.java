@@ -24,6 +24,10 @@ public class Util {
         return false;
     }
 
+//    public static boolean isSystemTraySupported() {
+//        return SystemTray.isSupported();
+//    }
+
     public static boolean isNumber(String string) {
         return string.matches("^-?\\d+$");
     }

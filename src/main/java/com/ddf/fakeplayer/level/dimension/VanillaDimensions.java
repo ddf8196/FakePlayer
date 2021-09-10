@@ -10,7 +10,7 @@ public class VanillaDimensions {
     public static final int Overworld = 0;
     public static final int Nether = 1;
     public static final int TheEnd = 2;
-    public static final int Undefined = 4;
+    public static final int Undefined = 3;
     public static final Vec3 TheEndSpawnPoint  = new Vec3(100.0f, 50.0f, 0.0f);
 
     static {

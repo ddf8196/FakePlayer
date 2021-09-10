@@ -23,6 +23,10 @@ repositories {
         name 'nukkitx-repo-snapshot'
         url 'https://repo.nukkitx.com/maven-snapshots/'
     }
+    maven {
+        name 'minecraft-libraries'
+        url "https://libraries.minecraft.net"
+    }
 }
 
 dependencies {
@@ -33,6 +37,7 @@ dependencies {
     implementation 'org.java-websocket:Java-WebSocket:1.5.2'
     implementation 'org.slf4j:slf4j-nop:1.7.32'
     implementation 'com.miglayout:miglayout-swing:5.3'
+    implementation 'com.mojang:brigadier:1.0.18'
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_8

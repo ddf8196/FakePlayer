@@ -13,6 +13,7 @@ import com.ddf.fakeplayer.util.Util;
 import com.formdev.flatlaf.FlatDarkLaf;
 import net.miginfocom.swing.MigLayout;
 
+import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -49,16 +50,22 @@ public class GUIMain extends Main {
 	private JTextArea log;
 	private JPopupMenu playersTableMenu1;
 	private JPopupMenu playersTableMenu2;
+	private JPopupMenu trayIconMenu;
+	private JDialog trayIconMenuDialog;
+	private TrayIcon trayIcon;
 
 	private GUIMain(Config config) throws IOException {
 		super(config);
 		frame = new JFrame("FakePlayer " + VersionInfo.VERSION);
+//		frame.setIconImage(Resources.ICON);
 		frame.setSize(560, 480);
+		frame.setResizable(false);
 		frame.setLocationRelativeTo(null);
-		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
 		initMenuBar();
 		initPopupMenu();
+//		initTrayIcon();
 		initLayout();
 		initListener();
 
@@ -101,6 +108,7 @@ public class GUIMain extends Main {
 
 		JMenu fileMenu = new JMenu("文件");
 		menuBar.add(fileMenu);
+
 		JMenuItem exportConfig = new JMenuItem("导出配置");
 		exportConfig.addActionListener(e -> {
 			JFileChooser fileChooser = new JFileChooser();
@@ -123,6 +131,7 @@ public class GUIMain extends Main {
             }
 		});
 		fileMenu.add(exportConfig);
+
 		JMenuItem importConfig = new JMenuItem("导入配置");
 		importConfig.addActionListener(e -> {
 			JFileChooser fileChooser = new JFileChooser();
@@ -147,20 +156,31 @@ public class GUIMain extends Main {
 		});
 		fileMenu.add(importConfig);
 		fileMenu.addSeparator();
+
 		JMenuItem saveConfig = new JMenuItem("保存配置");
 		saveConfig.addActionListener(e -> saveConfig());
 		fileMenu.add(saveConfig);
 		fileMenu.addSeparator();
+
+//		JMenuItem settings = new JMenuItem("设置");
+//		settings.addActionListener(e -> {
+//
+//		});
+//		fileMenu.add(settings);
+//		fileMenu.addSeparator();
+
 		JMenuItem exit = new JMenuItem("退出");
-		exit.addActionListener(e -> frame.dispose());
+		exit.addActionListener(e -> exit());
 		fileMenu.add(exit);
 
 		JMenu helpMenu = new JMenu("帮助");
 		menuBar.add(helpMenu);
+
 		JMenuItem showHelp = new JMenuItem("查看帮助");
 		showHelp.addActionListener(e -> Util.tryOpenBrowser("https://github.com/ddf8196/FakePlayer/wiki"));
 		helpMenu.add(showHelp);
 		helpMenu.addSeparator();
+
 		JMenuItem about = new JMenuItem("关于");
 		about.addActionListener(e -> {
 			AboutDialog dialog = new AboutDialog(this);
@@ -279,6 +299,55 @@ public class GUIMain extends Main {
 		content.add(logScrollPane, "cell 0 1 2 1,growy");
 	}
 
+//	private void initTrayIcon() {
+//		if (!Util.isSystemTraySupported()) {
+//			return;
+//		}
+//		try {
+//			trayIconMenuDialog = new JDialog();
+//			trayIconMenuDialog.setSize(0, 0);
+//			trayIconMenuDialog.setUndecorated(true);
+//
+//			trayIconMenu = new JPopupMenu() {
+//				@Override
+//				protected void firePopupMenuWillBecomeInvisible() {
+//					super.firePopupMenuWillBecomeInvisible();
+//					trayIconMenuDialog.setVisible(false);
+//				}
+//			};
+//
+//			JMenuItem showMainFrame = new JMenuItem("显示主界面");
+//			showMainFrame.addActionListener(e -> showMainFrame());
+//			trayIconMenu.add(showMainFrame);
+//
+//			JMenuItem exit = new JMenuItem("退出");
+//			exit.addActionListener(e -> exit());
+//			trayIconMenu.add(exit);
+//
+//			trayIcon = new TrayIcon(Resources.ICON, "FakePlayer " + VersionInfo.VERSION);
+//			trayIcon.setImageAutoSize(true);
+//			trayIcon.addMouseListener(new MouseAdapter() {
+//				@Override
+//				public void mouseClicked(MouseEvent e) {
+//					if (SwingUtilities.isLeftMouseButton(e)) {
+//						showMainFrame();
+//					} else if (SwingUtilities.isRightMouseButton(e)) {
+//						showTrayIconMenu(e.getXOnScreen(), e.getYOnScreen());
+//					}
+//				}
+//			});
+//
+//			SystemTray systemTray = SystemTray.getSystemTray();
+//			systemTray.add(trayIcon);
+//		} catch (Throwable throwable) {
+//			throwable.printStackTrace();
+//			if (Util.isSystemTraySupported()) {
+//				SystemTray.getSystemTray().remove(trayIcon);
+//			}
+//			trayIcon = null;
+//		}
+//	}
+
 	private void initListener() {
 		frame.addWindowListener(new WindowAdapter() {
 			@Override
@@ -287,19 +356,11 @@ public class GUIMain extends Main {
 			}
 			@Override
 			public void windowClosing(WindowEvent e) {
-				synchronized (clients) {
-					clients.forEach(Client::close);
+				if (trayIcon != null) {
+					frame.setVisible(false);
+				} else {
+					exit();
 				}
-				saveConfig();
-				stopWebSocket();
-			}
-			@Override
-			public void windowClosed(WindowEvent e) {
-				synchronized (clients) {
-					clients.forEach(Client::close);
-				}
-				saveConfig();
-				stopWebSocket();
 			}
 		});
 		playersTable.addMouseListener(new MouseAdapter() {
@@ -472,6 +533,32 @@ public class GUIMain extends Main {
 
 	public JFrame getFrame() {
 		return frame;
+	}
+
+	public void showMainFrame() {
+		frame.setVisible(true);
+		frame.setExtendedState(Frame.NORMAL);
+		frame.requestFocus();
+	}
+
+//	public void showTrayIconMenu(int x, int y) {
+//		trayIconMenuDialog.setVisible(true);
+//		trayIconMenu.setInvoker(trayIconMenuDialog);
+//		trayIconMenu.setVisible(true);
+//		Point point = new Point(x, y);
+//		int menuHeight = trayIconMenu.getHeight();
+//		if (y - menuHeight >= 0 || y + menuHeight > Toolkit.getDefaultToolkit().getScreenSize().height) {
+//			point.y = y - menuHeight;
+//		}
+//		trayIconMenu.setLocation(point);
+//		trayIconMenuDialog.setLocation(point);
+//	}
+
+	public void exit() {
+		clients.forEach(Client::close);
+		saveConfig();
+		stopWebSocket();
+		System.exit(0);
 	}
 
 	public static class NumberDocument extends PlainDocument {

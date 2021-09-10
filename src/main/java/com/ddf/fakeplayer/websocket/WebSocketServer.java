@@ -4,7 +4,6 @@ import com.ddf.fakeplayer.Client;
 import com.ddf.fakeplayer.Main;
 import com.ddf.fakeplayer.VersionInfo;
 import com.ddf.fakeplayer.util.Logger;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 
