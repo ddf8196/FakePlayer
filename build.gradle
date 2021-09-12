@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.ddf.fakeplayer'
-version '0.4.0-Beta'
+version '0.4.1-alpha.0'
 
 repositories {
     maven {
@@ -61,18 +61,19 @@ run {
     jvmArgs += '-Dfakeplayer.nogui=true'
 }
 
-task generateVersionInfo {
-    def versionRegex = '\\$\\{VERSION\\}'
-    def templateFile = new File(projectDir, "src/main/java/com/ddf/fakeplayer/VersionInfo.java.template")
-    def text = templateFile.text
-    text = (text =~ /${versionRegex}/).replaceAll(version.toString())
-    def file = new File(projectDir, "src/main/java/com/ddf/fakeplayer/VersionInfo.java")
-    file.createNewFile()
-    file.write(text)
+processResources {
+    doLast {
+        def file = new File(getDestinationDir(), 'version.properties')
+        def text = file.getText('UTF-8')
+        text = replace(text, 'VERSION', version.toString())
+        file.write(text, 'UTF-8')
+    }
 }
 
-compileJava.dependsOn(generateVersionInfo)
-compileTestJava.dependsOn(generateVersionInfo)
+static def replace(String input, String name, String value) {
+    def regex = '\\$\\{' + name + '\\}'
+    return (input =~ /${regex}/).replaceAll(value)
+}
 
 task runGUI(type: JavaExec) {
     classpath = run.classpath

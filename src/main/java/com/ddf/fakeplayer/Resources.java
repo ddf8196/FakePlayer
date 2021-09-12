@@ -3,17 +3,23 @@ package com.ddf.fakeplayer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 
 public class Resources {
+    public static Properties VERSION_PROPERTIES;
     public static String SKIN_DATA_STEVE_JSON;
     public static String SKIN_DATA_ALEX_JSON;
 //    public static BufferedImage ICON;
 
     static {
         try {
-            SKIN_DATA_STEVE_JSON = getResAsString("/skin_data_steve.json");
-            SKIN_DATA_ALEX_JSON = getResAsString("/skin_data_alex.json");
+            VERSION_PROPERTIES = new Properties();
+            VERSION_PROPERTIES.load(new InputStreamReader(getResAsStream("/version.properties"), StandardCharsets.UTF_8));
+            SKIN_DATA_STEVE_JSON = getResAsString("/skin/skin_data_steve.json");
+            SKIN_DATA_ALEX_JSON = getResAsString("/skin/skin_data_alex.json");
 //            ICON = ImageIO.read(getRes("/icon.png"));
         } catch (Throwable t) {
             t.printStackTrace();
