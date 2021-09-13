@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.ddf.fakeplayer'
-version '0.4.1-alpha.0'
+version '0.4.1-alpha'
 
 repositories {
     maven {
@@ -56,6 +56,14 @@ distributions {
     }
 }
 
+distTar {
+    archiveVersion.set(getFullVersionString())
+}
+
+distZip {
+    archiveVersion.set(getFullVersionString())
+}
+
 run {
     standardInput = System.in
     jvmArgs += '-Dfakeplayer.nogui=true'
@@ -65,9 +73,25 @@ processResources {
     doLast {
         def file = new File(getDestinationDir(), 'version.properties')
         def text = file.getText('UTF-8')
-        text = replace(text, 'VERSION', version.toString())
+        text = replace(text, 'VERSION', getFullVersionString())
         file.write(text, 'UTF-8')
     }
+}
+
+def getFullVersionString() {
+    if (isGithubActions())
+        return version.toString() + '-build' + getGithubRunNumber()
+    return version.toString()
+}
+
+static def isGithubActions() {
+    return System.getenv('GITHUB_ACTIONS') == 'true'
+}
+
+static def getGithubRunNumber() {
+    if (!isGithubActions())
+        return ''
+    return System.getenv('GITHUB_RUN_NUMBER')
 }
 
 static def replace(String input, String name, String value) {
