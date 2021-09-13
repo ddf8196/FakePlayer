@@ -80,7 +80,7 @@ processResources {
 
 def getFullVersionString() {
     if (isGithubActions())
-        return version.toString() + '-build' + getGithubRunNumber()
+        return version.toString() + '-build.' + getGithubRunNumber()
     return version.toString()
 }
 
