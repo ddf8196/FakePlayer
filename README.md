@@ -22,6 +22,7 @@ Minecraft Bedrock Edition 假人客户端
 ## 注意事项
 * 假人和正常玩家一样，不能绕过白名单，在开启了白名单的服务器中使用需要手动将假人名称添加至白名单中
 * 如果出现假人总是掉线重连，且信息为disconnectionScreen.timeout，请将server.properties中的player-idle-timeout设为0
+* 如果出现了协议版本过低无法使用的情况，请从[Actions](https://github.com/ddf8196/FakePlayer/actions)下载最新构建
 
 ## 功能
 * 较为稳定的挂机
