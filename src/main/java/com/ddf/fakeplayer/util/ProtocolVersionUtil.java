@@ -18,7 +18,7 @@ import com.nukkitx.protocol.bedrock.v428.Bedrock_v428;
 import com.nukkitx.protocol.bedrock.v431.Bedrock_v431;
 import com.nukkitx.protocol.bedrock.v440.Bedrock_v440;
 import com.nukkitx.protocol.bedrock.v448.Bedrock_v448;
-import com.nukkitx.protocol.bedrock.v448.Bedrock_v465;
+import com.nukkitx.protocol.bedrock.v465.Bedrock_v465;
 
 import java.util.Collections;
 import java.util.HashMap;
