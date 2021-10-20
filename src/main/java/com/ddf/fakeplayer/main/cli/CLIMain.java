@@ -1,10 +1,11 @@
-package com.ddf.fakeplayer.cli;
+package com.ddf.fakeplayer.main.cli;
 
-import com.ddf.fakeplayer.Client;
-import com.ddf.fakeplayer.util.Config;
-import com.ddf.fakeplayer.Main;
+import com.ddf.fakeplayer.main.I18N;
+import com.ddf.fakeplayer.main.config.Config;
+import com.ddf.fakeplayer.main.Main;
+import com.ddf.fakeplayer.main.config.PlayerData;
 import com.ddf.fakeplayer.util.Logger;
-import com.ddf.fakeplayer.util.Util;
+import com.ddf.fakeplayer.main.Util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,7 +18,7 @@ public class CLIMain extends Main {
 
     private CLIMain(Config config) throws IOException {
         super(config);
-        logger.log("配置文件已加载: ", config.getConfigPath().toRealPath().toString());
+        logger.log(I18N.get("log.configFileLoaded") + " ", config.getConfigPath().toRealPath().toString());
     }
 
     @Override
@@ -63,7 +64,7 @@ public class CLIMain extends Main {
         }
         setWebSocketEnabled(config.isWebSocketEnabled());
 
-        config.getPlayers().forEach(playerData -> addClient(playerData.getName(), playerData.getSkin()));
+        config.getPlayerDataList().forEach(this::addClient);
         clients.forEach(client -> client.connect(config.getServerAddress(), config.getServerPort()));
 
         logger.log("启动完成，输入help或?可查看帮助");
@@ -93,7 +94,8 @@ public class CLIMain extends Main {
                 case "add":
                     if (string.length >= 2) {
                         String playerName = string[1];
-                        addPlayer(playerName, "steve");
+                        PlayerData playerData = new PlayerData(playerName, "steve");
+                        addPlayer(playerData);
                     }
                     break;
                 case "remove":
@@ -127,12 +129,6 @@ public class CLIMain extends Main {
     private String readLine() throws IOException {
         return reader.readLine();
     }
-
-    @Override
-    public Client addClient(String name, String skin) {
-        return super.addClient(name, skin);
-    }
-
 
     public void stop() {
         clients.forEach(client -> client.setStop(true));

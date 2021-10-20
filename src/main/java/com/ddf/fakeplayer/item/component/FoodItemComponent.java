@@ -1,6 +1,8 @@
 package com.ddf.fakeplayer.item.component;
 
+import com.ddf.fakeplayer.actor.Actor;
 import com.ddf.fakeplayer.actor.player.Player;
+import com.ddf.fakeplayer.block.BlockPos;
 import com.ddf.fakeplayer.item.CooldownType;
 import com.ddf.fakeplayer.item.Item;
 import com.ddf.fakeplayer.item.ItemStack;
@@ -37,6 +39,10 @@ public class FoodItemComponent {
         if (player.forceAllowEating() || player.isHungry() || this.mCanAlwaysEat) {
             player.startUsingItem(instance, instance.getMaxUseDuration());
         }
+    }
+
+    public final boolean useOn(ItemStack instance, Actor entity, final BlockPos blockPos, /*uint8_t FacingID*/int face, final Vec3 clickPos) {
+        return false;
     }
 
     public static class Effect {

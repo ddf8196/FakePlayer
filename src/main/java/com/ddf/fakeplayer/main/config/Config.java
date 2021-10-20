@@ -1,5 +1,7 @@
-package com.ddf.fakeplayer.util;
+package com.ddf.fakeplayer.main.config;
 
+import com.ddf.fakeplayer.util.KeyUtil;
+import com.ddf.fakeplayer.util.ProtocolVersionUtil;
 import com.nukkitx.protocol.bedrock.BedrockPacketCodec;
 import com.nukkitx.protocol.bedrock.v408.Bedrock_v408;
 import org.yaml.snakeyaml.DumperOptions;
@@ -33,11 +35,13 @@ public class Config {
     private long reconnectDelay = 3000;
     private boolean webSocketEnabled = false;
     private int webSocketPort = 54321;
-    private String webSocketPassword = "";
+    private String language = "zh-cn";
     private List<PlayerData> players = new ArrayList<>();
+    private Map<String, CustomSkinData> customSkins = new LinkedHashMap<>();
     private transient KeyPair serverKeyPair;
     private transient Path configPath;
     private transient BedrockPacketCodec defaultPacketCodec = Bedrock_v408.V408_CODEC;
+    private transient Locale locale;
 
     static {
         LoaderOptions loaderOptions = new LoaderOptions();
@@ -89,6 +93,7 @@ public class Config {
             } catch (IllegalArgumentException e) {
                 e.printStackTrace();
             }
+            config.locale = Locale.forLanguageTag(config.language);
             return config;
         }
     }
@@ -199,29 +204,54 @@ public class Config {
         this.webSocketPort = webSocketPort;
     }
 
-    public String getWebSocketPassword() {
-        return webSocketPassword;
+    public String getLanguage() {
+        return language;
     }
 
-    public void setWebSocketPassword(String webSocketPassword) {
-        this.webSocketPassword = webSocketPassword;
+    public void setLanguage(String language) {
+        this.language = language;
     }
 
-    public void setPlayers(List<PlayerData> players) {
+    public Map<String, CustomSkinData> getCustomSkins() {
+        return customSkins;
+    }
+
+    public void setCustomSkins(Map<String, CustomSkinData> customSkins) {
+        this.customSkins = customSkins;
+    }
+
+    public void addCustomSkin(String name, CustomSkinData customSkinData) {
+        this.customSkins.put(name, customSkinData);
+    }
+
+    public void removeCustomSkin(String name) {
+        this.customSkins.remove(name);
+    }
+
+    public CustomSkinData getCustomSkin(String name) {
+        return this.customSkins.get(name);
+    }
+
+    public void setPlayerDataList(List<PlayerData> players) {
         this.players = players;
     }
 
-    public List<PlayerData> getPlayers() {
+    public List<PlayerData> getPlayerDataList() {
         return players;
     }
 
+    public void addPlayerData(PlayerData playerData) {
+        players.removeIf(playerData1 -> playerData1.getName().equals(playerData.getName()));
+        players.add(playerData);
+    }
+
+    @Deprecated
     public void addPlayerData(String name, String skin, boolean allowChatMessageControl) {
         PlayerData data = new PlayerData();
         data.setName(name);
         data.setSkin(skin);
         data.setAllowChatMessageControl(allowChatMessageControl);
-        players.removeIf(playerData -> playerData.getName().equals(name));
-        players.add(data);
+        addPlayerData(data);
     }
 
     public void removePlayerData(String name) {
@@ -253,33 +283,4 @@ public class Config {
         return defaultPacketCodec;
     }
 
-    public static class PlayerData {
-        private String name = "";
-        private String skin = "steve";
-        private boolean allowChatMessageControl = false;
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setSkin(String skin) {
-            this.skin = skin;
-        }
-
-        public String getSkin() {
-            return skin;
-        }
-
-        public boolean isAllowChatMessageControl() {
-            return allowChatMessageControl;
-        }
-
-        public void setAllowChatMessageControl(boolean allowChatMessageControl) {
-            this.allowChatMessageControl = allowChatMessageControl;
-        }
-    }
 }

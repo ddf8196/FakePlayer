@@ -1,6 +1,6 @@
-package com.ddf.fakeplayer.gui.dialog;
+package com.ddf.fakeplayer.main.gui.dialog;
 
-import com.ddf.fakeplayer.gui.GUIMain;
+import com.ddf.fakeplayer.main.gui.GUIMain;
 
 import javax.swing.*;
 

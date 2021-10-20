@@ -1,7 +1,8 @@
-package com.ddf.fakeplayer.gui.dialog;
+package com.ddf.fakeplayer.main.gui.dialog;
 
-import com.ddf.fakeplayer.util.Config;
-import com.ddf.fakeplayer.gui.GUIMain;
+import com.ddf.fakeplayer.client.Client;
+import com.ddf.fakeplayer.main.config.PlayerData;
+import com.ddf.fakeplayer.main.gui.GUIMain;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
@@ -14,9 +15,11 @@ public class PlayerInfoDialog extends JDialog {
 
     private final GUIMain main;
     private final int type;
-    private String playerName;
+    private final String playerName;
+    private final String playerSkin;
 
     private JTextField name;
+    private JList<String> scripts;
     private JComboBox<String> skin;
     private JCheckBox allowChatMessageControl;
     private JButton ok;
@@ -35,6 +38,7 @@ public class PlayerInfoDialog extends JDialog {
         this.main = main;
         this.type = type;
         this.playerName = playerName;
+        this.playerSkin = main.getConfig().getPlayerData(playerName).getSkin();
         initLayout();
         initData();
     }
@@ -82,7 +86,7 @@ public class PlayerInfoDialog extends JDialog {
                 break;
             case TYPE_EDIT:
                 setTitle("编辑假人");
-                Config.PlayerData data = main.getConfig().getPlayerData(playerName);
+                PlayerData data = main.getConfig().getPlayerData(playerName);
                 name.setText(data.getName());
                 skin.setSelectedItem(data.getSkin());
                 allowChatMessageControl.setSelected(data.isAllowChatMessageControl());
@@ -94,10 +98,11 @@ public class PlayerInfoDialog extends JDialog {
     }
 
     private void addOrEdit() {
+        String playerName = name.getText();
+        String skin = this.skin.getSelectedItem().toString();
+        boolean allowChatMessageControl = this.allowChatMessageControl.isSelected();
         switch (type) {
             case TYPE_ADD: {
-                String playerName = name.getText();
-                String skin = this.skin.getSelectedItem().toString();
                 if (playerName == null || playerName.isEmpty()) {
                     JOptionPane.showMessageDialog(main.getFrame(), "名称不能为空");
                     return;
@@ -106,22 +111,28 @@ public class PlayerInfoDialog extends JDialog {
                     JOptionPane.showMessageDialog(main.getFrame(), "假人已存在");
                     return;
                 }
-                main.addPlayer(playerName, skin, allowChatMessageControl.isSelected());
+                PlayerData playerData = new PlayerData(playerName, skin, allowChatMessageControl);
+                main.addPlayer(playerData);
                 dispose();
                 break;
             }
             case TYPE_EDIT: {
-                String text = name.getText();
-                if (text == null || text.isEmpty()) {
+                if (playerName == null || playerName.isEmpty()) {
                     JOptionPane.showMessageDialog(main.getFrame(), "名称不能为空");
                     return;
                 }
-                if (!text.equals(playerName) && main.getClient(text) != null) {
+                if (!playerName.equals(this.playerName) && main.getClient(playerName) != null) {
                     JOptionPane.showMessageDialog(main.getFrame(), "假人已存在");
                     return;
                 }
-                main.removePlayer(playerName);
-                main.addPlayer(text, skin.getSelectedItem().toString(), allowChatMessageControl.isSelected());
+                if (playerName.equals(this.playerName) && skin.equals(playerSkin)) {
+                    Client client = main.getClient(playerName);
+                    client.setAllowChatMessageControl(allowChatMessageControl);
+                } else {
+                    PlayerData playerData = new PlayerData(playerName, skin, allowChatMessageControl);
+                    main.removePlayer(this.playerName);
+                    main.addPlayer(playerData);
+                }
                 break;
             }
         }

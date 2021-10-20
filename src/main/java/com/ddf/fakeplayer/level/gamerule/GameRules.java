@@ -61,4 +61,20 @@ public class GameRules {
             return null;
         }
     }
+
+    public final boolean hasRule(int ruleType) {
+        if (ruleType >= 0 ) {
+            return ruleType < this.mGameRules.size();
+        }
+        return false;
+    }
+
+    public final GameRule getRule(int rule) {
+        return this.mGameRules.get(rule);
+    }
+
+    public final boolean getBool(int ruleType) {
+        GameRule rule = this.getRule(ruleType);
+        return rule != null && rule.getBool();
+    }
 }

@@ -1,7 +1,9 @@
-package com.ddf.fakeplayer;
+package com.ddf.fakeplayer.client;
 
+import com.ddf.fakeplayer.Resources;
 import com.ddf.fakeplayer.actor.player.FakePlayer;
 import com.ddf.fakeplayer.item.ItemRegistry;
+import com.ddf.fakeplayer.js.JSLoader;
 import com.ddf.fakeplayer.json.ExtraData;
 import com.ddf.fakeplayer.json.skin.SkinData;
 import com.ddf.fakeplayer.level.MultiPlayerLevel;
@@ -12,6 +14,7 @@ import com.ddf.fakeplayer.util.KeyUtil;
 import com.ddf.fakeplayer.util.Logger;
 import com.ddf.fakeplayer.util.ProtocolVersionUtil;
 import com.nukkitx.protocol.bedrock.*;
+import com.nukkitx.protocol.bedrock.data.inventory.ItemStackRequest;
 import com.nukkitx.protocol.bedrock.v408.Bedrock_v408;
 
 import java.io.Closeable;
@@ -19,10 +22,7 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Client implements Closeable {
@@ -45,10 +45,14 @@ public class Client implements Closeable {
     private ReconnectTask reconnectTask;
     private final Queue<BedrockPacket> receivedPackets = new ConcurrentLinkedQueue<>();
     private final Queue<Runnable> runnableQueue = new ConcurrentLinkedQueue<>();
+    private final Map<Integer, ItemStackRequest> itemStackRequests = new ConcurrentHashMap<>();
     private State state;
     private final List<StateChangeListener> stateChangeListeners = Collections.synchronizedList(new ArrayList<>());
     private BedrockPacketCodec defaultPacketCodec = Bedrock_v408.V408_CODEC;
-    private String skinDataJson = Resources.SKIN_DATA_STEVE_JSON;
+    private SkinType skinType = SkinType.STEVE;
+    private int customSkinImageWidth;
+    private int customSkinImageHeight;
+    private String customSkinImageData;
     private int chunkRadius = 20;
     private String playerName;
     private UUID playerUUID;
@@ -59,11 +63,11 @@ public class Client implements Closeable {
     private final Object stopLock = new Object();
     private boolean allowChatMessageControl;
 
-    public Client(String playerName, KeyPair serverKeyPair){
+    public Client(String playerName, KeyPair serverKeyPair) {
         this(playerName, UUID.nameUUIDFromBytes(playerName.getBytes(StandardCharsets.UTF_8)), serverKeyPair, false);
     }
 
-    public Client(String playerName, UUID uuid, KeyPair serverKeyPair, boolean allowChatMessageControl){
+    public Client(String playerName, UUID uuid, KeyPair serverKeyPair, boolean allowChatMessageControl) {
         this.logger = Logger.getLogger();
         this.playerName = playerName;
         this.playerUUID = uuid;
@@ -111,7 +115,7 @@ public class Client implements Closeable {
                 bedrockClient.bind().join();
                 final InetSocketAddress addressToConnect = new InetSocketAddress(address, port);
                 try {
-                    BedrockPong bedrockPong = bedrockClient.ping(addressToConnect, 1, TimeUnit.SECONDS).get(1, TimeUnit.SECONDS);
+                    BedrockPong bedrockPong = bedrockClient.ping(addressToConnect, 10, TimeUnit.SECONDS).get(10, TimeUnit.SECONDS);
                     packetCodec = ProtocolVersionUtil.getPacketCodec(bedrockPong.getProtocolVersion());
                 } catch (Throwable t) {
                     packetCodec = defaultPacketCodec;
@@ -160,7 +164,9 @@ public class Client implements Closeable {
     }
 
     public void sendPacket(BedrockPacket packet) {
-        session.sendPacket(packet);
+        if (isConnected()) {
+            session.sendPacket(packet);
+        }
     }
 
     public PacketSender getPacketSender() {
@@ -245,7 +251,7 @@ public class Client implements Closeable {
     }
 
     public SkinData createSkinData(){
-        SkinData skin = SkinData.createFromSkinJson(skinDataJson);
+        SkinData skin = SkinData.createFromSkinJson(skinType.getSkinDataJson());
         skin.setClientRandomId(ThreadLocalRandom.current().nextLong());
         skin.setCurrentInputMode(1);
         skin.setDefaultInputMode(1);
@@ -260,11 +266,36 @@ public class Client implements Closeable {
         skin.setSelfSignedId(player.getClientUUID().toString());
         skin.setServerAddress(getHostAddress() + ":" + getPort());
         skin.setThirdPartyName(player.getName());
+        if (skinType == SkinType.CUSTOM || skinType == SkinType.CUSTOM_SLIM) {
+            skin.setSkinId(UUID.randomUUID() + skin.getSkinId() + UUID.randomUUID());
+            skin.setSkinImageWidth(customSkinImageWidth);
+            skin.setSkinImageHeight(customSkinImageHeight);
+            skin.setSkinData(customSkinImageData);
+        }
         return skin;
     }
 
     public void update() {
-        this.level.tick();
+        if (reconnectTask != null) {
+            reconnectTask.tick();
+        }
+        if (!isConnected()) {
+            receivedPackets.clear();
+        } else {
+            while (!receivedPackets.isEmpty()) {
+                BedrockPacket packet = receivedPackets.poll();
+                if (packet != null) {
+                    packet.handle(packetHandler);
+                }
+            }
+            this.level.tick();
+        }
+        while (!runnableQueue.isEmpty()) {
+            Runnable runnable = runnableQueue.poll();
+            if (runnable != null) {
+                runnable.run();
+            }
+        }
     }
 
     public ItemRegistry getItemRegistry() {
@@ -363,12 +394,36 @@ public class Client implements Closeable {
         return stateChangeListeners;
     }
 
-    public String getSkinDataJson() {
-        return skinDataJson;
+    public SkinType getSkinType() {
+        return skinType;
     }
 
-    public void setSkinDataJson(String skinDataJson) {
-        this.skinDataJson = skinDataJson;
+    public void setSkinType(SkinType skinType) {
+        this.skinType = skinType;
+    }
+
+    public int getCustomSkinImageWidth() {
+        return customSkinImageWidth;
+    }
+
+    public void setCustomSkinImageWidth(int customSkinImageWidth) {
+        this.customSkinImageWidth = customSkinImageWidth;
+    }
+
+    public int getCustomSkinImageHeight() {
+        return customSkinImageHeight;
+    }
+
+    public void setCustomSkinImageHeight(int customSkinImageHeight) {
+        this.customSkinImageHeight = customSkinImageHeight;
+    }
+
+    public String getCustomSkinImageData() {
+        return customSkinImageData;
+    }
+
+    public void setCustomSkinImageData(String customSkinImageData) {
+        this.customSkinImageData = customSkinImageData;
     }
 
     public MultiPlayerLevel getLevel() {
@@ -437,6 +492,23 @@ public class Client implements Closeable {
         STOPPED
     }
 
+    public enum SkinType {
+        STEVE(Resources.SKIN_DATA_STEVE_JSON),
+        ALEX(Resources.SKIN_DATA_ALEX_JSON),
+        CUSTOM(Resources.SKIN_DATA_CUSTOM_JSON),
+        CUSTOM_SLIM(Resources.SKIN_DATA_CUSTOM_SLIM_JSON);
+
+        private final String skinDataJson;
+
+        SkinType(String skinDataJson) {
+            this.skinDataJson = skinDataJson;
+        }
+
+        public String getSkinDataJson() {
+            return skinDataJson;
+        }
+    }
+
     private static class ReconnectTask {
         private Client client;
         private long remainingTick;
@@ -466,10 +538,11 @@ public class Client implements Closeable {
         private static final long MIN_TICK_TIME = 50;
         private volatile boolean started = false;
         private final AtomicBoolean stop = new AtomicBoolean(false);
-        private Client client;
+        private final Client client;
 
         public ClientThread(Client client) {
             this.client = client;
+            setPriority(Thread.MAX_PRIORITY);
         }
 
         public void setStop() {
@@ -479,29 +552,11 @@ public class Client implements Closeable {
         @Override
         public void run() {
             started = true;
+            JSLoader.initContext();
             while (!stop.get()) {
                 long startTime = System.currentTimeMillis();
                 try {
-                    if (client.reconnectTask != null) {
-                        client.reconnectTask.tick();
-                    }
-                    if (!client.isConnected()) {
-                        client.receivedPackets.clear();
-                    } else {
-                        while (!client.receivedPackets.isEmpty()) {
-                            BedrockPacket packet = client.receivedPackets.poll();
-                            if (packet != null) {
-                                packet.handle(client.packetHandler);
-                            }
-                        }
-                        client.update();
-                    }
-                    while (!client.runnableQueue.isEmpty()) {
-                        Runnable runnable = client.runnableQueue.poll();
-                        if (runnable != null) {
-                            runnable.run();
-                        }
-                    }
+                    client.update();
                 } catch (Throwable t) {
                     client.logger.log(client.playerName, " 客户端线程发生异常: ", t);
                 }

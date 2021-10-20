@@ -1,11 +1,14 @@
 package com.ddf.fakeplayer.actor.player;
 
-import com.ddf.fakeplayer.Client;
+import com.ddf.fakeplayer.block.BlockPos;
+import com.ddf.fakeplayer.client.Client;
 import com.ddf.fakeplayer.container.ContainerID;
 import com.ddf.fakeplayer.container.inventory.transaction.ComplexInventoryTransaction;
 import com.ddf.fakeplayer.container.inventory.transaction.ItemUseInventoryTransaction;
 import com.ddf.fakeplayer.item.ItemStack;
 import com.ddf.fakeplayer.item.VanillaItems;
+import com.ddf.fakeplayer.js.JSLoader;
+import com.ddf.fakeplayer.js.Script;
 import com.ddf.fakeplayer.level.Level;
 import com.ddf.fakeplayer.network.NetworkBlockPosition;
 import com.ddf.fakeplayer.util.*;
@@ -21,11 +24,16 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.nukkitx.math.vector.Vector2f;
 import com.nukkitx.math.vector.Vector3f;
+import com.nukkitx.math.vector.Vector3i;
 import com.nukkitx.protocol.bedrock.data.ClientPlayMode;
 import com.nukkitx.protocol.bedrock.data.InputMode;
+import com.nukkitx.protocol.bedrock.data.PlayerActionType;
+import com.nukkitx.protocol.bedrock.packet.AnimatePacket;
+import com.nukkitx.protocol.bedrock.packet.PlayerActionPacket;
 import com.nukkitx.protocol.bedrock.packet.PlayerAuthInputPacket;
 import com.nukkitx.protocol.bedrock.packet.TextPacket;
 
+import java.io.IOException;
 import java.util.*;
 
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
@@ -40,6 +48,8 @@ public class FakePlayer extends LocalPlayer {
     public long syncRuntimeID = 0;
     private final List<FakePlayer.OnPlayerChatListener> onPlayerChatListeners = Collections.synchronizedList(new ArrayList<>());
     private final CommandDispatcher<Player> chatCommandDispatcher = new CommandDispatcher<>();
+    private final List<Script> scripts = new ArrayList<>();
+    private final Queue<String> scriptsToLoad = new LinkedList<>();
 
     public FakePlayer(Level level, String name, UUID uuid, Client client) {
         super(level, name, uuid, client);
@@ -170,6 +180,18 @@ public class FakePlayer extends LocalPlayer {
     @Override
     public void normalTick() {
         super.normalTick();
+        while (!scriptsToLoad.isEmpty()) {
+            try {
+                Script script = JSLoader.loadScript(scriptsToLoad.poll(), this);
+                script.evaluate();
+                scripts.add(script);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        scripts.forEach(script -> script.onTick(getLevel().getCurrentTick()));
+
         if (super.getLevel().isServerAuthoritativeMovement()) {
             sendPlayerAuthInput();
         }
@@ -181,6 +203,14 @@ public class FakePlayer extends LocalPlayer {
                 super.getGameMode().releaseUsingItem();
             }
         }
+    }
+
+    public final void addScript(String scriptPath) {
+        scriptsToLoad.add(scriptPath);
+    }
+
+    public final void removeScript(String path) {
+        scriptsToLoad.remove(path);
     }
 
     public final void sendInventoryMismatch() {
@@ -200,7 +230,49 @@ public class FakePlayer extends LocalPlayer {
         this.sendNetworkPacket(packet);
     }
 
-    private void startUseSelectedItem() {
+    public final void sendChatMessage(String message) {
+        TextPacket packet = new TextPacket();
+        packet.setType(TextPacket.Type.CHAT);
+        packet.setNeedsTranslation(false);
+        packet.setSourceName(super.getName());
+        packet.setMessage(message);
+        packet.setXuid(Long.toString(super.getClientUUID().getLeastSignificantBits()));
+        this.sendNetworkPacket(packet);
+    }
+
+    public final void sendSwingArm() {
+        AnimatePacket packet = new AnimatePacket();
+        packet.setRuntimeEntityId(super.getRuntimeID());
+        packet.setAction(AnimatePacket.Action.SWING_ARM);
+        packet.setRowingTime(0);
+        this.sendNetworkPacket(packet);
+    }
+
+    public final void sendStartBreak(BlockPos pos, int face) {
+        PlayerActionPacket packet = new PlayerActionPacket();
+        packet.setAction(PlayerActionType.START_BREAK);
+        packet.setRuntimeEntityId(super.getRuntimeID());
+        packet.setBlockPosition(DataConverter.vector3i(pos));
+        packet.setFace(face);
+        this.sendNetworkPacket(packet);
+    }
+
+    public final void sendAbortBreak(BlockPos pos) {
+        PlayerActionPacket packet = new PlayerActionPacket();
+        packet.setAction(PlayerActionType.ABORT_BREAK);
+        packet.setRuntimeEntityId(super.getRuntimeID());
+        packet.setBlockPosition(DataConverter.vector3i(pos));
+        this.sendNetworkPacket(packet);
+    }
+
+    public final void sendStopBreak() {
+        PlayerActionPacket packet = new PlayerActionPacket();
+        packet.setRuntimeEntityId(super.getRuntimeID());
+        packet.setBlockPosition(Vector3i.ZERO);
+        this.sendNetworkPacket(packet);
+    }
+
+    public final void startUseSelectedItem() {
         ItemUseInventoryTransaction transaction = new ItemUseInventoryTransaction(super.getLevel().getItemRegistry());
         transaction.setSelectedItem(super.getSelectedItem())
                 .setSelectedSlot(super.getSelectedItemSlot())
@@ -211,16 +283,6 @@ public class FakePlayer extends LocalPlayer {
                 .setActionType(ItemUseInventoryTransaction.ActionType.Use_1);
         super.getGameMode().useItem(super.getSelectedItem());
         this.sendComplexInventoryTransaction(transaction);
-    }
-
-    public final void sendChatMessage(String message) {
-        TextPacket packet = new TextPacket();
-        packet.setType(TextPacket.Type.CHAT);
-        packet.setNeedsTranslation(false);
-        packet.setSourceName(super.getName());
-        packet.setMessage(message);
-        packet.setXuid(Long.toString(super.getClientUUID().getLeastSignificantBits()));
-        this.sendNetworkPacket(packet);
     }
 
     public LiteralCommandNode<Player> registerChatCommand(String name, Command<Player> command) {

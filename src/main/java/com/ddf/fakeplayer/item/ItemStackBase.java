@@ -515,7 +515,7 @@ public class ItemStackBase {
         return this.mCount == 0;
     }
 
-    public boolean isItem() {
+    public final boolean isItem() {
         return this.mItem != null;
     }
 

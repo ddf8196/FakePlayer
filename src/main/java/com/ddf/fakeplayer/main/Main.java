@@ -1,16 +1,17 @@
-package com.ddf.fakeplayer;
+package com.ddf.fakeplayer.main;
 
+import com.ddf.fakeplayer.client.Client;
 import com.ddf.fakeplayer.actor.attribute.SharedAttributes;
-import com.ddf.fakeplayer.cli.CLIMain;
-import com.ddf.fakeplayer.gui.GUIMain;
+import com.ddf.fakeplayer.js.JSLoader;
+import com.ddf.fakeplayer.main.cli.CLIMain;
+import com.ddf.fakeplayer.main.config.CustomSkinData;
+import com.ddf.fakeplayer.main.config.PlayerData;
+import com.ddf.fakeplayer.main.gui.GUIMain;
 import com.ddf.fakeplayer.item.BedrockItems;
 import com.ddf.fakeplayer.item.VanillaItems;
-import com.ddf.fakeplayer.util.Config;
+import com.ddf.fakeplayer.main.config.Config;
 import com.ddf.fakeplayer.util.Logger;
 import com.ddf.fakeplayer.websocket.WebSocketServer;
-import io.netty.util.internal.logging.AbstractInternalLogger;
-import io.netty.util.internal.logging.InternalLogger;
-import io.netty.util.internal.logging.InternalLoggerFactory;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -41,13 +42,14 @@ public abstract class Main {
 
     public abstract void initLogger();
 
-    public synchronized void addPlayer(String name, String skin) {
-        addPlayer(name, skin, false);
+    @Deprecated
+    public void addPlayer(String name, String skin) {
+        addPlayer(new PlayerData(name, skin));
     }
 
-    public synchronized void addPlayer(String name, String skin, boolean allowChatMessageControl) {
-        config.addPlayerData(name, skin, allowChatMessageControl);
-        Client client = addClient(name, skin);
+    public synchronized void addPlayer(PlayerData playerData) {
+        config.addPlayerData(playerData);
+        Client client = addClient(playerData);
         client.connect(config.getServerAddress(), config.getServerPort());
         if (webSocketServer != null && config.isWebSocketEnabled())
             webSocketServer.sendAddPlayerMessage(client);
@@ -71,18 +73,29 @@ public abstract class Main {
         }
     }
 
-    public synchronized Client addClient(String name, String skin) {
-        removeClient(name);
-        Client client = new Client(name, config.getServerKeyPair());
-        Config.PlayerData playerData = config.getPlayerData(name);
-        client.setAllowChatMessageControl(playerData != null && playerData.isAllowChatMessageControl());
+    public synchronized Client addClient(PlayerData playerData) {
+        removeClient(playerData.getName());
+        Client client = new Client(playerData.getName(), config.getServerKeyPair());
+        client.setAllowChatMessageControl(playerData.isAllowChatMessageControl());
         client.setDefaultPacketCodec(config.getDefaultPacketCodec());
-        switch (skin) {
+        switch (playerData.getSkin().toLowerCase()) {
             case "steve":
-                client.setSkinDataJson(Resources.SKIN_DATA_STEVE_JSON);
+                client.setSkinType(Client.SkinType.STEVE);
                 break;
             case "alex":
-                client.setSkinDataJson(Resources.SKIN_DATA_ALEX_JSON);
+                client.setSkinType(Client.SkinType.ALEX);
+                break;
+            case "custom":
+                CustomSkinData skinData = config.getCustomSkin(playerData.getCustomSkin());
+                if (skinData == null) {
+                    client.setSkinType(Client.SkinType.STEVE);
+                    break;
+                }
+                client.setSkinType(skinData.isSlim()
+                        ? Client.SkinType.CUSTOM_SLIM : Client.SkinType.CUSTOM);
+                client.setCustomSkinImageWidth(skinData.getImageWidth());
+                client.setCustomSkinImageHeight(skinData.getImageHeight());
+                client.setCustomSkinImageData(skinData.getImageData());
                 break;
         }
         client.setAutoReconnect(config.isAutoReconnect());
@@ -189,6 +202,7 @@ public abstract class Main {
         VanillaItems.registerItems();
         SharedAttributes.init();
 
+        JSLoader.init();
         if (System.getProperty("fakeplayer.nogui", "false").equals("true")) {
             CLIMain.main(config);
         } else {

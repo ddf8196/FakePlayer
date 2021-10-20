@@ -1,8 +1,8 @@
-package com.ddf.fakeplayer.gui.dialog;
+package com.ddf.fakeplayer.main.gui.dialog;
 
 import com.ddf.fakeplayer.VersionInfo;
-import com.ddf.fakeplayer.gui.GUIMain;
-import com.ddf.fakeplayer.util.Util;
+import com.ddf.fakeplayer.main.gui.GUIMain;
+import com.ddf.fakeplayer.main.Util;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

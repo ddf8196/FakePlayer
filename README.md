@@ -53,5 +53,7 @@ Minecraft Bedrock Edition 假人客户端
 * [Java-WebSocket](https://github.com/TooTallNate/Java-WebSocket) ([MIT License](https://github.com/TooTallNate/Java-WebSocket/blob/master/LICENSE))
 * [MiGLayout Swing](https://github.com/mikaelgrev/miglayout) ([BSD 3-Clause "New" or "Revised" license](http://www.debian.org/misc/bsd.license))
 * [Brigadier](https://github.com/Mojang/brigadier) ([MIT License](https://github.com/Mojang/brigadier/blob/master/LICENSE))
+* [PNGJ](https://github.com/leonbloy/pngj) ([Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt))
+* [Rhino](https://github.com/mozilla/rhino) ([Mozilla Public License 2.0](https://github.com/mozilla/rhino/blob/master/LICENSE.txt))
 * SnakeYaml ([Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.txt))
 * SLF4J NOP Binding ([MIT License](	http://www.opensource.org/licenses/mit-license.php))

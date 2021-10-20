@@ -1,4 +1,4 @@
-package com.ddf.fakeplayer.util;
+package com.ddf.fakeplayer.main;
 
 import java.awt.*;
 import java.io.PrintWriter;
@@ -27,19 +27,6 @@ public class Util {
 //    public static boolean isSystemTraySupported() {
 //        return SystemTray.isSupported();
 //    }
-
-    public static boolean isNumber(String string) {
-        return string.matches("^-?\\d+$");
-    }
-
-    public static int toInt(String string) {
-        try {
-            return Integer.parseInt(string);
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-            return Integer.MIN_VALUE;
-        }
-    }
 
     public static String getStackTrace(Throwable throwable) {
         StringWriter stringWriter = new StringWriter();

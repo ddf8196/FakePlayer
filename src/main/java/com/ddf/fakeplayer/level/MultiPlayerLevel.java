@@ -17,6 +17,7 @@ public class MultiPlayerLevel extends Level {
             return;
         super.tick();
         this._trySyncServerTick();
+
 //        if (this.getGameRules().getBool(1)) {
 //            this.setTime(this.getTime() + 1);
 //        }

@@ -103,6 +103,17 @@ public class ItemStack extends ItemStackBase implements Cloneable {
         return this.mItem.use(this, player);
     }
 
+    public final boolean useOn(Actor entity, int x, int y, int z, /*uint8_t FacingID*/int face, float clickX, float clickY, float clickZ) {
+        if (super.isItem()) {
+//            GameRules gameRules = entity.getLevel().getGameRules();
+//            int ruleType = 29; //ALLOW_DESTRUCTIVE_OBJECTS
+//            if (!gameRules.hasRule(ruleType) || gameRules.getBool(ruleType) || !this.mItem.isDestructive(super.getAuxValue())) {
+                return this.mItem.useOn(this, entity, x, y, z, face, clickX, clickY, clickZ);
+//            }
+        }
+        return false;
+    }
+
     @NotImplemented
     public final void playSoundIncrementally(Mob mob) {
     }

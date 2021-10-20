@@ -14,6 +14,10 @@ public class GameRule {
     private Function<GameRule, Void> mTagNotFoundCallback;
     private GameRule.ValidateValueCallback mValidateValueCallback;
 
+    public boolean getBool() {
+        return this.mValue.boolVal;
+    }
+
     public enum Type {
         Invalid,
         Bool,

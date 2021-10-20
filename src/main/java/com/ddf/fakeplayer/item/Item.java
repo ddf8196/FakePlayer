@@ -200,6 +200,10 @@ public class Item {
         return false;
     }
 
+    public boolean isDestructive(int auxValue) {
+        return false;
+    }
+
     public boolean isStackedByData() {
         return this.mIsStackedByData;
     }
@@ -277,9 +281,9 @@ public class Item {
     public ItemStack use(ItemStack itemStack, Player player) {
         boolean isPlantable = this.mSeedComponent != null;
         if (this.mFoodComponent != null){
-            //if (!isPlantable || !this.mSeedComponent.isPlanting()) {
-            //    this.mFoodComponent.use(itemStack, player);
-            //}
+            if (!isPlantable || !this.mSeedComponent.isPlanting()) {
+                this.mFoodComponent.use(itemStack, player);
+            }
         }
         if (this.mCameraComponent != null) {
             //this.mCameraComponent.use(itemStack, player);
@@ -292,6 +296,33 @@ public class Item {
         }
         itemStack.startCoolDown(player);
         return itemStack;
+    }
+
+    public final boolean useOn(ItemStack itemStack, Actor entity, int x, int y, int z, /*uint8_t FacingID*/int face, float clickX, float clickY, float clickZ) {
+        if (!this.mRequiresWorldBuilder || entity.isWorldBuilder()) {
+            BlockPos pos = new BlockPos(x, y, z);
+            if (!this._calculatePlacePos(itemStack, entity, face, pos)) {
+                return false;
+            }
+            if (!this.mIgnoresPermissions && !this._checkUseOnPermissions(entity, itemStack, face, new BlockPos(x, y, z))) {
+                return false;
+            }
+            ItemStack itemBeforeUse = new ItemStack(itemStack);
+            boolean wasUsed = this._useOn(itemStack, entity, new BlockPos(pos), face, clickX, clickY, clickZ);
+//                if (wasUsed) {
+//                    entity.getLevel().getActorEventCoordinator().sendActorUseItemOn(entity, itemBeforeUse, pos, face);
+//                }
+            return wasUsed;
+        } else {
+            return false;
+        }
+    }
+
+    protected boolean _useOn(ItemStack instance, Actor entity, BlockPos pos, /*uint8_t FacingID*/int face, float clickX, float clickY, float clickZ) {
+        Vec3 clickPos = new Vec3(clickX, clickY, clickZ);
+        return this.mFoodComponent != null && this.mFoodComponent.useOn(instance, entity, pos, face, clickPos)
+                || this.mSeedComponent != null && this.mSeedComponent.useOn(instance, entity, pos, face, clickPos)
+                || this.mCameraComponent != null && this.mCameraComponent.useOn(instance, entity, pos, face, clickPos);
     }
 
     @NotImplemented

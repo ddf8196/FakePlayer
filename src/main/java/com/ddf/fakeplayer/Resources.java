@@ -1,5 +1,6 @@
 package com.ddf.fakeplayer;
 
+import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,7 +13,9 @@ public class Resources {
     public static Properties VERSION_PROPERTIES;
     public static String SKIN_DATA_STEVE_JSON;
     public static String SKIN_DATA_ALEX_JSON;
-//    public static BufferedImage ICON;
+    public static String SKIN_DATA_CUSTOM_JSON;
+    public static String SKIN_DATA_CUSTOM_SLIM_JSON;
+    public static Image ICON;
 
     static {
         try {
@@ -20,6 +23,8 @@ public class Resources {
             VERSION_PROPERTIES.load(new InputStreamReader(getResAsStream("/version.properties"), StandardCharsets.UTF_8));
             SKIN_DATA_STEVE_JSON = getResAsString("/skin/skin_data_steve.json");
             SKIN_DATA_ALEX_JSON = getResAsString("/skin/skin_data_alex.json");
+            SKIN_DATA_CUSTOM_JSON = getResAsString("/skin/skin_data_custom.json");
+            SKIN_DATA_CUSTOM_SLIM_JSON = getResAsString("/skin/skin_data_custom_slim.json");
 //            ICON = ImageIO.read(getRes("/icon.png"));
         } catch (Throwable t) {
             t.printStackTrace();

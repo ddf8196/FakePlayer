@@ -1,15 +1,17 @@
-package com.ddf.fakeplayer.gui;
+package com.ddf.fakeplayer.main.gui;
 
-import com.ddf.fakeplayer.Client;
+import com.ddf.fakeplayer.client.Client;
 import com.ddf.fakeplayer.VersionInfo;
-import com.ddf.fakeplayer.util.Config;
-import com.ddf.fakeplayer.Main;
-import com.ddf.fakeplayer.gui.dialog.AboutDialog;
-import com.ddf.fakeplayer.gui.dialog.PlayerInfoDialog;
-import com.ddf.fakeplayer.gui.dialog.PublicKeyDialog;
+import com.ddf.fakeplayer.main.I18N;
+import com.ddf.fakeplayer.main.config.Config;
+import com.ddf.fakeplayer.main.Main;
+import com.ddf.fakeplayer.main.config.PlayerData;
+import com.ddf.fakeplayer.main.gui.dialog.AboutDialog;
+import com.ddf.fakeplayer.main.gui.dialog.PlayerInfoDialog;
+import com.ddf.fakeplayer.main.gui.dialog.PublicKeyDialog;
 import com.ddf.fakeplayer.util.Logger;
 import com.ddf.fakeplayer.util.Pair;
-import com.ddf.fakeplayer.util.Util;
+import com.ddf.fakeplayer.main.Util;
 import com.formdev.flatlaf.FlatDarkLaf;
 import net.miginfocom.swing.MigLayout;
 
@@ -59,10 +61,9 @@ public class GUIMain extends Main {
 		frame = new JFrame("FakePlayer " + VersionInfo.VERSION);
 //		frame.setIconImage(Resources.ICON);
 		frame.setSize(560, 480);
-		frame.setResizable(false);
+//		frame.setResizable(false);
 		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-
 		initMenuBar();
 		initPopupMenu();
 //		initTrayIcon();
@@ -70,7 +71,7 @@ public class GUIMain extends Main {
 		initListener();
 
         try {
-            logger.log("配置文件已加载: ", config.getConfigPath().toRealPath());
+            logger.log(I18N.get("log.configFileLoaded"), ": ", config.getConfigPath().toRealPath());
         } catch (IOException e) {
             e.printStackTrace();
             config.save();
@@ -106,15 +107,15 @@ public class GUIMain extends Main {
 		JMenuBar menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);
 
-		JMenu fileMenu = new JMenu("文件");
+		JMenu fileMenu = new JMenu(I18N.get("menu.file"));
 		menuBar.add(fileMenu);
 
-		JMenuItem exportConfig = new JMenuItem("导出配置");
+		JMenuItem exportConfig = new JMenuItem(I18N.get("menu.file.exportConfig"));
 		exportConfig.addActionListener(e -> {
 			JFileChooser fileChooser = new JFileChooser();
 			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			fileChooser.setAcceptAllFileFilterUsed(false);
-			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("配置文件(*.yaml)", "yaml"));
+			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(I18N.get("menu.file.configFileDescription"), "yaml"));
 			int result = fileChooser.showSaveDialog(frame);
 			if (result == JFileChooser.APPROVE_OPTION) {
                 String path = fileChooser.getSelectedFile().getAbsolutePath();
@@ -124,20 +125,20 @@ public class GUIMain extends Main {
                 try {
                     config.save(Paths.get(path));
                 } catch (IOException ioException) {
-                    logger.log("配置文件导出失败: ", ioException);
+                    logger.log(I18N.get("log.exportConfigFail") + ": ", ioException);
                     return;
                 }
-                logger.log("配置文件导出成功");
+                logger.log(I18N.get("log.exportConfigSucceed"));
             }
 		});
 		fileMenu.add(exportConfig);
 
-		JMenuItem importConfig = new JMenuItem("导入配置");
+		JMenuItem importConfig = new JMenuItem(I18N.get("menu.file.importConfig"));
 		importConfig.addActionListener(e -> {
 			JFileChooser fileChooser = new JFileChooser();
 			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			fileChooser.setAcceptAllFileFilterUsed(false);
-			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("配置文件(*.yaml)", "yaml"));
+			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(I18N.get("menu.file.configFileDescription"), "yaml"));
 			int result = fileChooser.showOpenDialog(frame);
 			if (result == JFileChooser.APPROVE_OPTION) {
                 try {
@@ -148,16 +149,16 @@ public class GUIMain extends Main {
                     clients.forEach(Client::close);
                     initData();
                 } catch (IOException ioException) {
-                    logger.log("配置文件导入失败: ", ioException);
+                    logger.log(I18N.get("log.importConfigFail"), ": ", ioException);
                     return;
                 }
-                logger.log("配置文件导入成功");
+                logger.log(I18N.get("log.importConfigSucceed"));
             }
 		});
 		fileMenu.add(importConfig);
 		fileMenu.addSeparator();
 
-		JMenuItem saveConfig = new JMenuItem("保存配置");
+		JMenuItem saveConfig = new JMenuItem(I18N.get("menu.file.saveConfig"));
 		saveConfig.addActionListener(e -> saveConfig());
 		fileMenu.add(saveConfig);
 		fileMenu.addSeparator();
@@ -169,19 +170,19 @@ public class GUIMain extends Main {
 //		fileMenu.add(settings);
 //		fileMenu.addSeparator();
 
-		JMenuItem exit = new JMenuItem("退出");
+		JMenuItem exit = new JMenuItem(I18N.get("menu.file.exit"));
 		exit.addActionListener(e -> exit());
 		fileMenu.add(exit);
 
-		JMenu helpMenu = new JMenu("帮助");
+		JMenu helpMenu = new JMenu(I18N.get("menu.help"));
 		menuBar.add(helpMenu);
 
-		JMenuItem showHelp = new JMenuItem("查看帮助");
+		JMenuItem showHelp = new JMenuItem(I18N.get("menu.help.showHelp"));
 		showHelp.addActionListener(e -> Util.tryOpenBrowser("https://github.com/ddf8196/FakePlayer/wiki"));
 		helpMenu.add(showHelp);
 		helpMenu.addSeparator();
 
-		JMenuItem about = new JMenuItem("关于");
+		JMenuItem about = new JMenuItem(I18N.get("menu.help.about"));
 		about.addActionListener(e -> {
 			AboutDialog dialog = new AboutDialog(this);
 			dialog.setVisible(true);
@@ -191,24 +192,24 @@ public class GUIMain extends Main {
 
 	private void initPopupMenu() {
 		playersTableMenu1 = new JPopupMenu();
-		JMenuItem connect = new JMenuItem("连接");
+		JMenuItem connect = new JMenuItem(I18N.get("popupMenu.playersTable.connect"));
 		connect.addActionListener(e -> getSelectedClient().connect(config.getServerAddress(), config.getServerPort()));
 		playersTableMenu1.add(connect);
 
-		JMenuItem disconnect = new JMenuItem("断开连接");
+		JMenuItem disconnect = new JMenuItem(I18N.get("popupMenu.playersTable.disconnect"));
 		disconnect.addActionListener(e -> getSelectedClient().stop());
 		playersTableMenu1.add(disconnect);
 
-		JMenuItem edit = new JMenuItem("编辑");
+		JMenuItem edit = new JMenuItem(I18N.get("popupMenu.playersTable.edit"));
 		edit.addActionListener(e -> showEditPlayerDialog());
 		playersTableMenu1.add(edit);
 
-		JMenuItem remove = new JMenuItem("移除");
+		JMenuItem remove = new JMenuItem(I18N.get("popupMenu.playersTable.remove"));
 		remove.addActionListener(e -> removePlayer(getSelectedClient().getPlayerName()));
 		playersTableMenu1.add(remove);
 
 		playersTableMenu2 = new JPopupMenu();
-		JMenuItem connectSelected = new JMenuItem("连接选中");
+		JMenuItem connectSelected = new JMenuItem(I18N.get("popupMenu.playersTable.connectSelected"));
 		connectSelected.addActionListener(e -> {
 			for (int i : playersTable.getSelectedRows()) {
 				Client client = getClient(playersTableModel.getClientName(playersTable.convertRowIndexToModel(i)));
@@ -219,7 +220,7 @@ public class GUIMain extends Main {
 		});
 		playersTableMenu2.add(connectSelected);
 
-		JMenuItem disconnectSelected = new JMenuItem("断开选中");
+		JMenuItem disconnectSelected = new JMenuItem(I18N.get("popupMenu.playersTable.disconnectSelected"));
 		disconnectSelected.addActionListener(e -> {
 			for (int i : playersTable.getSelectedRows()) {
 				Client client = getClient(playersTableModel.getClientName(playersTable.convertRowIndexToModel(i)));
@@ -230,7 +231,7 @@ public class GUIMain extends Main {
 		});
 		playersTableMenu2.add(disconnectSelected);
 
-		JMenuItem removeSelected = new JMenuItem("移除选中");
+		JMenuItem removeSelected = new JMenuItem(I18N.get("popupMenu.playersTable.removeSelected"));
 		removeSelected.addActionListener(e -> {
 			List<String> list = new ArrayList<>();
 			for (int i : playersTable.getSelectedRows()) {
@@ -247,22 +248,22 @@ public class GUIMain extends Main {
 		playersTable = new JTable();
 		JPanel right = new JPanel();
 		configPanel = new JPanel();
-		JLabel serverAddressLabel = new JLabel("服务器地址");
+		JLabel serverAddressLabel = new JLabel(I18N.get("label.serverAddress"));
 		serverAddress = new JTextField();
-		JLabel serverPortLabel = new JLabel("服务器端口");
+		JLabel serverPortLabel = new JLabel(I18N.get("label.serverPort"));
 		serverPort = new JTextField();
-		JLabel publicKeyLabel = new JLabel("服务器公钥");
-		publicKeyButton = new JButton("查看");
-		autoReconnect = new JCheckBox("自动重连");
+		JLabel publicKeyLabel = new JLabel(I18N.get("label.publicKey"));
+		publicKeyButton = new JButton(I18N.get("button.publicKey"));
+		autoReconnect = new JCheckBox(I18N.get("checkBox.autoReconnect"));
 		JSeparator separator1 = new JSeparator();
 		webSocketPanel = new JPanel();
-		webSocketEnabled = new JCheckBox("启用WebSocket");
-		JLabel webSocketAddressLabel = new JLabel("WebSocket端口");
+		webSocketEnabled = new JCheckBox(I18N.get("checkBox.webSocketEnabled"));
+		JLabel webSocketPortLabel = new JLabel(I18N.get("label.webSocketPort"));
 		webSocketPort = new JTextField();
 		JSeparator separator2 = new JSeparator();
-		addFakePlayer = new JButton("添加假人");
-		connectAll = new JButton("全部连接");
-		disconnectAll = new JButton("全部断开");
+		addFakePlayer = new JButton(I18N.get("button.addFakePlayer"));
+		connectAll = new JButton(I18N.get("button.connectAll"));
+		disconnectAll = new JButton(I18N.get("button.disconnectAll"));
 		logScrollPane = new JScrollPane();
 		log = new JTextArea();
 
@@ -286,7 +287,7 @@ public class GUIMain extends Main {
 		right.add(separator1, "cell 0 1 2 1");
 		webSocketPanel.setLayout(new MigLayout("insets 0,hidemode 3", "[fill][grow,fill]", "[][]"));
 		webSocketPanel.add(webSocketEnabled, "cell 0 0 2 1");
-		webSocketPanel.add(webSocketAddressLabel, "cell 0 1");
+		webSocketPanel.add(webSocketPortLabel, "cell 0 1");
 		webSocketPanel.add(webSocketPort, "cell 1 1");
 		right.add(webSocketPanel, "cell 0 2 2 1");
 		right.add(separator2, "cell 0 3 2 1");
@@ -426,7 +427,7 @@ public class GUIMain extends Main {
 				try {
 					int port = Integer.parseInt(webSocketPort.getText());
 					if (!Util.isValidPort(port)) {
-						JOptionPane.showMessageDialog(frame, "端口应为1到65535的整数");
+						JOptionPane.showMessageDialog(frame, I18N.get("message.invalidPort"));
 						webSocketPort.setText(Integer.toString(config.getWebSocketPort()));
 						webSocketPort.requestFocus();
 					}
@@ -454,7 +455,7 @@ public class GUIMain extends Main {
 		webSocketPort.setDocument(new NumberDocument());
 		webSocketPort.setText(Integer.toString(config.getWebSocketPort()));
 
-		config.getPlayers().forEach(playerData -> addClient(playerData.getName(), playerData.getSkin()));
+		config.getPlayerDataList().forEach(this::addClient);
 		playersTable.setModel(playersTableModel);
 		playersTable.getRowSorter().setSortKeys(Collections.singletonList(new RowSorter.SortKey(0, SortOrder.ASCENDING)));
 
@@ -481,9 +482,9 @@ public class GUIMain extends Main {
 	}
 
 	@Override
-	public Client addClient(String name, String skin) {
-		Client client = super.addClient(name, skin);
-		SwingUtilities.invokeLater(() -> playersTableModel.addClientInfo(name));
+	public Client addClient(PlayerData playerData) {
+		Client client = super.addClient(playerData);
+		SwingUtilities.invokeLater(() -> playersTableModel.addClientInfo(playerData.getName()));
 		client.addStateChangedListener((client1, oldState, currentState) ->
 			SwingUtilities.invokeLater(() ->
 				playersTableModel.setClientState(client1.getPlayerName(), currentState)
@@ -526,7 +527,7 @@ public class GUIMain extends Main {
 		try {
 			config.save();
 		} catch (IOException e) {
-			logger.log("配置保存失败: ", e);
+			logger.log(I18N.get("log.saveConfigFail"), ": ", e);
 			e.printStackTrace();
 		}
 	}
@@ -593,9 +594,9 @@ public class GUIMain extends Main {
 		public String getColumnName(int column) {
 			switch (column) {
 				case 0:
-					return "名称";
+					return I18N.get("playersTable.name");
 				case 1:
-					return "状态";
+					return I18N.get("playersTable.status");
 				default:
 					return "";
 			}
@@ -609,19 +610,19 @@ public class GUIMain extends Main {
 				case 1:
 					switch (clientInfoList.get(rowIndex).getValue()) {
 						case CONNECTING:
-							return "正在连接";
+							return I18N.get("state.connecting");
 						case CONNECTED:
-							return "已连接";
+							return I18N.get("state.connected");
 						case DISCONNECTING:
-							return "正在断开连接";
+							return I18N.get("state.disconnecting");
 						case DISCONNECTED:
-							return "已断开连接";
+							return I18N.get("state.disconnected");
 						case RECONNECTING:
-							return "重连中";
+							return I18N.get("state.reconnecting");
 						case STOPPING:
-							return "正在停止";
+							return I18N.get("state.stopping");
 						case STOPPED:
-							return "已停止";
+							return I18N.get("state.stopped");
 					}
 			}
 			return null;

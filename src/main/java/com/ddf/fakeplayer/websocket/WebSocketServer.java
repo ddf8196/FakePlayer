@@ -1,8 +1,9 @@
 package com.ddf.fakeplayer.websocket;
 
-import com.ddf.fakeplayer.Client;
-import com.ddf.fakeplayer.Main;
+import com.ddf.fakeplayer.client.Client;
+import com.ddf.fakeplayer.main.Main;
 import com.ddf.fakeplayer.VersionInfo;
+import com.ddf.fakeplayer.main.config.PlayerData;
 import com.ddf.fakeplayer.util.Logger;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -144,7 +145,7 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
                         break;
                     case "steve":
                     case "alex":
-                        main.addPlayer(name, skin, allowCC);
+                        main.addPlayer(new PlayerData(name, skin, allowCC));
                         response.getData().setSuccess(true);
                         response.getData().setReason("");
                         conn.send(response.toString());

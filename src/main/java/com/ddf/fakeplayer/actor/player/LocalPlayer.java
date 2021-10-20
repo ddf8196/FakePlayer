@@ -1,6 +1,6 @@
 package com.ddf.fakeplayer.actor.player;
 
-import com.ddf.fakeplayer.Client;
+import com.ddf.fakeplayer.client.Client;
 import com.ddf.fakeplayer.container.ContainerID;
 import com.ddf.fakeplayer.container.inventory.transaction.ComplexInventoryTransaction;
 import com.ddf.fakeplayer.container.inventory.transaction.InventoryTransaction;

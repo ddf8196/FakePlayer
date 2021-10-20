@@ -106,7 +106,7 @@ public abstract class Level implements BlockSourceListener/*, IWorldRegistriesPr
     //private ItemEventCoordinator mItemEventCoordinator;
     //private StructureManager mStructureManager = structureManager;
     private /*ActorUniqueID*/long mParentMapId = ActorUniqueID.INVALID_ID;
-    protected boolean mIsFinishedInitializing = false;
+    public boolean mIsFinishedInitializing = false;
     private long mNextSaveDataTime = Long.MAX_VALUE;
     private long mNextStorageCheckTime = Long.MIN_VALUE;
     private boolean mStorageActionsDeferred = false;

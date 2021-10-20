@@ -1,6 +1,6 @@
 package com.ddf.fakeplayer.network;
 
-import com.ddf.fakeplayer.Client;
+import com.ddf.fakeplayer.client.Client;
 import com.ddf.fakeplayer.actor.Actor;
 import com.ddf.fakeplayer.actor.ActorDataIDs;
 import com.ddf.fakeplayer.actor.SynchedActorData;

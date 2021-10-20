@@ -1,6 +1,6 @@
 package com.ddf.fakeplayer.network;
 
-import com.ddf.fakeplayer.Client;
+import com.ddf.fakeplayer.client.Client;
 import com.nukkitx.protocol.bedrock.BedrockPacket;
 
 import java.util.ArrayList;

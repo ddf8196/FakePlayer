@@ -38,6 +38,8 @@ dependencies {
     implementation 'org.slf4j:slf4j-nop:1.7.32'
     implementation 'com.miglayout:miglayout-swing:5.3'
     implementation 'com.mojang:brigadier:1.0.18'
+    implementation 'ar.com.hjg:pngj:2.1.0'
+    implementation 'org.mozilla:rhino:1.7.13'
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_8
@@ -45,7 +47,7 @@ targetCompatibility = JavaVersion.VERSION_1_8
 
 compileJava.options.encoding = 'UTF-8'
 compileTestJava.options.encoding = 'UTF-8'
-mainClassName = 'com.ddf.fakeplayer.Main'
+mainClassName = 'com.ddf.fakeplayer.main.Main'
 
 distributions {
     main {
