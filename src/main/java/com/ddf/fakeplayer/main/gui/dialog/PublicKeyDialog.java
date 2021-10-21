@@ -1,5 +1,6 @@
 package com.ddf.fakeplayer.main.gui.dialog;
 
+import com.ddf.fakeplayer.main.I18N;
 import com.ddf.fakeplayer.main.gui.GUIMain;
 import com.ddf.fakeplayer.util.SimpleProperties;
 
@@ -35,7 +36,7 @@ public class PublicKeyDialog extends JDialog {
         add = new JButton("将公钥添加至server.properties");
         JPanel spacer = new JPanel();
         JPanel buttonBar = new JPanel();
-        ok = new JButton("确定");
+        ok = new JButton(I18N.get("button.ok"));
 
         content.setBorder(new EmptyBorder(12, 12, 12, 12));
         content.setLayout(new BorderLayout());
@@ -74,7 +75,7 @@ public class PublicKeyDialog extends JDialog {
                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                 new Insets(0, 0, 0, 0), 0, 0));
         content.add(buttonBar, BorderLayout.SOUTH);
-        setTitle("服务器公钥");
+        setTitle(I18N.get("title.serverPublicKey"));
         pack();
         setMinimumSize(getSize());
         setLocationRelativeTo(getOwner());

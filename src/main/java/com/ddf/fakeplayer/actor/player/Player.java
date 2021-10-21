@@ -28,10 +28,7 @@ import com.ddf.fakeplayer.level.GameType;
 import com.ddf.fakeplayer.level.Level;
 import com.ddf.fakeplayer.network.NetworkIdentifier;
 import com.ddf.fakeplayer.network.PacketSender;
-import com.ddf.fakeplayer.util.ColorFormat;
-import com.ddf.fakeplayer.util.DataConverter;
-import com.ddf.fakeplayer.util.NotImplemented;
-import com.ddf.fakeplayer.util.Vec3;
+import com.ddf.fakeplayer.util.*;
 import com.nukkitx.math.vector.Vector3i;
 import com.nukkitx.protocol.bedrock.BedrockPacket;
 import com.nukkitx.protocol.bedrock.data.AuthoritativeMovementMode;
@@ -462,8 +459,8 @@ public abstract class Player extends Mob {
     }
 
     public final void setBedRespawnPosition(final BlockPos bedPosition) {
-        Vec3 spawnPosition = super.getStateVectorComponent().getPos();
-        spawnPosition.y = this.getAABBShapeComponent().getAABB().min.y;
+        Vec3 pos = this.getStateVectorComponent().getPos();
+        Vec3 spawnPosition = new Vec3(pos.x, this.getAABBShapeComponent().getAABB().min.y, pos.z);
         BlockPos inRespawnPosition = new BlockPos(spawnPosition);
         this.setRespawnPosition(inRespawnPosition, false);
         if (!this.mBedPosition.equals(bedPosition)) {
@@ -810,8 +807,8 @@ public abstract class Player extends Mob {
 
     @NotImplemented
     public void resetPos(boolean clearMore) {
-        super.getStateVectorComponentNonConst().getPosDelta().set(Vec3.ZERO);
-        this.mRot.x = 0.0f;
+        super.getStateVectorComponentNonConst().setPosDelta(Vec3.ZERO);
+        this.mRot = new Vec2(0.0f, this.mRot.y);
 //        this.mInterpolation.reset();
         if (!this.isSleeping()) {
             super._setHeightOffset(1.62001f);

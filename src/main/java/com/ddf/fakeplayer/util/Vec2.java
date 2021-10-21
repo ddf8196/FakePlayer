@@ -2,7 +2,7 @@ package com.ddf.fakeplayer.util;
 
 public class Vec2 {
     public static final Vec2 ZERO = new Vec2();
-    public float x, y;
+    public final float x, y;
 
     public Vec2() {
         this(0.0f, 0.0f);

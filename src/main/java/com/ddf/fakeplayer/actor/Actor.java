@@ -231,7 +231,7 @@ public class Actor {
 //        String nameOut = entityName;
 //        ActorDefinitionIdentifier actorID = new ActorDefinitionIdentifier(entityNamespace, entityName, nameOut);
 //        this.setBaseDefinition(actorID, 1, 1);
-        this.getStateVectorComponentNonConst().getPosDelta().set(Vec3.ZERO);
+        this.getStateVectorComponentNonConst().setPosDelta(Vec3.ZERO);
     }
 
     public final void _refreshAABB() {
@@ -650,11 +650,13 @@ public class Actor {
     public void setRot(final Vec2 rot) {
         this.mRot = rot;
         Tuple2<Float, Float> result = _rotationWrapWithInterpolation(this.mRot.y, this.mRotPrev.y);
-        this.mRot.y = result.getT1();
-        this.mRotPrev.y = result.getT2();
+        float rotY = result.getT1();
+        float rotPrevY = result.getT2();
         result = _rotationWrapWithInterpolation(this.mRot.x, this.mRotPrev.x);
-        this.mRot.x = result.getT1();
-        this.mRotPrev.x = result.getT2();
+        float rotX = result.getT1();
+        float rotPrevX = result.getT2();
+        this.mRot = new Vec2(rotX, rotY);
+        this.mRotPrev = new Vec2(rotPrevX, rotPrevY);
     }
 
     public void setPos(final Vec3 pos) {
@@ -725,8 +727,7 @@ public class Actor {
             yscale = 0.0049999999f;
         Vec2 dim = this.getAABBShapeComponent().getAABBDim();
         if (xscale != dim.x || yscale != dim.y) {
-            dim.x = xscale;
-            dim.y = yscale;
+            dim = new Vec2(xscale, yscale);
             this._getAABBShapeComponentNonConst().setAABBDim(dim);
             float halfWidth = 0.5f * dim.x;
             Vec3 pos = this.getPos();
@@ -789,9 +790,7 @@ public class Actor {
     }
 
     public void lerpMotion(final Vec3 delta) {
-        this.getStateVectorComponentNonConst()
-                .getPosDelta()
-                .set(delta);
+        this.getStateVectorComponentNonConst().setPosDelta(delta);
     }
 
     @NotImplemented
@@ -808,9 +807,7 @@ public class Actor {
             this.stopRiding(true, true, false);
         this.mFallDistance = 0.0f;
         StateVectorComponent svc = this.getStateVectorComponentNonConst();
-        svc.getPosDelta().z = 0.0f;
-        svc.getPosDelta().y = 0.0f;
-        svc.getPosDelta().x = 0.0f;
+        svc.setPosDelta(Vec3.ZERO);
         this.moveTo(pos, this.mRot);
         Vec3 newPos = this.getStateVectorComponent().getPos();
         this._getStateVectorComponentNonConst()._setPosPrev(newPos);
@@ -1077,7 +1074,7 @@ public class Actor {
         if (riddenEntity != null && riddenEntity.mRemoved) {
             this.stopRiding(true, false, false);
         } else {
-            this.getStateVectorComponentNonConst().mPosDelta.set(Vec3.ZERO);
+            this.getStateVectorComponentNonConst().mPosDelta = Vec3.ZERO;
             this.normalTick();
             if (riddenEntity != null) {
                 boolean isUncontrolled = riddenEntity.getControllingPlayer() == ActorUniqueID.INVALID_ID;

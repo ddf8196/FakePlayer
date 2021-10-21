@@ -23,6 +23,8 @@ public class JsMinecraftBlockTypes extends BaseScriptableObject {
         blocks.put("noteblock", VanillaBlockTypes.mNote);
         blocks.put("sapling", VanillaBlockTypes.mSapling);
         blocks.put("wool", VanillaBlockTypes.mWool);
+        blocks.put("soulsand", VanillaBlockTypes.mSoulSand);
+        blocks.put("skull", VanillaBlockTypes.mSkull);
     }
 
     public JsMinecraftBlockTypes() {}

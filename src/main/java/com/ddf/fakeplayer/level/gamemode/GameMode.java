@@ -176,12 +176,6 @@ public class GameMode {
         return !itemPriorToUse.matches(item);
     }
 
-    public boolean useItemOn(ItemStack item, BlockPos blockPos) {
-        ItemInstance itemPriorToUse = new ItemInstance(item);
-        item = item.use(this.mPlayer);
-        return !itemPriorToUse.matches(item);
-    }
-
     private void _releaseUsingItemInternal() {
         this.mPlayer.releaseUsingItem();
     }

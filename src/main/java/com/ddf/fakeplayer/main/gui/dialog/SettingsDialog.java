@@ -1,5 +1,6 @@
 package com.ddf.fakeplayer.main.gui.dialog;
 
+import com.ddf.fakeplayer.main.I18N;
 import com.ddf.fakeplayer.main.gui.GUIMain;
 
 import javax.swing.*;
@@ -17,7 +18,7 @@ public class SettingsDialog extends JDialog {
     }
 
     private void initLayout() {
-
+        setTitle(I18N.get("title.settings"));
     }
 
     private void initListener() {

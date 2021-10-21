@@ -5,6 +5,8 @@ import com.ddf.fakeplayer.actor.player.FakePlayer;
 import com.ddf.fakeplayer.actor.player.Player;
 import com.ddf.fakeplayer.block.BlockPos;
 import com.ddf.fakeplayer.container.ContainerID;
+import com.ddf.fakeplayer.container.inventory.PlayerInventoryProxy;
+import com.ddf.fakeplayer.container.inventory.transaction.ItemUseInventoryTransaction;
 import com.ddf.fakeplayer.js.classes.entity.JsEntity;
 import com.ddf.fakeplayer.js.classes.item.JsItemStack;
 import com.ddf.fakeplayer.js.classes.location.JsBlockLocation;
@@ -266,12 +268,19 @@ public class JsFakePlayer extends JsPlayer {
 
     @JSFunction
     public boolean useItemInSlotOnBlock(int slot, JsBlockLocation blockLocation, int direction, int faceLocationX, int faceLocationY) {
+        PlayerInventoryProxy inventory = fakePlayer.getSupplies();
+        ItemUseInventoryTransaction transaction = new ItemUseInventoryTransaction(fakePlayer.getLevel().getItemRegistry());
+        inventory.createTransactionContext((container, slot1, oldItem, newItem) -> {
+
+        }, () -> {
+
+        });
+        fakePlayer.sendComplexInventoryTransaction(transaction);
         return false;
     }
 
     @JSFunction
     public boolean useItemOnBlock(JsItemStack itemStack, JsBlockLocation blockLocation, int direction, int faceLocationX, int faceLocationY) {
-//        fakePlayer.getGameMode().useItem()
         return false;
     }
 

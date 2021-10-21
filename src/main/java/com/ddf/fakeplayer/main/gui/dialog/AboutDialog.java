@@ -1,6 +1,7 @@
 package com.ddf.fakeplayer.main.gui.dialog;
 
 import com.ddf.fakeplayer.VersionInfo;
+import com.ddf.fakeplayer.main.I18N;
 import com.ddf.fakeplayer.main.gui.GUIMain;
 import com.ddf.fakeplayer.main.Util;
 
@@ -31,7 +32,7 @@ public class AboutDialog extends JDialog {
         mainPage = new JLabel("<html><a href='https://github.com/ddf8196/FakePlayer'>项目主页</a></html>");
         JPanel spacer = new JPanel();
         JPanel buttonBar = new JPanel();
-        okButton = new JButton("确定");
+        okButton = new JButton(I18N.get("button.ok"));
 
         content.setBorder(new EmptyBorder(12, 12, 12, 12));
         content.setLayout(new BorderLayout());
@@ -64,7 +65,7 @@ public class AboutDialog extends JDialog {
                 GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                 new Insets(0, 0, 0, 0), 0, 0));
         content.add(buttonBar, BorderLayout.SOUTH);
-        setTitle("关于");
+        setTitle(I18N.get("title.about"));
         pack();
         setMinimumSize(getSize());
         setLocationRelativeTo(getOwner());

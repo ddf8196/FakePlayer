@@ -58,4 +58,11 @@ public class PlayerData {
         this.allowChatMessageControl = allowChatMessageControl;
     }
 
+    public List<String> getScripts() {
+        return scripts;
+    }
+
+    public void addScript(String path) {
+        scripts.add(path);
+    }
 }

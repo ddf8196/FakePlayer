@@ -3,6 +3,8 @@ package com.ddf.fakeplayer.actor.player;
 import com.ddf.fakeplayer.block.BlockPos;
 import com.ddf.fakeplayer.client.Client;
 import com.ddf.fakeplayer.container.ContainerID;
+import com.ddf.fakeplayer.container.inventory.InventoryAction;
+import com.ddf.fakeplayer.container.inventory.InventorySource;
 import com.ddf.fakeplayer.container.inventory.transaction.ComplexInventoryTransaction;
 import com.ddf.fakeplayer.container.inventory.transaction.ItemUseInventoryTransaction;
 import com.ddf.fakeplayer.item.ItemStack;
@@ -211,6 +213,7 @@ public class FakePlayer extends LocalPlayer {
 
     public final void removeScript(String path) {
         scriptsToLoad.remove(path);
+        scripts.removeIf(script -> script.getPath().equals(path));
     }
 
     public final void sendInventoryMismatch() {
@@ -273,15 +276,20 @@ public class FakePlayer extends LocalPlayer {
     }
 
     public final void startUseSelectedItem() {
-        ItemUseInventoryTransaction transaction = new ItemUseInventoryTransaction(super.getLevel().getItemRegistry());
-        transaction.setSelectedItem(super.getSelectedItem())
-                .setSelectedSlot(super.getSelectedItemSlot())
-                .setBlockPosition(new NetworkBlockPosition(0, 0, 0))
-                .setFacing(0xFF)
-                .setClickPosition(new Vec3(0.0f, 0.0f, 0.0f))
-                .setFromPosition(this.getPos())
-                .setActionType(ItemUseInventoryTransaction.ActionType.Use_1);
-        super.getGameMode().useItem(super.getSelectedItem());
+        ItemUseInventoryTransaction transaction = new ItemUseInventoryTransaction(this.getLevel().getItemRegistry());
+        this.getSupplies().createTransactionContext((container, slot, oldItem, newItem) -> {
+            InventoryAction action = new InventoryAction(InventorySource.fromContainerWindowID(ContainerID.CONTAINER_ID_INVENTORY), slot, oldItem, newItem);
+            transaction.getInventoryTransaction().addAction(action);
+        }, () -> {
+            transaction.setSelectedItem(super.getSelectedItem())
+                    .setSelectedSlot(super.getSelectedItemSlot())
+                    .setBlockPosition(new NetworkBlockPosition(0, 0, 0))
+                    .setFacing(0xFF)
+                    .setClickPosition(new Vec3(0.0f, 0.0f, 0.0f))
+                    .setFromPosition(this.getPos())
+                    .setActionType(ItemUseInventoryTransaction.ActionType.Use_1);
+            super.getGameMode().useItem(super.getSelectedItem());
+        });
         this.sendComplexInventoryTransaction(transaction);
     }
 

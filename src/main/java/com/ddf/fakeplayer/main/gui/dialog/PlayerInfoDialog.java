@@ -1,6 +1,7 @@
 package com.ddf.fakeplayer.main.gui.dialog;
 
 import com.ddf.fakeplayer.client.Client;
+import com.ddf.fakeplayer.main.I18N;
 import com.ddf.fakeplayer.main.config.PlayerData;
 import com.ddf.fakeplayer.main.gui.GUIMain;
 import net.miginfocom.swing.MigLayout;
@@ -38,7 +39,11 @@ public class PlayerInfoDialog extends JDialog {
         this.main = main;
         this.type = type;
         this.playerName = playerName;
-        this.playerSkin = main.getConfig().getPlayerData(playerName).getSkin();
+        if (type != TYPE_ADD) {
+            this.playerSkin = main.getConfig().getPlayerData(playerName).getSkin();
+        } else {
+            this.playerSkin = null;
+        }
         initLayout();
         initData();
     }
@@ -53,10 +58,10 @@ public class PlayerInfoDialog extends JDialog {
                 "steve",
                 "alex"
         });
-        allowChatMessageControl = new JCheckBox("允许聊天信息控制");
+        allowChatMessageControl = new JCheckBox(I18N.get("checkBox.allowChatMessageControl"));
         JPanel buttonBar = new JPanel();
-        ok = new JButton("确定");
-        cancel = new JButton("取消");
+        ok = new JButton(I18N.get("button.ok"));
+        cancel = new JButton(I18N.get("button.cancel"));
 
         content.setBorder(new EmptyBorder(12, 12, 12, 12));
         content.setLayout(new BorderLayout());
@@ -82,10 +87,10 @@ public class PlayerInfoDialog extends JDialog {
     private void initData() {
         switch (type) {
             case TYPE_ADD:
-                setTitle("添加假人");
+                setTitle(I18N.get("title.addFakePlayer"));
                 break;
             case TYPE_EDIT:
-                setTitle("编辑假人");
+                setTitle(I18N.get("title.editFakePlayer"));
                 PlayerData data = main.getConfig().getPlayerData(playerName);
                 name.setText(data.getName());
                 skin.setSelectedItem(data.getSkin());

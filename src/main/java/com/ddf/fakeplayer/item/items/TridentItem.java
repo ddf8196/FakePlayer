@@ -1,5 +1,6 @@
 package com.ddf.fakeplayer.item.items;
 
+import com.ddf.fakeplayer.actor.component.StateVectorComponent;
 import com.ddf.fakeplayer.actor.player.AbilitiesIndex;
 import com.ddf.fakeplayer.actor.player.Player;
 import com.ddf.fakeplayer.container.inventory.PlayerInventoryProxy;
@@ -89,10 +90,11 @@ public class TridentItem extends Item {
                 Vec3 impulse = new Vec3(x_, y_, z_);
                 float dist = impulse.length();
                 float n = 3.0f * (riptideLevel + 1.0f) / 4.0f;
-                impulse.multiplyAndSet(n / dist);
+                impulse = impulse.multiply(n / dist);
                 player.startSpinAttack();
                 if (!player.isRemoved() && !player.isImmobile()) {
-                    player.getStateVectorComponentNonConst().getPosDelta().addAndSet(impulse);
+                    StateVectorComponent svc = player.getStateVectorComponentNonConst();
+                    svc.setPosDelta(svc.getPosDelta().add(impulse));
                 }
 //                Level level = player.getLevel();
 //                if (riptideLevel >= 3) {
