@@ -3,6 +3,8 @@ package com.ddf.fakeplayer.block;
 import com.ddf.fakeplayer.actor.Actor;
 import com.ddf.fakeplayer.actor.player.Player;
 import com.ddf.fakeplayer.nbt.CompoundTag;
+import com.ddf.fakeplayer.util.AABB;
+import com.ddf.fakeplayer.util.NotImplemented;
 
 public class Block {
     private final /*uint16_t DataID*/short mData;
@@ -17,6 +19,18 @@ public class Block {
         this.mSerializationId = new CompoundTag();
         this.mRuntimeId = 0;
         this.mHasRuntimeId = false;
+    }
+
+    public final boolean canContainLiquid() {
+        return this.mLegacyBlock.canContainLiquid();
+    }
+
+    public final boolean canHurtAndBreakItem() {
+        return this.mLegacyBlock.canHurtAndBreakItem();
+    }
+
+    public final AABB getAABB(BlockSource regionDEPRECATED, final BlockPos pos, AABB bufferValue, boolean isClipping) {
+        return this.mLegacyBlock.getAABB(regionDEPRECATED, pos, this, bufferValue, isClipping);
     }
 
     public final Block getDefaultState() {
@@ -43,12 +57,20 @@ public class Block {
         return this.mLegacyBlock.getIgnoresDestroyPermissions(entity, pos);
     }
 
-    public final boolean canHurtAndBreakItem() {
-        return this.mLegacyBlock.canHurtAndBreakItem();
-    }
-
     public final boolean hasProperty(BlockProperty type) {
         return this.mLegacyBlock.hasProperty(type);
+    }
+
+    @NotImplemented
+    public final boolean isInteractiveBlock() {
+        return false;
+//        return this.mLegacyBlock.isInteractiveBlock();
+    }
+
+    @NotImplemented
+    public boolean use(Player player, final BlockPos pos) {
+        return false;
+        //return this.mLegacyBlock.use(player, pos);
     }
 
     public final void playerDestroy(Player player, final BlockPos pos) {

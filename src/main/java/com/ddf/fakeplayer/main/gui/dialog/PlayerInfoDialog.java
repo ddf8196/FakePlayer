@@ -51,9 +51,9 @@ public class PlayerInfoDialog extends JDialog {
     private void initLayout() {
         JPanel content = new JPanel();
         JPanel playerInfoPanel = new JPanel();
-        JLabel nameLabel = new JLabel("假人名称");
+        JLabel nameLabel = new JLabel(I18N.get("label.playerName"));
         name = new JTextField();
-        JLabel skinLabel = new JLabel("皮肤");
+        JLabel skinLabel = new JLabel(I18N.get("label.playerSkin"));
         skin = new JComboBox<>(new String[]{
                 "steve",
                 "alex"
@@ -109,11 +109,11 @@ public class PlayerInfoDialog extends JDialog {
         switch (type) {
             case TYPE_ADD: {
                 if (playerName == null || playerName.isEmpty()) {
-                    JOptionPane.showMessageDialog(main.getFrame(), "名称不能为空");
+                    JOptionPane.showMessageDialog(main.getFrame(), I18N.get("message.emptyPlayerName"));
                     return;
                 }
                 if (main.getClient(playerName) != null) {
-                    JOptionPane.showMessageDialog(main.getFrame(), "假人已存在");
+                    JOptionPane.showMessageDialog(main.getFrame(), I18N.get("message.playerAlreadyExists"));
                     return;
                 }
                 PlayerData playerData = new PlayerData(playerName, skin, allowChatMessageControl);
@@ -123,11 +123,11 @@ public class PlayerInfoDialog extends JDialog {
             }
             case TYPE_EDIT: {
                 if (playerName == null || playerName.isEmpty()) {
-                    JOptionPane.showMessageDialog(main.getFrame(), "名称不能为空");
+                    JOptionPane.showMessageDialog(main.getFrame(), I18N.get("message.emptyPlayerName"));
                     return;
                 }
                 if (!playerName.equals(this.playerName) && main.getClient(playerName) != null) {
-                    JOptionPane.showMessageDialog(main.getFrame(), "假人已存在");
+                    JOptionPane.showMessageDialog(main.getFrame(), I18N.get("message.playerAlreadyExists"));
                     return;
                 }
                 if (playerName.equals(this.playerName) && skin.equals(playerSkin)) {

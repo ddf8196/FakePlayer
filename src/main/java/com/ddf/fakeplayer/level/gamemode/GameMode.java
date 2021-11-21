@@ -8,15 +8,15 @@ import com.ddf.fakeplayer.container.ContainerID;
 import com.ddf.fakeplayer.container.inventory.InventoryAction;
 import com.ddf.fakeplayer.container.inventory.InventorySource;
 import com.ddf.fakeplayer.container.inventory.transaction.*;
-import com.ddf.fakeplayer.item.Item;
-import com.ddf.fakeplayer.item.ItemInstance;
-import com.ddf.fakeplayer.item.ItemStack;
+import com.ddf.fakeplayer.item.*;
 import com.ddf.fakeplayer.network.NetworkBlockPosition;
+import com.ddf.fakeplayer.util.AABB;
 import com.ddf.fakeplayer.util.NotImplemented;
 import com.ddf.fakeplayer.util.ValueHolder;
 import com.ddf.fakeplayer.util.Vec3;
+import com.ddf.fakeplayer.util.mc.HitResult;
 
-@SuppressWarnings("all")
+//@SuppressWarnings("all")
 public class GameMode {
     public static final float PICKRANGE_VR_SURVIVAL = 7.0f;
     public static final float PICKRANGE_VR_CREATIVE = 12.0f;
@@ -176,6 +176,84 @@ public class GameMode {
         return !itemPriorToUse.matches(item);
     }
 
+    public boolean useItemOn(ItemStack item, final BlockPos at,/*FacingID*/int face, final Vec3 hit, final Block targetBlock) {
+        Vec3 v46 = new Vec3(at);
+        Vec3 click = hit.subtract(v46);
+        Block block = this.mPlayer.getRegion().getBlock(at);
+        Block liquidBlock = this.mPlayer.getRegion().getLiquidBlock(at);
+        if (block.getLegacyBlock().equals(VanillaBlockTypes.mInvisibleBedrock)) {
+            return false;
+        } else if (targetBlock != null && !targetBlock.equals(block)) {
+            return false;
+        } else {
+            AABB aabb = new AABB();
+            if (!block.getAABB(this.mPlayer.getRegion(), at, aabb, false).isEmpty()
+                    || item.getItem() != VanillaItems.mBucket
+                    || block.getMaterial().isLiquid()
+                    || liquidBlock.getMaterial().isLiquid()
+                    || block.canContainLiquid()) {
+                if (this.mPlayer.isSneaking()
+                        && this.mPlayer.getCarriedItem().toBoolean()
+                        || block.getLegacyBlock().equals(BedrockBlockTypes.mAir)
+                        || !block.use(this.mPlayer, at)) {
+                    if (item.toBoolean()) {
+                        if (!item.isBlock() || this._canUseBlock(item.getLegacyBlock().getDefaultState())) {
+                            boolean isSnappableBlock = false;
+                            boolean success;
+                            if (item.isBlock()) {
+                                isSnappableBlock = isSnappableBlock(item.getLegacyBlock());
+                            }
+                            this.mLastBuildBlockWasSnappable = isSnappableBlock;
+                            if (this.mPlayer.isCreative()) {
+                                ItemStack oldItem = new ItemStack(item);
+                                success = item.useOn(this.mPlayer, at.x, at.y, at.z, face, click.x, click.y, click.z);
+                                if (!success)
+                                    item = oldItem;
+                            } else {
+                                success = item.useOn(this.mPlayer, at.x, at.y, at.z, face, click.x, click.y, click.z);
+                            }
+                            if (!success || item.toBoolean()) {
+                                if (success)
+                                    this.mPlayer.setSelectedItem(item);
+                            } else {
+                                PlayerInventoryProxy.SlotData selectedSlot = this.mPlayer.getSupplies().getSelectedSlot();
+                                this.mPlayer.getSupplies().clearSlot(selectedSlot.mSlot, selectedSlot.mContainerId);
+                            }
+                            return success;
+                        } else {
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
+                } else {
+                    this.mLastBuildBlockWasInteractive = block.isInteractiveBlock();
+                    ItemStack selectedItem = this.mPlayer.getSelectedItem();
+                    if (!this.mLastBuildBlockWasInteractive) {
+                        if (selectedItem.isBlock()) {
+                            this.mLastBuildBlockWasSnappable = isSnappableBlock(selectedItem.getLegacyBlock());
+                        } else {
+                            this.mLastBuildBlockWasSnappable = false;
+                        }
+                    } else {
+                        this.mLastBuildBlockWasSnappable = false;
+                    }
+                    return true;
+                }
+            } else {
+                return false;
+            }
+        }
+    }
+
+    private static boolean isSnappableBlock(final BlockLegacy block) {
+        return block.hasProperty(BlockProperty.CubeShaped)
+            || block.hasProperty(BlockProperty.Stair)
+            || block.hasProperty(BlockProperty.HalfSlab)
+            || block.isFenceBlock()
+            || block.isThinFenceBlock();
+    }
+
     private void _releaseUsingItemInternal() {
         this.mPlayer.releaseUsingItem();
     }
@@ -213,9 +291,70 @@ public class GameMode {
         }
     }
 
+    public boolean buildBlock(final BlockPos pos, /*FacingID*/int face) {
+        ValueHolder<Boolean> success = new ValueHolder<>(false);
+        ItemUseInventoryTransaction transaction = new ItemUseInventoryTransaction(this.mPlayer.getLevel().getItemRegistry());
+        this.mPlayer.getSupplies().createTransactionContext((container, slot, oldItem, newItem) -> {
+            InventoryAction action = new InventoryAction(InventorySource.fromContainerWindowID(ContainerID.CONTAINER_ID_INVENTORY), slot, oldItem, newItem);
+            this.mPlayer.getTransactionManager().addExpectedAction(action);
+            transaction.getInventoryTransaction().addAction(action);
+        }, () -> {
+            ItemStack item = new ItemStack(this.mPlayer.getSelectedItem());
+            ItemInstance itemInstance = new ItemInstance(item);
+            transaction.setSelectedItem(item)
+                    .setSelectedSlot(this.mPlayer.getSupplies().getSelectedSlot().mSlot)
+                    .setBlockPosition(new NetworkBlockPosition(0, 0, 0));
+            HitResult hitResult = this.mPlayer.getLevel().getHitResult();
+            HitResult liquidHitResult = this.mPlayer.getLevel().getLiquidHitResult();
+            if (item.toBoolean() && item.isLiquidClipItem() && liquidHitResult.isHitLiquid()) {
+                BlockPos liquidBlockPos = liquidHitResult.getLiquid();
+                int liquidFacing = liquidHitResult.getLiquidFacing();
+                Vec3 liquidPos = liquidHitResult.getLiquidPos();
+                transaction.setBlockPosition(new NetworkBlockPosition(liquidBlockPos))
+                        .setTargetBlock(this.mPlayer.getRegion().getBlock(liquidBlockPos))
+                        .setFacing(liquidFacing)
+                        .setClickPosition(liquidPos.subtract(new Vec3(liquidBlockPos)))
+                        .setFromPosition(this.mPlayer.getPos())
+                        .setActionType(ItemUseInventoryTransaction.ActionType.Place_4);
+                success.set(this.useItemOn(item, liquidBlockPos, liquidFacing, liquidPos, null));
+            }
+            if (!success.get()) {
+
+            }
+        });
+        if (this.mPlayer.getLevel().isClientSide()) {
+            this.mPlayer.sendComplexInventoryTransaction(transaction);
+        }
+        return success.get();
+    }
+
+    public final boolean baseUseItem(ItemStack item) {
+        ValueHolder<Boolean> success = new ValueHolder<>(false);
+        ItemUseInventoryTransaction transaction = new ItemUseInventoryTransaction(this.mPlayer.getLevel().getItemRegistry());
+        this.mPlayer.getSupplies().createTransactionContext((container, slot, oldItem, newItem) -> {
+            InventoryAction action = new InventoryAction(InventorySource.fromContainerWindowID(ContainerID.CONTAINER_ID_INVENTORY), slot, oldItem, newItem);
+            this.mPlayer.getTransactionManager().addExpectedAction(action);
+            transaction.getInventoryTransaction().addAction(action);
+        }, () -> {
+            transaction.setSelectedItem(item)
+                    .setSelectedSlot(this.mPlayer.getSupplies().getSelectedSlot().mSlot)
+                    .setBlockPosition(new NetworkBlockPosition(0, 0, 0))
+                    .setFacing(0xFF)
+                    .setClickPosition(Vec3.ZERO)
+                    .setFromPosition(this.mPlayer.getPos())
+                    .setActionType(ItemUseInventoryTransaction.ActionType.Use_1);
+            success.set(this.useItem(item));
+            if (success.get())
+                this.mPlayer.setSelectedItem(item);
+        });
+        if (this.mPlayer.getLevel().isClientSide()) {
+            this.mPlayer.sendComplexInventoryTransaction(transaction);
+        }
+        return success.get();
+    }
+
     public boolean interact(Actor entity, final Vec3 location) {
-        boolean success = false;
-        ValueHolder<Boolean> successHolder = new ValueHolder<>(success);
+        ValueHolder<Boolean> success = new ValueHolder<>(false);
         ItemUseOnActorInventoryTransaction transaction = new ItemUseOnActorInventoryTransaction(this.mPlayer.getLevel().getItemRegistry());
         this.mPlayer.getSupplies().createTransactionContext((container, slot, oldItem, newItem) -> {
             InventoryAction action = new InventoryAction(InventorySource.fromContainerWindowID(ContainerID.CONTAINER_ID_INVENTORY), slot, oldItem, newItem);
@@ -228,13 +367,12 @@ public class GameMode {
                     .setEntityRuntimeId(entity.getRuntimeID())
                     .setFromPosition(this.mPlayer.getPos())
                     .setHitPosition(location);
-            successHolder.set(this.mPlayer.interact(entity, location));
+            success.set(this.mPlayer.interact(entity, location));
         });
-        success = successHolder.get();
         if (this.mPlayer.getLevel().isClientSide()) {
             this.mPlayer.sendComplexInventoryTransaction(transaction);
         }
-        return success;
+        return success.get();
     }
 
     public void tick() {

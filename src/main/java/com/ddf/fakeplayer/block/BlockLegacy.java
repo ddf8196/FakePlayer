@@ -11,6 +11,7 @@ import com.ddf.fakeplayer.util.AABB;
 import com.ddf.fakeplayer.util.BaseGameVersion;
 import com.ddf.fakeplayer.util.Brightness;
 import com.ddf.fakeplayer.util.NotImplemented;
+import com.ddf.fakeplayer.util.Vec3;
 import com.ddf.fakeplayer.util.tuple.Tuple2;
 
 import java.util.ArrayList;
@@ -107,6 +108,23 @@ public class BlockLegacy {
         return new Tuple2<>(nspace, name);
     }
 
+    public boolean canBeSilkTouched() {
+        return true;
+    }
+
+    public boolean canContainLiquid() {
+        return !this.hasProperty(BlockProperty.CubeShaped);
+    }
+
+    public boolean canHurtAndBreakItem() {
+        return this.mDestroySpeed > 0.0f;
+    }
+
+    @NotImplemented
+    public AABB getAABB(BlockSource a2, final BlockPos pos, final Block block, AABB bufferValue, boolean isClipping) {
+        return null;
+    }
+
     public final Block getDefaultState() {
         return this.mDefaultState;
     }
@@ -143,16 +161,20 @@ public class BlockLegacy {
         return new ItemInstance(block, 1, null);
     }
 
-    public boolean canBeSilkTouched() {
-        return true;
-    }
-
-    public boolean canHurtAndBreakItem() {
-        return this.mDestroySpeed > 0.0f;
+    public AABB getVisualShape(final Block block, AABB bufferAABB, boolean isClipping) {
+        return this.mVisualShape;
     }
 
     public final boolean hasProperty(BlockProperty type) {
         return (this.mProperties & type.getValue()) != BlockProperty.None_43.getValue();
+    }
+
+    public boolean isFenceBlock() {
+        return false;
+    }
+
+    public boolean isThinFenceBlock() {
+        return false;
     }
 
     public void setSolid(boolean solid) {

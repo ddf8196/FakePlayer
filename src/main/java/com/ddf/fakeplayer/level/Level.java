@@ -17,6 +17,7 @@ import com.ddf.fakeplayer.level.dimension.ChangeDimensionRequest;
 import com.ddf.fakeplayer.level.dimension.Dimension;
 import com.ddf.fakeplayer.network.PacketSender;
 import com.ddf.fakeplayer.util.NotImplemented;
+import com.ddf.fakeplayer.util.mc.HitResult;
 import com.ddf.fakeplayer.util.Vec3;
 import com.nukkitx.math.vector.Vector3i;
 import com.nukkitx.protocol.bedrock.data.PlayerActionType;
@@ -69,8 +70,8 @@ public abstract class Level implements BlockSourceListener/*, IWorldRegistriesPr
     private HashMap<Player, ChangeDimensionRequest> mChangeDimensionRequests = new HashMap<>();
     //private PlayerListEntries mPlayerList = new HashMap<>();
     protected PacketSender mPacketSender = null;
-    //private HitResult mHitResult = new HitResult();
-    //private HitResult mLiquidHitResult = new HitResult();
+    private HitResult mHitResult = new HitResult();
+    private HitResult mLiquidHitResult = new HitResult();
     private Random mRandom = new Random();
     private Random mAnimateRandom = new Random();
     //private NetEventCallback mNetEventCallback = null;
@@ -194,6 +195,14 @@ public abstract class Level implements BlockSourceListener/*, IWorldRegistriesPr
 
     public final BlockPos getDefaultSpawn() {
         return this.mLevelData.get().getSpawnPos();
+    }
+
+    public HitResult getHitResult() {
+        return this.mHitResult;
+    }
+
+    public HitResult getLiquidHitResult() {
+        return this.mLiquidHitResult;
     }
 
     public ItemRegistry getItemRegistry() {

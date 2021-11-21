@@ -1,18 +1,15 @@
 package com.ddf.fakeplayer.actor.player;
 
+import com.ddf.fakeplayer.VersionInfo;
 import com.ddf.fakeplayer.block.BlockPos;
 import com.ddf.fakeplayer.client.Client;
 import com.ddf.fakeplayer.container.ContainerID;
-import com.ddf.fakeplayer.container.inventory.InventoryAction;
-import com.ddf.fakeplayer.container.inventory.InventorySource;
 import com.ddf.fakeplayer.container.inventory.transaction.ComplexInventoryTransaction;
-import com.ddf.fakeplayer.container.inventory.transaction.ItemUseInventoryTransaction;
 import com.ddf.fakeplayer.item.ItemStack;
 import com.ddf.fakeplayer.item.VanillaItems;
 import com.ddf.fakeplayer.js.JSLoader;
 import com.ddf.fakeplayer.js.Script;
 import com.ddf.fakeplayer.level.Level;
-import com.ddf.fakeplayer.network.NetworkBlockPosition;
 import com.ddf.fakeplayer.util.*;
 import com.ddf.fakeplayer.util.command.CommandDispatcherUtil;
 import com.mojang.brigadier.Command;
@@ -71,6 +68,7 @@ public class FakePlayer extends LocalPlayer {
         registerChatCommand("help", context -> {
             this.sendChatMessage(
                     "help - 查看帮助信息\n" +
+                    "getVersion - 获取假人客户端版本\n" +
                     "getPos - 获取假人当前坐标\n" +
                     "getInventory - 获取假人背包内容\n" +
                     "getSelectedSlot - 获取假人当前选择的快捷栏槽位\n" +
@@ -81,6 +79,10 @@ public class FakePlayer extends LocalPlayer {
                     "sync start - 开始将假人的坐标和视角与玩家同步\n" +
                     "sync stop - 停止将假人的坐标和视角与玩家同步"
             );
+            return Command.SINGLE_SUCCESS;
+        });
+        registerChatCommand("getVersion", context -> {
+            this.sendChatMessage("FakePlayer " + VersionInfo.VERSION);
             return Command.SINGLE_SUCCESS;
         });
         registerChatCommand("getPos", context -> {
@@ -200,9 +202,9 @@ public class FakePlayer extends LocalPlayer {
         ItemStack selectedItem = super.getSelectedItem();
         if (selectedItem.getItem() == VanillaItems.mTrident) {
             if (!isUsingItem()) {
-                startUseSelectedItem();
+                this.getGameMode().baseUseItem(selectedItem);
             } else if(VanillaItems.mTrident.getMaxUseDuration(getCarriedItem()) - super.mItemInUseDuration > 10) {
-                super.getGameMode().releaseUsingItem();
+                this.getGameMode().releaseUsingItem();
             }
         }
     }
@@ -273,24 +275,6 @@ public class FakePlayer extends LocalPlayer {
         packet.setRuntimeEntityId(super.getRuntimeID());
         packet.setBlockPosition(Vector3i.ZERO);
         this.sendNetworkPacket(packet);
-    }
-
-    public final void startUseSelectedItem() {
-        ItemUseInventoryTransaction transaction = new ItemUseInventoryTransaction(this.getLevel().getItemRegistry());
-        this.getSupplies().createTransactionContext((container, slot, oldItem, newItem) -> {
-            InventoryAction action = new InventoryAction(InventorySource.fromContainerWindowID(ContainerID.CONTAINER_ID_INVENTORY), slot, oldItem, newItem);
-            transaction.getInventoryTransaction().addAction(action);
-        }, () -> {
-            transaction.setSelectedItem(super.getSelectedItem())
-                    .setSelectedSlot(super.getSelectedItemSlot())
-                    .setBlockPosition(new NetworkBlockPosition(0, 0, 0))
-                    .setFacing(0xFF)
-                    .setClickPosition(new Vec3(0.0f, 0.0f, 0.0f))
-                    .setFromPosition(this.getPos())
-                    .setActionType(ItemUseInventoryTransaction.ActionType.Use_1);
-            super.getGameMode().useItem(super.getSelectedItem());
-        });
-        this.sendComplexInventoryTransaction(transaction);
     }
 
     public LiteralCommandNode<Player> registerChatCommand(String name, Command<Player> command) {

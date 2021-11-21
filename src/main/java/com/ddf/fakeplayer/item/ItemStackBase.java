@@ -519,7 +519,7 @@ public class ItemStackBase {
         return this.mItem != null;
     }
 
-    public boolean isBlock() {
+    public final boolean isBlock() {
         if (this.mItem != null) {
             return this.mItem.getLegacyBlock() != null;
         }
@@ -584,6 +584,13 @@ public class ItemStackBase {
 
     public final boolean isInstance(final Item i) {
         return i == this.mItem;
+    }
+
+    public final boolean isLiquidClipItem() {
+        if (this.isItem()) {
+            return this.mItem.isLiquidClipItem(this.getAuxValue());
+        }
+        return false;
     }
 
     public void setAuxValue(short value) {

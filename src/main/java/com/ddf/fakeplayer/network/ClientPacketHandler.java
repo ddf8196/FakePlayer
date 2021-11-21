@@ -338,7 +338,9 @@ public class ClientPacketHandler implements BedrockPacketHandler {
         Mob mob = new Mob(client.getLevel());
         mob.setEntityType(packet.getEntityType());
         mob.setIdentifier(packet.getIdentifier());
-        mob.getStateVectorComponentNonConst().setPosDelta(DataConverter.vec3(packet.getMotion()));
+        mob.getStateVectorComponentNonConst()
+                .getPosDelta()
+                .set(DataConverter.vec3(packet.getMotion()));
         mob.setPos(DataConverter.vec3(packet.getPosition()));
         mob.setRot(DataConverter.vec2(packet.getRotation()));
         mob.setYHeadRot(packet.getRotation().getZ());

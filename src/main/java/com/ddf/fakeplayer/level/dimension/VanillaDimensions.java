@@ -1,8 +1,6 @@
 package com.ddf.fakeplayer.level.dimension;
 
-import com.ddf.fakeplayer.util.ValueHolder;
 import com.ddf.fakeplayer.util.Vec3;
-import com.ddf.fakeplayer.util.tuple.Tuple2;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +19,7 @@ public class VanillaDimensions {
         DimensionMap.put("the end", VanillaDimensions.TheEnd);
     }
 
-    public static boolean _convertPointFromEnd(final Vec3 startingPos, ValueHolder<Vec3> outputPos, /*DimensionType*/int toID, final Vec3 OverworldSpawnPos) {
+    public static boolean _convertPointFromEnd(final Vec3 startingPos, Vec3 outputPos, /*DimensionType*/int toID, final Vec3 OverworldSpawnPos) {
         if (toID == VanillaDimensions.Overworld) {
             outputPos.set(OverworldSpawnPos);
             return true;
@@ -34,12 +32,11 @@ public class VanillaDimensions {
         }
     }
 
-    public static boolean _convertPointFromNether(final Vec3 startingPos, ValueHolder<Vec3> outputPos, /*DimensionType*/int toID, int netherScale) {
+    public static boolean _convertPointFromNether(final Vec3 startingPos, Vec3 outputPos, /*DimensionType*/int toID, int netherScale) {
         if (toID == VanillaDimensions.Overworld){
-            outputPos.set(new Vec3(
-                    (float) netherScale * startingPos.x,
-                    startingPos.y,
-                    (float) netherScale * startingPos.z));
+            outputPos.set(startingPos);
+            outputPos.x = (float) netherScale * outputPos.x;
+            outputPos.z = (float) netherScale * outputPos.z;
             return true;
         } else if (toID == VanillaDimensions.Nether) {
             outputPos.set(startingPos);
@@ -53,15 +50,14 @@ public class VanillaDimensions {
         }
     }
 
-    public static boolean _convertPointFromOverworld(final Vec3 startingPos, ValueHolder<Vec3> outputPos, /*DimensionType*/int toID, int netherScale) {
+    public static boolean _convertPointFromOverworld(final Vec3 startingPos, Vec3 outputPos, /*DimensionType*/int toID, int netherScale) {
         if (toID == VanillaDimensions.Overworld) {
             outputPos.set(startingPos);
             return true;
         } else if (toID == VanillaDimensions.Nether) {
-            outputPos.set(new Vec3(
-                    startingPos.x / (float) netherScale,
-                    startingPos.y,
-                    startingPos.z / (float) netherScale));
+            outputPos.set(startingPos);
+            outputPos.x = outputPos.x / (float) netherScale;
+            outputPos.z = outputPos.z / (float) netherScale;
             return true;
         } else if (toID == VanillaDimensions.TheEnd) {
             outputPos.set(VanillaDimensions.TheEndSpawnPoint);
@@ -72,7 +68,7 @@ public class VanillaDimensions {
         }
     }
 
-    public static boolean convertPointBetweenDimensions(final Vec3 startingPosition, ValueHolder<Vec3> outputPosition, /*DimensionType*/int fromID, /*DimensionType*/int toID, final DimensionConversionData data) {
+    public static boolean convertPointBetweenDimensions(final Vec3 startingPosition, Vec3 outputPosition, /*DimensionType*/int fromID, /*DimensionType*/int toID, final DimensionConversionData data) {
         if (fromID == toID) {
             outputPosition.set(startingPosition);
             return true;

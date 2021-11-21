@@ -3,7 +3,7 @@ package com.ddf.fakeplayer.block;
 import com.ddf.fakeplayer.level.chunk.ChunkPos;
 import com.ddf.fakeplayer.util.Vec3;
 
-public class BlockPos {
+public class BlockPos implements Cloneable {
     public static final BlockPos ZERO = new BlockPos();
     public static final BlockPos ONE = new BlockPos(1, 1, 1);
     public static final BlockPos MAX = new BlockPos(0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF);
@@ -74,5 +74,10 @@ public class BlockPos {
         return this.x == rhs.x
                 && this.y == rhs.y
                 && this.z == rhs.z;
+    }
+
+    @Override
+    public BlockPos clone() {
+        return new BlockPos(this);
     }
 }

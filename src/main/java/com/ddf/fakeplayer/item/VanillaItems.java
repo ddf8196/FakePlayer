@@ -247,89 +247,161 @@ public class VanillaItems {
 
     @NotImplemented
     public static void registerItems() {
-        VanillaItems.mApple = new Item("apple");
-        ItemRegistry.registerItem(VanillaItems.mApple);
-        VanillaItems.mApple_gold = new Item("golden_apple");
-        ItemRegistry.registerItem(VanillaItems.mApple_gold);
-        VanillaItems.mApple_enchanted = new Item("appleEnchanted");
-        ItemRegistry.registerItem(VanillaItems.mApple_enchanted);
-        VanillaItems.mMushroomStew = new Item("mushroom_stew");
-        ItemRegistry.registerItem(VanillaItems.mMushroomStew);
-        VanillaItems.mBread = new Item("bread");
-        ItemRegistry.registerItem(VanillaItems.mBread);
-        VanillaItems.mPorkChop_raw = new Item("porkchop");
-        ItemRegistry.registerItem(VanillaItems.mPorkChop_raw);
-        VanillaItems.mPorkChop_cooked = new Item("cooked_porkchop" );
-        ItemRegistry.registerItem(VanillaItems.mPorkChop_cooked);
-        VanillaItems.mFish_raw_cod = new Item("fish");
-        ItemRegistry.registerItem(VanillaItems.mFish_raw_cod);
-        VanillaItems.mFish_raw_salmon = new Item("salmon");
-        ItemRegistry.registerItem(VanillaItems.mFish_raw_salmon);
-        VanillaItems.mFish_raw_clownfish = new Item("clownfish");
-        ItemRegistry.registerItem(VanillaItems.mFish_raw_clownfish);
-        VanillaItems.mFish_raw_pufferfish = new Item("pufferfish");
-        ItemRegistry.registerItem(VanillaItems.mFish_raw_pufferfish);
-        VanillaItems.mFish_cooked_cod = new Item("cooked_fish");
-        ItemRegistry.registerItem(VanillaItems.mFish_cooked_cod);
-        VanillaItems.mFish_cooked_salmon = new Item("cooked_salmon");
-        ItemRegistry.registerItem(VanillaItems.mFish_cooked_salmon);
-        VanillaItems.mKelp_dried = new Item("dried_kelp");
-        ItemRegistry.registerItem(VanillaItems.mKelp_dried);
-        VanillaItems.mCookie = new Item("cookie");
-        ItemRegistry.registerItem(VanillaItems.mCookie);
-        VanillaItems.mMelonSlice = new Item("melon");
-        ItemRegistry.registerItem(VanillaItems.mMelonSlice);
-        VanillaItems.mBeef_raw = new Item("beef");
-        ItemRegistry.registerItem(VanillaItems.mBeef_raw);
-        VanillaItems.mBeef_cooked = new Item("cooked_beef");
-        ItemRegistry.registerItem(VanillaItems.mBeef_cooked);
-        VanillaItems.mChicken_raw = new Item("chicken");
-        ItemRegistry.registerItem(VanillaItems.mChicken_raw);
-        VanillaItems.mChicken_cooked = new Item("cooked_chicken");
-        ItemRegistry.registerItem(VanillaItems.mChicken_cooked);
-        VanillaItems.mRotten_flesh = new Item("rotten_flesh");
-        ItemRegistry.registerItem(VanillaItems.mRotten_flesh);
-        VanillaItems.mSpider_eye = new Item("spider_eye");
-        ItemRegistry.registerItem(VanillaItems.mSpider_eye);
-        VanillaItems.mCarrot = new Item("carrot");
-        ItemRegistry.registerItem(VanillaItems.mCarrot);
-        VanillaItems.mPotato = new Item("potato");
-        ItemRegistry.registerItem(VanillaItems.mPotato);
-        VanillaItems.mPotatoBaked = new Item("baked_potato");
-        ItemRegistry.registerItem(VanillaItems.mPotatoBaked);
-        VanillaItems.mPoisonous_potato = new Item("poisonous_potato");
-        ItemRegistry.registerItem(VanillaItems.mPoisonous_potato);
-        VanillaItems.mGoldenCarrot = new Item("golden_carrot");
-        ItemRegistry.registerItem(VanillaItems.mGoldenCarrot);
-        VanillaItems.mPumpkinPie = new Item("pumpkin_pie");
-        ItemRegistry.registerItem(VanillaItems.mPumpkinPie);
-        VanillaItems.mBeetroot = new Item("beetroot");
-        ItemRegistry.registerItem(VanillaItems.mBeetroot);
-        VanillaItems.mBeetrootSoup = new Item("beetroot_soup");
-        ItemRegistry.registerItem(VanillaItems.mBeetrootSoup);
-        VanillaItems.mSweetBerries = new Item("sweet_berries");
-        ItemRegistry.registerItem(VanillaItems.mSweetBerries);
-        VanillaItems.mRabbitRaw = new Item("rabbit");
-        ItemRegistry.registerItem(VanillaItems.mRabbitRaw);
-        VanillaItems.mRabbitCooked = new Item("cooked_rabbit");
-        ItemRegistry.registerItem(VanillaItems.mRabbitCooked);
-        VanillaItems.mRabbitStew = new Item("rabbit_stew");
-        ItemRegistry.registerItem(VanillaItems.mRabbitStew);
-        VanillaItems.mSeeds_wheat = new Item("wheat_seeds");
-        ItemRegistry.registerItem(VanillaItems.mSeeds_wheat);
-        VanillaItems.mSeeds_pumpkin = new Item("pumpkin_seeds");
-        ItemRegistry.registerItem(VanillaItems.mSeeds_pumpkin);
-        VanillaItems.mSeeds_melon = new Item("melon_seeds");
-        ItemRegistry.registerItem(VanillaItems.mSeeds_melon);
-        VanillaItems.mNether_wart = new Item("nether_wart");
-        ItemRegistry.registerItem(VanillaItems.mNether_wart);
-        VanillaItems.mSeeds_beetroot = new Item("beetroot_seeds");
-        ItemRegistry.registerItem(VanillaItems.mSeeds_beetroot);
+        mApple = new Item("apple");
+        mApple.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mApple);
 
-        VanillaItems.mTrident = new TridentItem("trident");
-        ItemRegistry.registerItem(VanillaItems.mTrident);
-        VanillaItems.mTrident.setMaxStackSize((byte) 1);
-        VanillaItems.mTrident.setMaxDamage(250);
+        mApple_gold = new Item("golden_apple");
+        mApple_gold.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mApple_gold);
+
+        mApple_enchanted = new Item("appleEnchanted");
+        mApple_enchanted.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mApple_enchanted);
+
+        mMushroomStew = new Item("mushroom_stew");
+        mMushroomStew.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mMushroomStew);
+
+        mBread = new Item("bread");
+        mBread.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mBread);
+
+        mPorkChop_raw = new Item("porkchop");
+        mPorkChop_raw.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mPorkChop_raw);
+
+        mPorkChop_cooked = new Item("cooked_porkchop");
+        mPorkChop_cooked.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mPorkChop_cooked);
+
+        mFish_raw_cod = new Item("fish");
+        mFish_raw_cod.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mFish_raw_cod);
+
+        mFish_raw_salmon = new Item("salmon");
+        mFish_raw_salmon.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mFish_raw_salmon);
+
+        mFish_raw_clownfish = new Item("clownfish");
+        mFish_raw_clownfish.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mFish_raw_clownfish);
+
+        mFish_raw_pufferfish = new Item("pufferfish");
+        mFish_raw_pufferfish.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mFish_raw_pufferfish);
+
+        mFish_cooked_cod = new Item("cooked_fish");
+        mFish_cooked_cod.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mFish_cooked_cod);
+
+        mFish_cooked_salmon = new Item("cooked_salmon");
+        mFish_cooked_salmon.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mFish_cooked_salmon);
+
+        mKelp_dried = new Item("dried_kelp");
+        mKelp_dried.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mKelp_dried);
+
+        mCookie = new Item("cookie");
+        mCookie.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mCookie);
+
+        mMelonSlice = new Item("melon");
+        mMelonSlice.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mMelonSlice);
+
+        mBeef_raw = new Item("beef");
+        mBeef_raw.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mBeef_raw);
+
+        mBeef_cooked = new Item("cooked_beef");
+        mBeef_cooked.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mBeef_cooked);
+
+        mChicken_raw = new Item("chicken");
+        mChicken_raw.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mChicken_raw);
+
+        mChicken_cooked = new Item("cooked_chicken");
+        mChicken_cooked.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mChicken_cooked);
+
+        mRotten_flesh = new Item("rotten_flesh");
+        mRotten_flesh.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mRotten_flesh);
+
+        mSpider_eye = new Item("spider_eye");
+        mSpider_eye.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mSpider_eye);
+
+        mCarrot = new Item("carrot");
+        mCarrot.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mCarrot);
+
+        mPotato = new Item("potato");
+        mPotato.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mPotato);
+
+        mPotatoBaked = new Item("baked_potato");
+        mPotatoBaked.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mPotatoBaked);
+
+        mPoisonous_potato = new Item("poisonous_potato");
+        mPoisonous_potato.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mPoisonous_potato);
+
+        mGoldenCarrot = new Item("golden_carrot");
+        mGoldenCarrot.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mGoldenCarrot);
+
+        mPumpkinPie = new Item("pumpkin_pie");
+        mPumpkinPie.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mPumpkinPie);
+
+        mBeetroot = new Item("beetroot");
+        mBeetroot.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mBeetroot);
+
+        mBeetrootSoup = new Item("beetroot_soup");
+        mBeetrootSoup.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mBeetrootSoup);
+
+        mSweetBerries = new Item("sweet_berries");
+        mSweetBerries.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mSweetBerries);
+
+        mRabbitRaw = new Item("rabbit");
+        mRabbitRaw.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mRabbitRaw);
+
+        mRabbitCooked = new Item("cooked_rabbit");
+        mRabbitCooked.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mRabbitCooked);
+
+        mRabbitStew = new Item("rabbit_stew");
+        mRabbitStew.setTag(VanillaItemTags.Food);
+        ItemRegistry.registerItem(mRabbitStew);
+
+        mSeeds_wheat = new Item("wheat_seeds");
+        ItemRegistry.registerItem(mSeeds_wheat);
+
+        mSeeds_pumpkin = new Item("pumpkin_seeds");
+        ItemRegistry.registerItem(mSeeds_pumpkin);
+
+        mSeeds_melon = new Item("melon_seeds");
+        ItemRegistry.registerItem(mSeeds_melon);
+
+        mNether_wart = new Item("nether_wart");
+        ItemRegistry.registerItem(mNether_wart);
+
+        mSeeds_beetroot = new Item("beetroot_seeds");
+        ItemRegistry.registerItem(mSeeds_beetroot);
+
+        mTrident = new TridentItem("trident");
+        ItemRegistry.registerItem(mTrident);
+        mTrident.setMaxStackSize((byte) 1);
+        mTrident.setMaxDamage(250);
 
         //Alias
         ItemRegistry.registerAlias("minecraft:glazedTerracotta.purple", "minecraft:purple_glazed_terracotta");

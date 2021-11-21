@@ -26,7 +26,7 @@ public class Material {
         this.mBlocksPrecipitation = true;
         this.mSolid = true;
         this.mSuperHot = false;
-        //this.mMaterialColor = Color::NIL;
+        //this.mMaterialColor = Color.NIL;
         if (settings == Settings.Gas) {
             this.mSolid = false;
             this.mBlocksMotion = false;
@@ -60,6 +60,10 @@ public class Material {
 
     public final boolean isAlwaysDestroyable() {
         return this.mAlwaysDestroyable;
+    }
+
+    public final boolean isLiquid() {
+        return this.mLiquid;
     }
 
     public final Material _setReplaceable() {

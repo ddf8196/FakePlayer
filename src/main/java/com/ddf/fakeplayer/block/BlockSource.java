@@ -6,6 +6,7 @@ import com.ddf.fakeplayer.actor.player.AbilitiesIndex;
 import com.ddf.fakeplayer.actor.player.Player;
 import com.ddf.fakeplayer.item.ItemStack;
 import com.ddf.fakeplayer.level.Level;
+import com.ddf.fakeplayer.level.chunk.ChunkBlockPos;
 import com.ddf.fakeplayer.level.chunk.ChunkPos;
 import com.ddf.fakeplayer.level.chunk.ChunkSource;
 import com.ddf.fakeplayer.level.chunk.LevelChunk;
@@ -70,7 +71,7 @@ public class BlockSource {
                 if (block.getMaterial().isType(MaterialType.Deny_0)) {
                     return false;
                 }
-                --posCheck.y;
+                posCheck = new BlockPos(posCheck.x, posCheck.y - 1, posCheck.z);
             }
             return currentState;
         }
@@ -130,6 +131,27 @@ public class BlockSource {
 //        if (c == null)
 //            return BedrockBlocks.mAir;
 //        return c.getBlock(new ChunkBlockPos(pos));
+    }
+
+    public final Block getExtraBlock(final BlockPos p) {
+        if ( p.y < 0 )
+            return BedrockBlocks.mAir;
+        if ( p.y >= this.mMaxHeight )
+        return BedrockBlocks.mAir;
+        ChunkPos pos = new ChunkPos(p);
+        LevelChunk c = this.getChunk(pos);
+        if (c == null)
+            return BedrockBlocks.mAir;
+        ChunkBlockPos localPos = new ChunkBlockPos(p);
+        return c.getExtraBlock(localPos);
+    }
+
+    public final Block getLiquidBlock(final BlockPos p) {
+        Block extraBlock = this.getExtraBlock(p);
+        if (!extraBlock.equals(BedrockBlocks.mAir))
+            return extraBlock;
+        else
+            return this.getBlock(p);
     }
 
     @NotImplemented

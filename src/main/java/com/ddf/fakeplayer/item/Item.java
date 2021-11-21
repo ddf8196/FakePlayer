@@ -54,6 +54,7 @@ public class Item {
     private String mRawNameId;
     private String mNamespace = "minecraft";
     private String mFullName;
+    private String mTag;
     protected short mMaxDamage = 0;
     private boolean mIsGlint = true;
     private boolean mHandEquipped = true;
@@ -212,6 +213,9 @@ public class Item {
         return this.mHandEquipped;
     }
 
+    public boolean isLiquidClipItem(int auxValue) {
+        return false;
+    }
     public boolean isValidRepairItem(final ItemInstance source, final ItemInstance repairItem) {
         return false;
     }
@@ -245,6 +249,10 @@ public class Item {
     public Item setMaxUseDuration(int maxUseDuration) {
         this.mMaxUseDuration = maxUseDuration;
         return this;
+    }
+
+    public void setTag(String tag) {
+        this.mTag = tag;
     }
 
 //    public String appendFormattedHovertext(final ItemStackBase stack, Level level, String hovertext, final boolean showCategory) {

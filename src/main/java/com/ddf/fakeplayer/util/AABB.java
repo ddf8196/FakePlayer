@@ -21,4 +21,25 @@ public class AABB {
         this.max = new Vec3(maxX, maxY, maxZ);
         this.empty = min.equals(Vec3.ZERO) && max.equals(Vec3.ZERO);
     }
+
+    public AABB(AABB aabb) {
+        this.min = aabb.min.clone();
+        this.max = aabb.max.clone();
+        this.empty = aabb.empty;
+    }
+
+    public final boolean isEmpty() {
+        return this.empty;
+    }
+
+    public void set(AABB aabb) {
+        this.min.set(aabb.min);
+        this.max.set(aabb.max);
+        this.empty = aabb.empty;
+    }
+
+    @Override
+    public AABB clone() {
+        return new AABB(this);
+    }
 }
