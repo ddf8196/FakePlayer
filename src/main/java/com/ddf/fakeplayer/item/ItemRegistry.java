@@ -43,8 +43,6 @@ public class ItemRegistry {
     public static void addUnknownItems(List<StartGamePacket.ItemEntry> itemEntries) {
         for (StartGamePacket.ItemEntry itemEntry : itemEntries) {
             String identifier = itemEntry.getIdentifier();
-            if (identifier.equals("minecraft:trident"))
-                System.out.println("trident");
             Item item = mNameToItemMap.get(identifier);
             if (item == null) {
                 registerItem(new UnknownItem(identifier, itemEntry.getId()));

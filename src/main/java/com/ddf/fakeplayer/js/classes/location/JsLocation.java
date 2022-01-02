@@ -43,7 +43,6 @@ public class JsLocation extends BaseScriptableObject {
 
     @JSGetter
     public double x() {
-        System.out.println("Location_x");
         return x;
     }
 
