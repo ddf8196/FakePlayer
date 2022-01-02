@@ -1,7 +1,5 @@
 package com.ddf.fakeplayer.level.chunk;
 
-import com.ddf.fakeplayer.util.NotImplemented;
-
-@NotImplemented
-public enum BiomeChunkState {
+public class BiomeChunkState {
+    public byte snowLevel;
 }

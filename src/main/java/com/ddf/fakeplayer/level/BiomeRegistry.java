@@ -1,7 +1,7 @@
-package com.ddf.fakeplayer.level.chunk;
+package com.ddf.fakeplayer.level;
 
 import com.ddf.fakeplayer.util.NotImplemented;
 
 @NotImplemented
-public class SubChunk {
+public class BiomeRegistry {
 }

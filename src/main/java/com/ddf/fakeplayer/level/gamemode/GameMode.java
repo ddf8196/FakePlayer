@@ -126,7 +126,7 @@ public class GameMode {
         ItemStack SelectedItem = entity.getSelectedItem();
         if (region.checkBlockDestroyPermissions(entity, pos, SelectedItem, false) ) {
             ValueHolder<Boolean> successHolder = new ValueHolder<>(success);
-            ItemUseInventoryTransaction transaction = new ItemUseInventoryTransaction(this.mPlayer.getLevel().getItemRegistry());
+            ItemUseInventoryTransaction transaction = new ItemUseInventoryTransaction();
             PlayerInventoryProxy supplies = this.mPlayer.getSupplies();
             supplies.createTransactionContext((container, slot, oldItem, newItem) -> {
                 InventoryAction action = new InventoryAction(InventorySource.fromContainerWindowID(ContainerID.CONTAINER_ID_INVENTORY), slot, oldItem, newItem);
@@ -260,7 +260,7 @@ public class GameMode {
 
     public void releaseUsingItem() {
         ItemStack item = new ItemStack(this.mPlayer.getSelectedItem());
-        ItemReleaseInventoryTransaction transaction = new ItemReleaseInventoryTransaction(this.mPlayer.getLevel().getItemRegistry());
+        ItemReleaseInventoryTransaction transaction = new ItemReleaseInventoryTransaction();
         this.mPlayer.getSupplies().createTransactionContext((container, slot, oldItem, newItem) -> {
             InventoryAction action = new InventoryAction(InventorySource.fromContainerWindowID(ContainerID.CONTAINER_ID_INVENTORY), slot, oldItem, newItem);
             this.mPlayer.getTransactionManager().addExpectedAction(action);
@@ -293,7 +293,7 @@ public class GameMode {
 
     public boolean buildBlock(final BlockPos pos, /*FacingID*/int face) {
         ValueHolder<Boolean> success = new ValueHolder<>(false);
-        ItemUseInventoryTransaction transaction = new ItemUseInventoryTransaction(this.mPlayer.getLevel().getItemRegistry());
+        ItemUseInventoryTransaction transaction = new ItemUseInventoryTransaction();
         this.mPlayer.getSupplies().createTransactionContext((container, slot, oldItem, newItem) -> {
             InventoryAction action = new InventoryAction(InventorySource.fromContainerWindowID(ContainerID.CONTAINER_ID_INVENTORY), slot, oldItem, newItem);
             this.mPlayer.getTransactionManager().addExpectedAction(action);
@@ -330,7 +330,7 @@ public class GameMode {
 
     public final boolean baseUseItem(ItemStack item) {
         ValueHolder<Boolean> success = new ValueHolder<>(false);
-        ItemUseInventoryTransaction transaction = new ItemUseInventoryTransaction(this.mPlayer.getLevel().getItemRegistry());
+        ItemUseInventoryTransaction transaction = new ItemUseInventoryTransaction();
         this.mPlayer.getSupplies().createTransactionContext((container, slot, oldItem, newItem) -> {
             InventoryAction action = new InventoryAction(InventorySource.fromContainerWindowID(ContainerID.CONTAINER_ID_INVENTORY), slot, oldItem, newItem);
             this.mPlayer.getTransactionManager().addExpectedAction(action);
@@ -355,7 +355,7 @@ public class GameMode {
 
     public boolean interact(Actor entity, final Vec3 location) {
         ValueHolder<Boolean> success = new ValueHolder<>(false);
-        ItemUseOnActorInventoryTransaction transaction = new ItemUseOnActorInventoryTransaction(this.mPlayer.getLevel().getItemRegistry());
+        ItemUseOnActorInventoryTransaction transaction = new ItemUseOnActorInventoryTransaction();
         this.mPlayer.getSupplies().createTransactionContext((container, slot, oldItem, newItem) -> {
             InventoryAction action = new InventoryAction(InventorySource.fromContainerWindowID(ContainerID.CONTAINER_ID_INVENTORY), slot, oldItem, newItem);
             this.mPlayer.getTransactionManager().addExpectedAction(action);

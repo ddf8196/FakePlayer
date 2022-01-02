@@ -31,11 +31,11 @@ public class Resources {
         }
     }
 
-    private static String getResAsString(String path) throws IOException {
+    public static String getResAsString(String path) throws IOException {
         return new String(getResAsBytes(path));
     }
 
-    private static byte[] getResAsBytes(String path) throws IOException {
+    public static byte[] getResAsBytes(String path) throws IOException {
         InputStream is = getResAsStream(path);
         ByteArrayOutputStream baos = new ByteArrayOutputStream(is.available());
         byte[] buf = new byte[1024];
@@ -46,11 +46,11 @@ public class Resources {
         return baos.toByteArray();
     }
 
-    private static InputStream getResAsStream(String path) {
+    public static InputStream getResAsStream(String path) {
         return Resources.class.getResourceAsStream(path);
     }
 
-    private static URL getRes(String path) {
+    public static URL getRes(String path) {
         return Resources.class.getResource(path);
     }
 }

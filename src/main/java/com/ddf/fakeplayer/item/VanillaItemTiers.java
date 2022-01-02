@@ -10,22 +10,22 @@ public class VanillaItemTiers {
     public static final Item.Tier DIAMOND = new Item.Tier(3, 1561, 8.0f, 3, 10);
     public static final Item.Tier NETHERITE = new Item.Tier(4, 2031, 9.0f, 4, 15);
 
-    public static ItemStack getTierItem(ItemRegistry registry, final Item.Tier tier) {
+    public static ItemStack getTierItem(final Item.Tier tier) {
         switch (tier.getLevel()) {
             case 0:
                 if (tier.getSpeed() == 2.0f){
                     return new ItemStack(VanillaBlockTypes.mWoodPlanks, 1);
                 } else {
-                    return new ItemStack(registry, VanillaItems.mGoldIngot);
+                    return new ItemStack(VanillaItems.mGoldIngot);
                 }
             case 1:
                 return new ItemStack(VanillaBlockTypes.mStone, 1);
             case 2:
-                return new ItemStack(registry, VanillaItems.mIronIngot);
+                return new ItemStack(VanillaItems.mIronIngot);
             case 3:
-                return new ItemStack(registry, VanillaItems.mDiamond);
+                return new ItemStack(VanillaItems.mDiamond);
             default:
-                return new ItemStack(registry);
+                return new ItemStack();
         }
     }
 }

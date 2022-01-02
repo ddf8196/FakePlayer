@@ -1,4 +1,4 @@
-package com.ddf.fakeplayer.level.chunk;
+package com.ddf.fakeplayer.level.chunk.subchunk;
 
 public enum SubChunkFormat {
     v17_0_0,

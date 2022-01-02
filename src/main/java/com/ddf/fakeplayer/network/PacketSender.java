@@ -1,13 +1,12 @@
 package com.ddf.fakeplayer.network;
 
-import com.ddf.fakeplayer.util.NotImplemented;
 import com.nukkitx.protocol.bedrock.BedrockPacket;
 
 import java.util.ArrayList;
 import java.util.function.Function;
 
 public abstract class PacketSender {
-    /*uint8_t SubClientId*/byte mSenderSubId;
+    protected  /*uint8_t SubClientId*/byte mSenderSubId;
 
     protected PacketSender(/*uint8_t SubClientId*/byte subid) {
         this.mSenderSubId = subid;

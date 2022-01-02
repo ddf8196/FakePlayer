@@ -247,158 +247,158 @@ public class VanillaItems {
 
     @NotImplemented
     public static void registerItems() {
-        mApple = new Item("apple");
-        mApple.setTag(VanillaItemTags.Food);
+        mApple = new Item("apple", 4 + 256);
+        mApple.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mApple);
 
-        mApple_gold = new Item("golden_apple");
-        mApple_gold.setTag(VanillaItemTags.Food);
+        mApple_gold = new Item("golden_apple", 66 + 256);
+        mApple_gold.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mApple_gold);
 
-        mApple_enchanted = new Item("appleEnchanted");
-        mApple_enchanted.setTag(VanillaItemTags.Food);
+        mApple_enchanted = new Item("appleEnchanted", 210 + 256);
+        mApple_enchanted.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mApple_enchanted);
 
-        mMushroomStew = new Item("mushroom_stew");
-        mMushroomStew.setTag(VanillaItemTags.Food);
+        mMushroomStew = new Item("mushroom_stew", 26 + 256);
+        mMushroomStew.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mMushroomStew);
 
-        mBread = new Item("bread");
-        mBread.setTag(VanillaItemTags.Food);
+        mBread = new Item("bread", 41 + 256);
+        mBread.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mBread);
 
-        mPorkChop_raw = new Item("porkchop");
-        mPorkChop_raw.setTag(VanillaItemTags.Food);
+        mPorkChop_raw = new Item("porkchop", 63 + 256);
+        mPorkChop_raw.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mPorkChop_raw);
 
-        mPorkChop_cooked = new Item("cooked_porkchop");
-        mPorkChop_cooked.setTag(VanillaItemTags.Food);
+        mPorkChop_cooked = new Item("cooked_porkchop", 64 + 256);
+        mPorkChop_cooked.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mPorkChop_cooked);
 
-        mFish_raw_cod = new Item("fish");
-        mFish_raw_cod.setTag(VanillaItemTags.Food);
+        mFish_raw_cod = new Item("fish", 93 + 256);
+        mFish_raw_cod.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mFish_raw_cod);
 
-        mFish_raw_salmon = new Item("salmon");
-        mFish_raw_salmon.setTag(VanillaItemTags.Food);
+        mFish_raw_salmon = new Item("salmon", 204 + 256);
+        mFish_raw_salmon.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mFish_raw_salmon);
 
-        mFish_raw_clownfish = new Item("clownfish");
-        mFish_raw_clownfish.setTag(VanillaItemTags.Food);
+        mFish_raw_clownfish = new Item("clownfish", 205 + 256);
+        mFish_raw_clownfish.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mFish_raw_clownfish);
 
-        mFish_raw_pufferfish = new Item("pufferfish");
-        mFish_raw_pufferfish.setTag(VanillaItemTags.Food);
+        mFish_raw_pufferfish = new Item("pufferfish", 206 + 256);
+        mFish_raw_pufferfish.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mFish_raw_pufferfish);
 
-        mFish_cooked_cod = new Item("cooked_fish");
-        mFish_cooked_cod.setTag(VanillaItemTags.Food);
+        mFish_cooked_cod = new Item("cooked_fish", 94 + 256);
+        mFish_cooked_cod.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mFish_cooked_cod);
 
-        mFish_cooked_salmon = new Item("cooked_salmon");
-        mFish_cooked_salmon.setTag(VanillaItemTags.Food);
+        mFish_cooked_salmon = new Item("cooked_salmon", 207 + 256);
+        mFish_cooked_salmon.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mFish_cooked_salmon);
 
-        mKelp_dried = new Item("dried_kelp");
-        mKelp_dried.setTag(VanillaItemTags.Food);
+        mKelp_dried = new Item("dried_kelp", 208 + 256);
+        mKelp_dried.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mKelp_dried);
 
-        mCookie = new Item("cookie");
-        mCookie.setTag(VanillaItemTags.Food);
+        mCookie = new Item("cookie", 101 + 256);
+        mCookie.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mCookie);
 
-        mMelonSlice = new Item("melon");
-        mMelonSlice.setTag(VanillaItemTags.Food);
+        mMelonSlice = new Item("melon", 104 + 256);
+        mMelonSlice.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mMelonSlice);
 
-        mBeef_raw = new Item("beef");
-        mBeef_raw.setTag(VanillaItemTags.Food);
+        mBeef_raw = new Item("beef", 107 + 256);
+        mBeef_raw.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mBeef_raw);
 
-        mBeef_cooked = new Item("cooked_beef");
-        mBeef_cooked.setTag(VanillaItemTags.Food);
+        mBeef_cooked = new Item("cooked_beef", 108 + 256);
+        mBeef_cooked.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mBeef_cooked);
 
-        mChicken_raw = new Item("chicken");
-        mChicken_raw.setTag(VanillaItemTags.Food);
+        mChicken_raw = new Item("chicken", 109 + 256);
+        mChicken_raw.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mChicken_raw);
 
-        mChicken_cooked = new Item("cooked_chicken");
-        mChicken_cooked.setTag(VanillaItemTags.Food);
+        mChicken_cooked = new Item("cooked_chicken", 110 + 256);
+        mChicken_cooked.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mChicken_cooked);
 
-        mRotten_flesh = new Item("rotten_flesh");
-        mRotten_flesh.setTag(VanillaItemTags.Food);
+        mRotten_flesh = new Item("rotten_flesh", 111 + 256);
+        mRotten_flesh.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mRotten_flesh);
 
-        mSpider_eye = new Item("spider_eye");
-        mSpider_eye.setTag(VanillaItemTags.Food);
+        mSpider_eye = new Item("spider_eye", 119 + 256);
+        mSpider_eye.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mSpider_eye);
 
-        mCarrot = new Item("carrot");
-        mCarrot.setTag(VanillaItemTags.Food);
+        mCarrot = new Item("carrot", 135 + 256);
+        mCarrot.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mCarrot);
 
-        mPotato = new Item("potato");
-        mPotato.setTag(VanillaItemTags.Food);
+        mPotato = new Item("potato", 136 + 256);
+        mPotato.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mPotato);
 
-        mPotatoBaked = new Item("baked_potato");
-        mPotatoBaked.setTag(VanillaItemTags.Food);
+        mPotatoBaked = new Item("baked_potato", 137 + 256);
+        mPotatoBaked.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mPotatoBaked);
 
-        mPoisonous_potato = new Item("poisonous_potato");
-        mPoisonous_potato.setTag(VanillaItemTags.Food);
+        mPoisonous_potato = new Item("poisonous_potato", 138 + 256);
+        mPoisonous_potato.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mPoisonous_potato);
 
-        mGoldenCarrot = new Item("golden_carrot");
-        mGoldenCarrot.setTag(VanillaItemTags.Food);
+        mGoldenCarrot = new Item("golden_carrot", 140 + 256);
+        mGoldenCarrot.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mGoldenCarrot);
 
-        mPumpkinPie = new Item("pumpkin_pie");
-        mPumpkinPie.setTag(VanillaItemTags.Food);
+        mPumpkinPie = new Item("pumpkin_pie", 144 + 256);
+        mPumpkinPie.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mPumpkinPie);
 
-        mBeetroot = new Item("beetroot");
-        mBeetroot.setTag(VanillaItemTags.Food);
+        mBeetroot = new Item("beetroot", 201 + 256);
+        mBeetroot.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mBeetroot);
 
-        mBeetrootSoup = new Item("beetroot_soup");
-        mBeetrootSoup.setTag(VanillaItemTags.Food);
+        mBeetrootSoup = new Item("beetroot_soup", 203 + 256);
+        mBeetrootSoup.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mBeetrootSoup);
 
-        mSweetBerries = new Item("sweet_berries");
-        mSweetBerries.setTag(VanillaItemTags.Food);
+        mSweetBerries = new Item("sweet_berries", 221 + 256);
+        mSweetBerries.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mSweetBerries);
 
-        mRabbitRaw = new Item("rabbit");
-        mRabbitRaw.setTag(VanillaItemTags.Food);
+        mRabbitRaw = new Item("rabbit", 155 + 256);
+        mRabbitRaw.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mRabbitRaw);
 
-        mRabbitCooked = new Item("cooked_rabbit");
-        mRabbitCooked.setTag(VanillaItemTags.Food);
+        mRabbitCooked = new Item("cooked_rabbit", 156 + 256);
+        mRabbitCooked.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mRabbitCooked);
 
-        mRabbitStew = new Item("rabbit_stew");
-        mRabbitStew.setTag(VanillaItemTags.Food);
+        mRabbitStew = new Item("rabbit_stew", 157 + 256);
+        mRabbitStew.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mRabbitStew);
 
-        mSeeds_wheat = new Item("wheat_seeds");
+        mSeeds_wheat = new Item("wheat_seeds", 39 + 256);
         ItemRegistry.registerItem(mSeeds_wheat);
 
-        mSeeds_pumpkin = new Item("pumpkin_seeds");
+        mSeeds_pumpkin = new Item("pumpkin_seeds", 105 + 256);
         ItemRegistry.registerItem(mSeeds_pumpkin);
 
-        mSeeds_melon = new Item("melon_seeds");
+        mSeeds_melon = new Item("melon_seeds", 106 + 256);
         ItemRegistry.registerItem(mSeeds_melon);
 
-        mNether_wart = new Item("nether_wart");
+        mNether_wart = new Item("nether_wart", 116 + 256);
         ItemRegistry.registerItem(mNether_wart);
 
-        mSeeds_beetroot = new Item("beetroot_seeds");
+        mSeeds_beetroot = new Item("beetroot_seeds", 202 + 256);
         ItemRegistry.registerItem(mSeeds_beetroot);
 
-        mTrident = new TridentItem("trident");
+        mTrident = new TridentItem("trident", 455);
         ItemRegistry.registerItem(mTrident);
         mTrident.setMaxStackSize((byte) 1);
         mTrident.setMaxDamage(250);

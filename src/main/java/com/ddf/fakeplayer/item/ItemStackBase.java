@@ -29,7 +29,6 @@ public class ItemStackBase {
     public static final String TAG_STORE_CAN_PLACE_ON = "CanPlaceOn";
     private static final String TAG_STORE_CAN_DESTROY = "CanDestroy";
 
-    private ItemRegistry registry;
     protected Item mItem;
     private CompoundTag mUserData;
     private Block mBlock = null;
@@ -45,60 +44,47 @@ public class ItemStackBase {
     private /*unsigned long Tick*/long mBlockingTick = 0;
     private ItemInstance mChargedItem = null;
 
-    private boolean usingNetId;
-    private int netId;
-
-    protected ItemStackBase(ItemRegistry registry) {
-        this.registry = registry;
+    protected ItemStackBase() {
         this.init(0, 0, 0);
     }
 
 
-    protected ItemStackBase(ItemRegistry registry, final int id) {
-        this.registry = registry;
+    protected ItemStackBase(final int id) {
         this.init(id, 1, 0);
     }
 
-    protected ItemStackBase(ItemRegistry registry, final int id, int count) {
-        this.registry = registry;
+    protected ItemStackBase(final int id, int count) {
         this.init(id, count, 0);
     }
 
-    protected ItemStackBase(ItemRegistry registry, final int id, int count, int auxValue) {
-        this.registry = registry;
+    protected ItemStackBase(final int id, int count, int auxValue) {
         this.init(id, count, auxValue);
     }
 
-    protected ItemStackBase(ItemRegistry registry, final int id, int count, int auxValue, final CompoundTag _userData) {
-        this.registry = registry;
+    protected ItemStackBase(final int id, int count, int auxValue, final CompoundTag _userData) {
         this.init(id, count, auxValue);
         if (_userData != null)
             this.mUserData = _userData.clone();
     }
 
-    protected ItemStackBase(ItemRegistry registry, final Item item) {
-        this.registry = registry;
+    protected ItemStackBase(final Item item) {
         this.init(item, 1, 0, null);
     }
 
-    protected ItemStackBase(ItemRegistry registry, final Item item, int count) {
-        this.registry = registry;
+    protected ItemStackBase(final Item item, int count) {
         this.init(item, count, 0, null);
     }
 
-    protected ItemStackBase(ItemRegistry registry, final Item item, int count, int auxValue) {
-        this.registry = registry;
+    protected ItemStackBase(final Item item, int count, int auxValue) {
         this.init(item, count, auxValue, null);
     }
 
-    protected ItemStackBase(ItemRegistry registry, final Item item, int count, int auxValue, final CompoundTag _userData) {
-        this.registry = registry;
+    protected ItemStackBase(final Item item, int count, int auxValue, final CompoundTag _userData) {
         this.init(item, count, auxValue, _userData);
     }
 
     @NotImplemented
     protected ItemStackBase(final ItemStackBase rhs) {
-        this.registry = rhs.registry;
         this.mBlock = rhs.mBlock;
         if (this.mBlock != null && rhs.mAuxValue == 0x7FFF) {
             //this.init(this.mBlock.getLegacyBlock(), rhs.mCount);
@@ -145,11 +131,9 @@ public class ItemStackBase {
 //    }
 
     final boolean _setItem(int id) {
-        if (registry != null) {
-            this.mItem = registry.getItem(id);
-        }
+        this.mItem = ItemRegistry.getItem(id);
         if (this.mItem != null) {
-            id = this.mItem.getId(this.registry);
+            id = this.mItem.getId();
         }
         if (this.mItem == null)
             this.mValid = id == 0;
@@ -166,7 +150,7 @@ public class ItemStackBase {
     private void _makeChargedItemFromUserData() {
         CompoundTag chargedItem;
         if (this.mUserData != null && (chargedItem = this.mUserData.getCompound(ItemStackBase.TAG_CHARGED_ITEM)) != null ) {
-            this.mChargedItem = ItemInstance.fromTag(registry, chargedItem);
+            this.mChargedItem = ItemInstance.fromTag(chargedItem);
         } else if (this.mChargedItem != null) {
             this.mChargedItem = null;
         }
@@ -217,7 +201,7 @@ public class ItemStackBase {
         if (compoundTag.contains("Name")) {
             Item item = ItemRegistry.lookupByName(compoundTag.getString("Name"));
             if (item != null)
-                idpair.id = item.getId(registry);
+                idpair.id = item.getId();
         } else {
             idpair.id = compoundTag.getShort("id");
             IdPair.PromoteItemIdPair(idpair);
@@ -253,13 +237,7 @@ public class ItemStackBase {
         this.mCount = (byte) Math.max(count_, 0);
         if (this.mBlock == null)
             this.setAuxValue((short) aux_);
-        if (this.registry != null && this.registry.isInitialized()) {
-            this._setItem(id);
-        } else if (this.registry != null) {
-            this.registry.addNonInitializedItemStack(this, id);
-        } else {
-            this._setItem(id);
-        }
+        this._setItem(id);
         this.mPickupTime = System.nanoTime();
         if (this.mItem != null) {
             this.mItem.getLegacyBlock();
@@ -286,7 +264,7 @@ public class ItemStackBase {
 //                }
 //            }
         } else {
-            this.init(item.getId(registry), count, auxValue);
+            this.init(item.getId(), count, auxValue);
         }
         if (userData != null)
             this.mUserData = userData.clone();
@@ -304,16 +282,12 @@ public class ItemStackBase {
         this.mChargedItem = null;
     }
 
-    public final ItemRegistry getRegistry() {
-        return this.registry;
-    }
-
     public final short getId() {
         if (!this.mValid)
             return -1;
         if (this.mItem == null)
             return 0;
-        return this.mItem.getId(registry);
+        return this.mItem.getId();
     }
 
     public final short getAuxValue() {
@@ -332,7 +306,7 @@ public class ItemStackBase {
             damageValue = this.getAuxValue();
         if (this.mItem == null)
             return 0;
-        return damageValue | (this.mItem.getId(registry) << 16);
+        return damageValue | (this.mItem.getId() << 16);
     }
 
     public short getMaxDamage() {
@@ -649,22 +623,6 @@ public class ItemStackBase {
 
     public final void setBlockingTick(long blockingTick) {
         this.mBlockingTick = blockingTick;
-    }
-
-    public boolean isUsingNetId() {
-        return usingNetId;
-    }
-
-    public void setUsingNetId(boolean usingNetId) {
-        this.usingNetId = usingNetId;
-    }
-
-    public int getNetId() {
-        return netId;
-    }
-
-    public void setNetId(int netId) {
-        this.netId = netId;
     }
 
     public void load(final CompoundTag compoundTag) {

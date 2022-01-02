@@ -9,6 +9,7 @@ import com.ddf.fakeplayer.actor.player.Abilities;
 import com.ddf.fakeplayer.actor.player.LocalPlayer;
 import com.ddf.fakeplayer.actor.player.Player;
 import com.ddf.fakeplayer.block.BlockLegacy;
+import com.ddf.fakeplayer.block.BlockPalette;
 import com.ddf.fakeplayer.block.BlockPos;
 import com.ddf.fakeplayer.block.BlockSourceListener;
 import com.ddf.fakeplayer.item.ItemRegistry;
@@ -30,7 +31,6 @@ import java.util.function.Function;
 public abstract class Level implements BlockSourceListener/*, IWorldRegistriesProvider*/ {
     private List<Actor> entities = new ArrayList<>();
 
-    private ItemRegistry itemRegistry;
     private ArrayList<ChunkPos> mTickingChunksOffset = new ArrayList<>();
     private ArrayList<ChunkPos> mClientTickingChunksOffset = new ArrayList<>();
     private ArrayList<Player> mPlayers = new ArrayList<>();
@@ -62,7 +62,7 @@ public abstract class Level implements BlockSourceListener/*, IWorldRegistriesPr
     //private ProjectileFactory mProjectileFactory;
     //private BehaviorFactory mBehaviorFactory = new BehaviorFactory();
     //private BehaviorTreeGroup mBehaviorTreeDefinitions;
-    //private BlockPalette mGlobalBlockPalette;
+    private BlockPalette mGlobalBlockPalette = new BlockPalette(this);
     //private Recipes mRecipes;
     private HashMap<Integer, Dimension> mDimensions = new HashMap<>();
     //private PortalForcer mPortalForcer;
@@ -123,7 +123,7 @@ public abstract class Level implements BlockSourceListener/*, IWorldRegistriesPr
     //private FeatureRegistry mFeatureRegistry;
     //private FeatureTypeFactory mFeatureTypeFactory;
     //private JigsawStructureRegistry mJigsawStructureRegistry = new JigsawStructureRegistry();
-    //private BiomeRegistry mBiomes;
+    private BiomeRegistry mBiomes;
     //private BiomeComponentFactory mBiomeComponentFactory;
     //private SurfaceBuilderRegistry mSurfaceBuilders;
     //private Factory<Dimension, Level, Scheduler> mDimensionFactory = new Factory<>();
@@ -137,8 +137,7 @@ public abstract class Level implements BlockSourceListener/*, IWorldRegistriesPr
     private float mPlayerMovementDistanceThresholdSqr = this.mPlayerMovementDistanceThreshold * this.mPlayerMovementDistanceThreshold;
 
     @NotImplemented
-    protected Level(ItemRegistry itemRegistry, /*SoundPlayer*/Object soundPlayer, /*LevelStorage*/Object levelStorage, /*IMinecraftEventing*/Object eventing, boolean isClientSide, /*Scheduler*/Object callbackContext, /*StructureManager*/Object structureManager, /*ResourcePackManager*/Object addOnResourcePackManager, IEntityRegistryOwner entityRegistryOwner, /*BlockComponentFactory*/Object blockComponentFactory, /*BlockDefinitionGroup*/Object blockDefinitionGroup) {
-        this.itemRegistry = itemRegistry;
+    protected Level(/*SoundPlayer*/Object soundPlayer, /*LevelStorage*/Object levelStorage, /*IMinecraftEventing*/Object eventing, boolean isClientSide, /*Scheduler*/Object callbackContext, /*StructureManager*/Object structureManager, /*ResourcePackManager*/Object addOnResourcePackManager, IEntityRegistryOwner entityRegistryOwner, /*BlockComponentFactory*/Object blockComponentFactory, /*BlockDefinitionGroup*/Object blockDefinitionGroup) {
 //        this.mSoundPlayer = soundPlayer;
 //        this.mLevelStorage = levelStorage
 //        this.mEventing = eventing;
@@ -177,6 +176,18 @@ public abstract class Level implements BlockSourceListener/*, IWorldRegistriesPr
         return this.mLevelData.get().getAdventureSettings();
     }
 
+    public final BiomeRegistry getBiomeRegistry() {
+        return this.mBiomes;
+    }
+
+    public BlockPalette getBlockPalette() {
+        return this.mGlobalBlockPalette;
+    }
+
+    public final BlockPalette getGlobalBlockPalette() {
+        return this.mGlobalBlockPalette;
+    }
+
     public final long getCurrentTick() {
         return this.mLevelData.get().getCurrentTick();
     }
@@ -203,10 +214,6 @@ public abstract class Level implements BlockSourceListener/*, IWorldRegistriesPr
 
     public HitResult getLiquidHitResult() {
         return this.mLiquidHitResult;
-    }
-
-    public ItemRegistry getItemRegistry() {
-        return itemRegistry;
     }
 
     public LevelData getLevelData() {

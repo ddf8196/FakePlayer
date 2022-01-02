@@ -18,8 +18,8 @@ public class DiggerItem extends Item {
     private ArrayList<Block> mBlocks = new ArrayList<>();
     private TreeSet<BlockLegacy> m_bBlocks = new TreeSet<>();
 
-    protected DiggerItem(final String name/*, int id*/, int attackDamage, final Item.Tier tier, final ArrayList<Block> blocks) {
-        super(name);
+    protected DiggerItem(final String name, int id, int attackDamage, final Item.Tier tier, final ArrayList<Block> blocks) {
+        super(name, id);
         this.mSpeed = tier.getSpeed();
         this.mTier = tier;
         this.setBlocks(blocks);
@@ -56,7 +56,7 @@ public class DiggerItem extends Item {
 
     @Override
     public boolean isValidRepairItem(final ItemInstance source, final ItemInstance repairItem) {
-        ItemInstance tierItem = new ItemInstance(VanillaItemTiers.getTierItem(source.getRegistry(), this.mTier));
+        ItemInstance tierItem = new ItemInstance(VanillaItemTiers.getTierItem(this.mTier));
         if (tierItem.isItem() == repairItem.isItem()) {
             if (tierItem.isItem() && tierItem.getItem() == repairItem.getItem()) {
                 return true;

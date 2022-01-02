@@ -6,7 +6,6 @@ import com.ddf.fakeplayer.container.ContainerID;
 import com.ddf.fakeplayer.container.inventory.InventoryAction;
 import com.ddf.fakeplayer.container.inventory.InventorySource;
 import com.ddf.fakeplayer.container.inventory.InventorySourceType;
-import com.ddf.fakeplayer.item.ItemRegistry;
 import com.ddf.fakeplayer.item.ItemStack;
 import com.ddf.fakeplayer.util.NotImplemented;
 
@@ -15,20 +14,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class InventoryTransaction {
-    final ItemRegistry itemRegistry;
     private final HashMap<InventorySource, ArrayList<InventoryAction>> mActions = new HashMap<>();
     private final ArrayList<InventoryTransactionItemGroup> mContents = new ArrayList<>();
 
-    public InventoryTransaction(ItemRegistry itemRegistry) {
-        this.itemRegistry = itemRegistry;
+    public InventoryTransaction() {
     }
 
     public InventoryTransaction(final InventoryTransaction a2) {
         if (a2 == null) {
-            this.itemRegistry = null;
             return;
         }
-        this.itemRegistry = a2.itemRegistry;
         this.mActions.putAll(a2.mActions);
         this.mContents.addAll(a2.mContents);
     }
@@ -106,7 +101,7 @@ public class InventoryTransaction {
             if (c.add(item, count))
                 return;
         }
-        this.mContents.add(new InventoryTransactionItemGroup(itemRegistry, item, count));
+        this.mContents.add(new InventoryTransactionItemGroup(item, count));
     }
 
     public final HashMap<InventorySource, ArrayList<InventoryAction>> getAllActions() {

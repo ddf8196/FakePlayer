@@ -38,7 +38,6 @@ public class Client implements Closeable {
     private volatile MultiPlayerLevel level;
     private volatile FakePlayer player;
 
-    private volatile ItemRegistry itemRegistry;
     private Logger logger;
     private ClientThread clientThread;
     private boolean initialized = false;
@@ -106,8 +105,7 @@ public class Client implements Closeable {
             }
             this.stop.set(false);
             try {
-                itemRegistry = new ItemRegistry();
-                level = new MultiPlayerLevel(itemRegistry, packetSender);
+                level = new MultiPlayerLevel(packetSender);
                 player = new FakePlayer(level, playerName, playerUUID, this);
                 level.addEntity(player);
                 packetHandler = new ClientPacketHandler(this);
@@ -122,6 +120,12 @@ public class Client implements Closeable {
                     logger.log(playerName, " 协议版本获取失败,尝试使用默认协议版本(", defaultPacketCodec.getProtocolVersion(), ")连接");
                 }
                 bedrockClient.setRakNetVersion(ProtocolVersionUtil.getRakNetProtocolVersion(packetCodec));
+
+                //1.16.100+
+                if (packetCodec.getProtocolVersion() >= 419 && ProtocolVersionUtil.getBlockPalette(packetCodec) != null) {
+                    level.getGlobalBlockPalette().initFromNbtMapList(ProtocolVersionUtil.getBlockPalette(packetCodec));
+                }
+
                 bedrockClient.connect(addressToConnect, 1, TimeUnit.SECONDS).whenComplete((session, throwable) -> runOnClientThread(() ->  {
                     if (throwable != null) {
                         return;
@@ -279,9 +283,10 @@ public class Client implements Closeable {
         if (reconnectTask != null) {
             reconnectTask.tick();
         }
-        if (!isConnected()) {
+        if (!isConnected() && !receivedPackets.isEmpty()) {
             receivedPackets.clear();
-        } else {
+        }
+        if (isConnected()) {
             while (!receivedPackets.isEmpty()) {
                 BedrockPacket packet = receivedPackets.poll();
                 if (packet != null) {
@@ -296,10 +301,6 @@ public class Client implements Closeable {
                 runnable.run();
             }
         }
-    }
-
-    public ItemRegistry getItemRegistry() {
-        return itemRegistry;
     }
 
     public boolean isStop() {

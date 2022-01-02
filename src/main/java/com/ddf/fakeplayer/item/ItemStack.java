@@ -10,42 +10,43 @@ import com.ddf.fakeplayer.nbt.CompoundTag;
 import com.ddf.fakeplayer.util.NotImplemented;
 
 public class ItemStack extends ItemStackBase implements Cloneable {
-    public static final ItemStack EMPTY_ITEM = new ItemStack(null, BedrockItems.mAir, 0, 0, null);
+    public static final ItemStack EMPTY_ITEM = new ItemStack(BedrockItems.mAir, 0, 0, null);
+    private ItemStackNetIdVariant mNetIdVariant = new ItemStackNetIdVariant();
 
-    public ItemStack(ItemRegistry registry) {
-        super(registry);
+    public ItemStack() {
+        super();
     }
 
-    public ItemStack(ItemRegistry registry, final int id) {
-        super(registry, id);
+    public ItemStack(final int id) {
+        super(id);
     }
 
-    public ItemStack(ItemRegistry registry, final int id, int count) {
-        super(registry, id, count);
+    public ItemStack(final int id, int count) {
+        super(id, count);
     }
 
-    public ItemStack(ItemRegistry registry, final int id, int count, int auxValue) {
-        super(registry, id, count, auxValue);
+    public ItemStack(final int id, int count, int auxValue) {
+        super(id, count, auxValue);
     }
 
-    public ItemStack(ItemRegistry registry, final int id, int count, int auxValue, final CompoundTag _userData) {
-        super(registry, id, count, auxValue, _userData);
+    public ItemStack(final int id, int count, int auxValue, final CompoundTag _userData) {
+        super(id, count, auxValue, _userData);
     }
 
-    public ItemStack(ItemRegistry registry, Item item) {
-        super(registry, item);
+    public ItemStack(Item item) {
+        super(item);
     }
 
-    public ItemStack(ItemRegistry registry, final Item item, int count) {
-        super(registry, item, count);
+    public ItemStack(final Item item, int count) {
+        super(item, count);
     }
 
-    public ItemStack(ItemRegistry registry, final Item item, int count, int auxValue) {
-        super(registry, item, count, auxValue);
+    public ItemStack(final Item item, int count, int auxValue) {
+        super(item, count, auxValue);
     }
 
-    public ItemStack(ItemRegistry registry, final Item item, int count, int auxValue, final CompoundTag _userData) {
-        super(registry, item, count, auxValue, _userData);
+    public ItemStack(final Item item, int count, int auxValue, final CompoundTag _userData) {
+        super(item, count, auxValue, _userData);
     }
 
     public ItemStack(ItemInstance rhs) {
@@ -60,20 +61,36 @@ public class ItemStack extends ItemStackBase implements Cloneable {
         super(block, count);
     }
 
-    @NotImplemented
     public final float getDestroySpeed(final Block block) {
-        return 1.0f;
-//        if (this.mItem != null) {
-//            return this.mItem.getDestroySpeed(new ItemInstance(this), block);
-//        } else {
-//            return 1.0f;
-//        }
+        if (this.mItem != null) {
+            return this.mItem.getDestroySpeed(new ItemInstance(this), block);
+        } else {
+            return 1.0f;
+        }
+    }
+
+    public final ItemStackNetIdVariant getItemStackNetIdVariant() {
+        return this.mNetIdVariant;
     }
 
     public int getMaxUseDuration() {
         if (!this.isItem())
             return 0;
         return this.mItem.getMaxUseDuration(this);
+    }
+
+    @Override
+    public void setNull() {
+        super.setNull();
+        if (this.mNetIdVariant != null)
+            this.mNetIdVariant.set(0, 0);
+    }
+
+    public final void clientInitNetId(int netId) {
+        if (netId > 0/*TypedServerNetId<ItemStackNetIdTag,int,0>::isValid()*/)
+            this.mNetIdVariant.set(netId, ItemStackNetIdVariant.SERVER_NET_ID);
+        else
+            this.mNetIdVariant.set(0, 0);
     }
 
     public void releaseUsing(Player player, int durationLeft) {

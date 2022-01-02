@@ -6,6 +6,7 @@ import com.ddf.fakeplayer.level.SavedData;
 import com.ddf.fakeplayer.level.chunk.*;
 import com.ddf.fakeplayer.level.Level;
 import com.ddf.fakeplayer.level.LevelListener;
+import com.ddf.fakeplayer.level.generator.GeneratorType;
 import com.ddf.fakeplayer.nbt.CompoundTag;
 import com.ddf.fakeplayer.network.NetworkIdentifierWithSubId;
 import com.ddf.fakeplayer.util.*;
@@ -37,7 +38,7 @@ public abstract class Dimension extends SavedData implements LevelListener  {
     //private TaskGroup mTaskGroup;
     //private PostprocessingManager mPostProcessingManager = new PostprocessingManager();
     private ChunkSource mChunkSource;
-    //private WorldGenerator mWorldGenerator = null;
+    private WorldGenerator mWorldGenerator = null;
     private Weather mWeather;
     private Seasons mSeasons;
     //private CircuitSystem mCircuitSystem = new CircuitSystem();
@@ -49,7 +50,7 @@ public abstract class Dimension extends SavedData implements LevelListener  {
     //private LevelChunkGarbageCollector mLevelChunkGarbageCollector = new LevelChunkGarbageCollector(this);
     private TreeSet</*ActorUniqueID*/Long> mWitherIDs = new TreeSet<>();
     //private RuntimeLightingManager mRuntimeLightingManager;
-    //private LevelChunkBuilderData mLevelChunkBuilderData = new LevelChunkBuilderData();
+    private LevelChunkBuilderData mLevelChunkBuilderData = new LevelChunkBuilderData();
     private long mLastPruneTime = 0;
     //private ChunkBuildOrderPolicyBase mChunkBuildOrderPolicy = new ChunkBuildOrderPolicy();
     //private VillageManager mVillageManager;
@@ -91,6 +92,37 @@ public abstract class Dimension extends SavedData implements LevelListener  {
         this.setDirty(true);
     }
 
+    @NotImplemented
+    public void init() {
+        ChunkSource chunkSource;
+        if (this.mLevel.isClientSide()) {
+            this.mWorldGenerator = null;
+            chunkSource = new NetworkChunkSource(this);
+        } else {
+            throw new RuntimeException("Not implemented");
+        }
+
+//        if (!this.mLevel.getLevelData().hasSpawnPos()) {
+//            BlockPos spawnPos = this.mWorldGenerator.findSpawnPosition();
+//            this.mLevel.getLevelData().setSpawnPos(spawnPos);
+//        }
+
+        if (this.mLevel.getLevelData().getGenerator() != GeneratorType.Legacy) {
+            this.mChunkSource = chunkSource;
+        } else {
+            this.mChunkSource = new WorldLimitChunkSource(chunkSource, this.mLevel.getLevelData().getWorldCenter());
+        }
+        this.mBlockSource = new BlockSource(this.mLevel,this, this.mChunkSource, false, false);
+
+//        this.mRuntimeLightingManager = new RuntimeLightingManager(this);
+
+        this.updateLightRamp();
+        this.mLastPruneTime = System.currentTimeMillis();
+//        if (!this.mLevel.isClientSide() && this.mId == VanillaDimensions.Overworld) {
+//            this.mVillageManager.loadAllVillages();
+//        }
+    }
+
     public int getDefaultBiome() {
         return 0;
     }
@@ -99,8 +131,12 @@ public abstract class Dimension extends SavedData implements LevelListener  {
         return this.mHeight;
     }
 
-    public Level getLevel() {
+    public final Level getLevel() {
         return this.mLevel;
+    }
+
+    public final LevelChunkBuilderData getLevelChunkBuilderData() {
+        return this.mLevelChunkBuilderData;
     }
 
     public BrightnessPair getDefaultBrightness() {
@@ -109,5 +145,12 @@ public abstract class Dimension extends SavedData implements LevelListener  {
 
     public int getId() {
         return this.mId;
+    }
+
+    public void updateLightRamp() { //+40
+        for (int i = 0; i <= Brightness.MAX; ++i) {
+            float v = 1.0f - ((float) i / (float) Brightness.MAX);
+            this.mBrightnessRamp[i] = MathUtil.clamp(((1.0f - v) / ((3.0f * v) + 1.0f)) + 0.0f, 0.0f, 1.0f);
+        }
     }
 }

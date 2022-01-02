@@ -6,7 +6,7 @@ public class VanillaBlockTypes {
     public static BlockLegacy mYellowFlower;
     public static BlockLegacy mWorkBench;
     public static BlockLegacy mWoolCarpet;
-    public static BlockLegacy mWool;;
+    public static BlockLegacy mWool;
     public static BlockLegacy mWoodenSlab;
     public static BlockLegacy mWoodenDoorSpruce;
     public static BlockLegacy mWoodenDoorJungle;

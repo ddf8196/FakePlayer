@@ -9,7 +9,6 @@ import com.ddf.fakeplayer.container.ContainerID;
 import com.ddf.fakeplayer.container.inventory.InventoryAction;
 import com.ddf.fakeplayer.container.inventory.InventorySource;
 import com.ddf.fakeplayer.container.inventory.transaction.*;
-import com.ddf.fakeplayer.item.ItemRegistry;
 import com.ddf.fakeplayer.item.ItemStack;
 import com.ddf.fakeplayer.level.GameType;
 import com.ddf.fakeplayer.level.dimension.ChangeDimensionRequest;
@@ -63,11 +62,10 @@ public class DataConverter {
         return Vector3i.from(blockPos.x, blockPos.y, blockPos.z);
     }
 
-    public static ItemStack itemStack(ItemRegistry registry, ItemData itemData) {
-        ItemStack itemStack = new ItemStack(registry, itemData.getId(), itemData.getCount(), itemData.getDamage(), compoundTag(itemData.getTag()));
+    public static ItemStack itemStack(ItemData itemData) {
+        ItemStack itemStack = new ItemStack(itemData.getId(), itemData.getCount(), itemData.getDamage(), compoundTag(itemData.getTag()));
         itemStack.setBlockingTick(itemData.getBlockingTicks());
-        itemStack.setUsingNetId(itemData.isUsingNetId());
-        itemStack.setNetId(itemData.getNetId());
+        itemStack.clientInitNetId(itemData.getNetId());
         return itemStack;
     }
 
@@ -80,8 +78,8 @@ public class DataConverter {
                 //.canPlace()
                 //.canBreak()
                 .blockingTicks(itemStack.getBlockingTick())
-                .usingNetId(itemStack.isUsingNetId())
-                .netId(itemStack.getNetId())
+                .usingNetId(itemStack.getItemStackNetIdVariant().hasAnyValidId())
+                .netId(itemStack.getItemStackNetIdVariant().toInt())
                 .build();
     }
 
@@ -137,14 +135,14 @@ public class DataConverter {
         return packet;
     }
 
-    public static ComplexInventoryTransaction complexInventoryTransaction(ItemRegistry itemRegistry, InventoryTransactionPacket inventoryTransactionPacket) {
-        InventoryTransaction transaction = new InventoryTransaction(itemRegistry);
+    public static ComplexInventoryTransaction complexInventoryTransaction(InventoryTransactionPacket inventoryTransactionPacket) {
+        InventoryTransaction transaction = new InventoryTransaction();
         ComplexInventoryTransaction.Type type = null;
         switch (inventoryTransactionPacket.getTransactionType()) {
             case NORMAL: {
                 type = ComplexInventoryTransaction.Type.NormalTransaction;
                 for (InventoryActionData actionData : inventoryTransactionPacket.getActions()) {
-                    transaction.addAction(inventoryAction(itemRegistry, actionData));
+                    transaction.addAction(inventoryAction(actionData));
                 }
             }
             break;
@@ -176,12 +174,12 @@ public class DataConverter {
                 itemData(inventoryAction.getToItem()));
     }
 
-    public static InventoryAction inventoryAction(ItemRegistry itemRegistry, InventoryActionData inventoryActionData) {
+    public static InventoryAction inventoryAction(InventoryActionData inventoryActionData) {
         return new InventoryAction(
                 inventorySource(inventoryActionData.getSource()),
                 inventoryActionData.getSlot(),
-                itemStack(itemRegistry, inventoryActionData.getFromItem()),
-                itemStack(itemRegistry, inventoryActionData.getToItem()));
+                itemStack(inventoryActionData.getFromItem()),
+                itemStack(inventoryActionData.getToItem()));
     }
 
     public static InventorySource inventorySource(com.nukkitx.protocol.bedrock.data.inventory.InventorySource inventorySource) {

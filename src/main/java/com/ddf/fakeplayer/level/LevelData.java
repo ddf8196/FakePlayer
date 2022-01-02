@@ -3,6 +3,7 @@ package com.ddf.fakeplayer.level;
 import com.ddf.fakeplayer.actor.player.Abilities;
 import com.ddf.fakeplayer.block.BlockPos;
 import com.ddf.fakeplayer.level.gamerule.GameRules;
+import com.ddf.fakeplayer.level.generator.GeneratorType;
 import com.ddf.fakeplayer.nbt.CompoundTag;
 import com.ddf.fakeplayer.util.NotImplemented;
 import com.ddf.fakeplayer.util.SemVersion;
@@ -37,7 +38,7 @@ public class LevelData {
     private Difficulty mGameDifficulty = Difficulty.Normal_0;
     private boolean mForceGameType = false;
     private boolean mSpawnMobs = this.mGameType == GameType.Survival;
-    //private GeneratorType mGenerator = GeneratorType.Overworld;
+    private GeneratorType mGenerator = GeneratorType.Overworld;
     private /*uint32_t*/long mWorldStartCount = -1;
     private boolean mAchievementsDisabled = false;
     //private EducationEditionOffer mEducationEditionOffer = EducationEditionOffer.None_3;
@@ -99,12 +100,24 @@ public class LevelData {
         return this.mGameType;
     }
 
+    public final GeneratorType getGenerator() {
+        return this.mGenerator;
+    }
+
     public final String getLevelName() {
         return this.mLevelName;
     }
 
     public final BlockPos getSpawnPos() {
         return this.mSpawnPos;
+    }
+
+    public final BlockPos getWorldCenter() {
+        return this.mLimitedWorldOrigin;
+    }
+
+    public final boolean hasSpawnPos() {
+        return this.mHasSpawnPos;
     }
 
     public final boolean hasStartWithMapEnabled() {
@@ -123,6 +136,10 @@ public class LevelData {
 
     public final void setGameType(GameType type) {
         this.mGameType = type;
+    }
+
+    public final void setGenerator(GeneratorType generator) {
+        this.mGenerator = generator;
     }
 
     public final void setSpawnPos(final BlockPos spawn) {

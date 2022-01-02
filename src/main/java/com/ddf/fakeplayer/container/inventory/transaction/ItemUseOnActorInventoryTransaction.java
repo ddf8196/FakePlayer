@@ -12,12 +12,12 @@ public class ItemUseOnActorInventoryTransaction extends ComplexInventoryTransact
     private Vec3 mFromPos;
     private Vec3 mHitPos;
 
-    public ItemUseOnActorInventoryTransaction(ItemRegistry itemRegistry) {
-        super(itemRegistry, Type.ItemUseOnEntityTransaction);
+    public ItemUseOnActorInventoryTransaction() {
+        super(Type.ItemUseOnEntityTransaction);
         this.mRuntimeId = 0L;
         this.mActionType = ActionType.Interact_1;
         this.mSlot = -1;
-        this.mItem = new ItemStack(itemRegistry);
+        this.mItem = new ItemStack();
         this.mFromPos = new Vec3();
         this.mHitPos = new Vec3();
     }
@@ -27,7 +27,7 @@ public class ItemUseOnActorInventoryTransaction extends ComplexInventoryTransact
         this.mRuntimeId = 0L;
         this.mActionType = ActionType.Interact_1;
         this.mSlot = -1;
-        this.mItem = new ItemStack(transaction.itemRegistry);
+        this.mItem = new ItemStack();
         this.mFromPos = new Vec3();
         this.mHitPos = new Vec3();
     }

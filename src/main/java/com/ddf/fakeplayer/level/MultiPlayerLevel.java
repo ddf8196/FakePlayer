@@ -7,8 +7,8 @@ import com.nukkitx.protocol.bedrock.packet.TickSyncPacket;
 public class MultiPlayerLevel extends Level {
     private long mLastSyncServerTick = 0;
 
-    public MultiPlayerLevel(ItemRegistry itemRegistry, PacketSender packetSender) {
-        super(itemRegistry, null, null, null, true, null, null, null, null, null, null);
+    public MultiPlayerLevel(PacketSender packetSender) {
+        super(null, null, null, true, null, null, null, null, null, null);
         this.mPacketSender = packetSender;
     }
 

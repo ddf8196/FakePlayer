@@ -269,7 +269,7 @@ public class JsFakePlayer extends JsPlayer {
     @JSFunction
     public boolean useItemInSlotOnBlock(int slot, JsBlockLocation blockLocation, int direction, int faceLocationX, int faceLocationY) {
         PlayerInventoryProxy inventory = fakePlayer.getSupplies();
-        ItemUseInventoryTransaction transaction = new ItemUseInventoryTransaction(fakePlayer.getLevel().getItemRegistry());
+        ItemUseInventoryTransaction transaction = new ItemUseInventoryTransaction();
         inventory.createTransactionContext((container, slot1, oldItem, newItem) -> {
 
         }, () -> {

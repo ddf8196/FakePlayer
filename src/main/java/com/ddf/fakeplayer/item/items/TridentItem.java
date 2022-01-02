@@ -9,8 +9,8 @@ import com.ddf.fakeplayer.item.enchant.EnchantUtils;
 import com.ddf.fakeplayer.util.Vec3;
 
 public class TridentItem extends Item {
-    public TridentItem(String name/*, int id*/) {
-        super(name/*, id*/);
+    public TridentItem(String name, int id) {
+        super(name, id);
         this.mUseAnim = UseAnimation.Spear;
         setMaxUseDuration(72000);
         this.mMaxDamage = 8;

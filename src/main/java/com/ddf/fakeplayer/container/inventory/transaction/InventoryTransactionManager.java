@@ -30,7 +30,7 @@ public class InventoryTransactionManager {
         if (!this.checkActionExpected(action)) {
             if (!action.getFromItem().equals(action.getToItem())){
                 if (this.mCurrentTransaction == null) {
-                    this.mCurrentTransaction = new InventoryTransaction(this.mPlayer.getLevel().getItemRegistry());
+                    this.mCurrentTransaction = new InventoryTransaction();
                 }
                 this.mCurrentTransaction.addAction(action);
                 if (this.mCurrentTransaction.verifyBalance()) {

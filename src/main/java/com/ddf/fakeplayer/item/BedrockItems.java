@@ -6,7 +6,7 @@ public class BedrockItems {
     public static Item mAir;
 
     public static void registerItems() {
-        BedrockItems.mAir = new AirBlockItem("air");
+        BedrockItems.mAir = new AirBlockItem("air", -158);
         ItemRegistry.registerItem(BedrockItems.mAir);
     }
 }

@@ -26,7 +26,7 @@ public class Inventory extends FillingContainer {
         this.clearInventory(36);
         if (this.mPlayer != null) {
             if (this.mPlayer.getLevel().hasStartWithMapEnabled()) {
-                ItemStack map = new ItemStack(mPlayer.getLevel().getItemRegistry(), VanillaItems.mEmptyMap, 1, 2);
+                ItemStack map = new ItemStack(VanillaItems.mEmptyMap, 1, 2);
                 CompoundTag tag = new CompoundTag();
                 tag.putInt(MapItem.TAG_MAP_SCALE, this._getDefaultStartingMapScale());
                 map.setUserData(tag);

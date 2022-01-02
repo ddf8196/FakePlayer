@@ -1,5 +1,7 @@
 package com.ddf.fakeplayer.main;
 
+import com.ddf.fakeplayer.block.*;
+import com.ddf.fakeplayer.block.blocktypes.UnknownBlock;
 import com.ddf.fakeplayer.client.Client;
 import com.ddf.fakeplayer.actor.attribute.SharedAttributes;
 import com.ddf.fakeplayer.js.JSLoader;
@@ -10,8 +12,12 @@ import com.ddf.fakeplayer.main.gui.GUIMain;
 import com.ddf.fakeplayer.item.BedrockItems;
 import com.ddf.fakeplayer.item.VanillaItems;
 import com.ddf.fakeplayer.main.config.Config;
+import com.ddf.fakeplayer.util.DataConverter;
 import com.ddf.fakeplayer.util.Logger;
+import com.ddf.fakeplayer.util.ProtocolVersionUtil;
+import com.ddf.fakeplayer.util.mc.VanillaBlockUpdater;
 import com.ddf.fakeplayer.websocket.WebSocketServer;
+import com.nukkitx.nbt.NbtMap;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -201,6 +207,34 @@ public abstract class Main {
         BedrockItems.registerItems();
         VanillaItems.registerItems();
         SharedAttributes.init();
+
+//        if (++_initCount != 1)
+//            return false;
+        Material.initMaterials();
+//        VanillaStates.registerStates();
+        BedrockBlockTypes.registerBlocks();
+        VanillaBlockTypes.registerBlocks();
+        //----------------------------------------
+        for (NbtMap nbtMap : ProtocolVersionUtil.getBlockPalette(ProtocolVersionUtil.getLatestPacketCodec())) {
+            NbtMap block = nbtMap.getCompound("block");
+            String name = block.getString("name");
+            NbtMap states = block.getCompound("states");
+            int id = nbtMap.getInt("id");
+            BlockLegacy blockLegacy = BlockTypeRegistry.lookupByName(name);
+            if (blockLegacy == null)
+                BlockTypeRegistry.registerBlock(new UnknownBlock(name, id, DataConverter.compoundTag(block)));
+            else if (blockLegacy instanceof UnknownBlock)
+                ((UnknownBlock) blockLegacy).addState(DataConverter.compoundTag(block));
+        }
+        //----------------------------------------
+//        if (blockDefinitionGroup != null)
+//            BlockDefinitionGroup.registerBlocks(blockDefinitionGroup);
+        VanillaBlockUpdater.initialize();
+        BlockTypeRegistry.prepareBlocks(Integer.MIN_VALUE/*VanillaBlockUpdater.get().latestVersion()*/);
+        BedrockBlocks.assignBlocks();
+        VanillaBlocks.assignBlocks();
+//        WorldSystems.init(resourcePackManager);
+//            return true;
 
         JSLoader.init();
         if (System.getProperty("fakeplayer.nogui", "false").equals("true")) {

@@ -1,9 +1,10 @@
 package com.ddf.fakeplayer.util.mc;
 
-import com.ddf.fakeplayer.actor.ActorFlags;
 import com.ddf.fakeplayer.block.BlockPos;
+import com.ddf.fakeplayer.util.NotImplemented;
 
 public class Facing {
+    @NotImplemented
     public static final BlockPos[] DIRECTION = new BlockPos[6];
 
     public enum Name {
@@ -36,5 +37,4 @@ public class Facing {
             return null;
         }
     }
-
 }

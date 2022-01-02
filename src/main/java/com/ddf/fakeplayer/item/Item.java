@@ -12,10 +12,10 @@ import com.ddf.fakeplayer.item.enchant.Enchant;
 import com.ddf.fakeplayer.item.enchant.EnchantUtils;
 import com.ddf.fakeplayer.level.Level;
 import com.ddf.fakeplayer.nbt.CompoundTag;
+import com.ddf.fakeplayer.util.BaseGameVersion;
 import com.ddf.fakeplayer.util.JsonUtil;
 import com.ddf.fakeplayer.util.NotImplemented;
 import com.ddf.fakeplayer.util.Vec3;
-import com.ddf.fakeplayer.util.tuple.Tuple4;
 
 import java.util.ArrayList;
 import java.util.function.Function;
@@ -49,24 +49,26 @@ public class Item {
     private Vec3 mRenderingAdjTrans = new Vec3(0.0f);
     private Vec3 mRenderingAdjRot = new Vec3(0.0f);
     private float mRenderingAdjScale = 1.0f;
-    //private short mId;
+    private short mId;
     private String mDescriptionId;
     private String mRawNameId;
     private String mNamespace = "minecraft";
     private String mFullName;
-    private String mTag;
+    private ArrayList<String> mTags = new ArrayList<>();
     protected short mMaxDamage = 0;
-    private boolean mIsGlint = true;
-    private boolean mHandEquipped = true;
-    private boolean mIsStackedByData = true;
-    private boolean mRequiresWorldBuilder = true;
-    private boolean mExplodable = true;
-    private boolean mShouldDespawn = true;
-    private boolean mAllowOffhand = true;
-    private boolean mIgnoresPermissions = true;
-    private boolean mExperimental = true;
+
+    private boolean mIsGlint = false;
+    private boolean mHandEquipped = false;
+    private boolean mIsStackedByData = false;
+    private boolean mRequiresWorldBuilder = false;
+    private boolean mExplodable = false;
+    private boolean mShouldDespawn = false;
+    private boolean mAllowOffhand = false;
+    private boolean mIgnoresPermissions = false;
+    private boolean mExperimental = false;
+
     private int mMaxUseDuration = 0;
-    //private BaseGameVersion mMinRequiredBaseGameVersion = new BaseGameVersion();
+    private BaseGameVersion mMinRequiredBaseGameVersion = new BaseGameVersion();
     private BlockLegacy mLegacyBlock;
     private CreativeItemCategory mCreativeCategory = CreativeItemCategory.Items;
     private Item mCraftingRemainingItem;
@@ -75,15 +77,15 @@ public class Item {
     private CameraItemComponent mCameraComponent;
     private ArrayList<Function<Void, Void>> mOnResetBAIcallbacks = new ArrayList<>();
 
-    public Item(String nameId/*, short id*/) {
-        //this.mId = id;
+    public Item(String nameId, int id) {
+        this.mId = (short) id;
         this.mDescriptionId = Item.ICON_DESCRIPTION_PREFIX + nameId;
         this.mRawNameId = nameId;
         int auxValue = 0;
-        Tuple4<Boolean, String, String, Integer> result = JsonUtil.parseItem(this.mRawNameId, this.mNamespace, auxValue, nameId);
-        this.mRawNameId = result.getT2();
-        this.mNamespace = result.getT3();
-        auxValue = result.getT4();
+        JsonUtil.ItemParseResult result = JsonUtil.parseItem(auxValue, nameId);
+        this.mRawNameId = result.outItemName;
+        this.mNamespace = result.outItemNamespace;
+        auxValue = result.inoutItemAux;
         this.mFullName = getNameSpace() + ":" + mRawNameId;
     }
 
@@ -113,9 +115,9 @@ public class Item {
         return this.mLegacyBlock;
     }
 
-    public short getId(ItemRegistry registry) {
-        //return this.mId;
-        return (short) registry.getId(this);
+    public short getId() {
+        return this.mId;
+//        return (short) registry.getId(this);
     }
 
     public final String getFullItemName() {
@@ -251,8 +253,12 @@ public class Item {
         return this;
     }
 
-    public void setTag(String tag) {
-        this.mTag = tag;
+    public void addTag(String tag) {
+        this.mTags.add(tag);
+    }
+
+    public boolean hasTag(String tag) {
+        return this.mTags.contains(tag);
     }
 
 //    public String appendFormattedHovertext(final ItemStackBase stack, Level level, String hovertext, final boolean showCategory) {

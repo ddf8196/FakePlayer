@@ -6,26 +6,26 @@ import com.ddf.fakeplayer.util.NotImplemented;
 
 @NotImplemented
 public class ItemInstance extends ItemStackBase {
-    public static final ItemInstance EMPTY_ITEM = new ItemInstance(null, BedrockItems.mAir, 0, 0, null);
+    public static final ItemInstance EMPTY_ITEM = new ItemInstance(BedrockItems.mAir, 0, 0, null);
 
-    public ItemInstance(ItemRegistry registry) {
-        super(registry);
+    public ItemInstance() {
+        super();
     }
 
-    public ItemInstance(ItemRegistry registry, final Item item) {
-        super(registry, item);
+    public ItemInstance(final Item item) {
+        super(item);
     }
 
-    public ItemInstance(ItemRegistry registry, final Item item, int count) {
-        super(registry, item, count);
+    public ItemInstance(final Item item, int count) {
+        super(item, count);
     }
 
-    public ItemInstance(ItemRegistry registry, final Item item, int count, int auxValue) {
-        super(registry, item, count, auxValue);
+    public ItemInstance(final Item item, int count, int auxValue) {
+        super(item, count, auxValue);
     }
 
-    public ItemInstance(ItemRegistry registry, final Item item, int count, int auxValue, final CompoundTag _userData) {
-        super(registry, item, count, auxValue, _userData);
+    public ItemInstance(final Item item, int count, int auxValue, final CompoundTag _userData) {
+        super(item, count, auxValue, _userData);
     }
 
     public ItemInstance(final ItemInstance rhs) {
@@ -40,12 +40,12 @@ public class ItemInstance extends ItemStackBase {
         super(block, count, _userData);
     }
 
-    public static ItemInstance fromTag(ItemRegistry registry, final CompoundTag tag) {
-        ItemInstance ii = new ItemInstance(registry);
+    public static ItemInstance fromTag(final CompoundTag tag) {
+        ItemInstance ii = new ItemInstance();
         ii.load(tag);
         if (ii.isItem())
             return new ItemInstance(ii);
         else
-            return new ItemInstance(registry);
+            return new ItemInstance();
     }
 }

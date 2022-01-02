@@ -2,14 +2,16 @@ package com.ddf.fakeplayer.block;
 
 import com.ddf.fakeplayer.actor.Actor;
 import com.ddf.fakeplayer.actor.player.Player;
+import com.ddf.fakeplayer.item.ItemStateInstance;
 import com.ddf.fakeplayer.nbt.CompoundTag;
+import com.ddf.fakeplayer.state.ItemState;
 import com.ddf.fakeplayer.util.AABB;
 import com.ddf.fakeplayer.util.NotImplemented;
 
 public class Block {
     private final /*uint16_t DataID*/short mData;
     private BlockLegacy mLegacyBlock;
-    private CompoundTag mSerializationId;
+    public CompoundTag mSerializationId;
     private int mRuntimeId;
     private boolean mHasRuntimeId;
 
@@ -57,6 +59,10 @@ public class Block {
         return this.mLegacyBlock.getIgnoresDestroyPermissions(entity, pos);
     }
 
+    public int getState(final ItemState stateType) {
+        return this.mLegacyBlock.getState(stateType, this.mData);
+    }
+
     public final boolean hasProperty(BlockProperty type) {
         return this.mLegacyBlock.hasProperty(type);
     }
@@ -65,6 +71,25 @@ public class Block {
     public final boolean isInteractiveBlock() {
         return false;
 //        return this.mLegacyBlock.isInteractiveBlock();
+    }
+
+    public final void setRuntimeId(final int runtimeId) {
+        this.mRuntimeId = runtimeId;
+        this.mHasRuntimeId = true;
+    }
+
+    public final void buildSerializationId(/*uint32_t*/int latestUpdaterVersion) {
+        this.mSerializationId.clear();
+        this.mSerializationId.putString("name", this.mLegacyBlock.getFullName());
+        this.mSerializationId.putInt("version", latestUpdaterVersion);
+        CompoundTag tag = new CompoundTag();
+        for (ItemStateInstance __begin : this.mLegacyBlock.mStates) {
+            if (__begin != null && __begin.isInitialized()) {
+                ItemState state = __begin.getState();
+                state.toNBT(tag, this.getState(state));
+            }
+        }
+        this.mSerializationId.put("states", tag);
     }
 
     @NotImplemented

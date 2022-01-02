@@ -17,9 +17,9 @@ public class PlayerInventoryProxy implements ContainerSizeChangeListener, Contai
     private ArrayList<ItemStack> mComplexItems;
     private HudContainerManagerModel mHudContainerManager;
 
-    public PlayerInventoryProxy(ItemRegistry itemRegistry, Inventory inv) {
+    public PlayerInventoryProxy(Inventory inv) {
         this.mSelected = 0;
-        this.mInfiniteItem = new ItemStack(itemRegistry);
+        this.mInfiniteItem = new ItemStack();
         this.mSelectedContainerId = ContainerID.CONTAINER_ID_INVENTORY;
         this.mInventory = inv;
         this.mComplexItems = new ArrayList<>();

@@ -121,7 +121,7 @@ public abstract class Player extends Mob {
     private boolean mIsInitialSpawnDone = false;
     private boolean mPositionLoadedFromSave = false;
     private int mFixStartSpawnFailures = 0;
-    private ItemStack mItemInUse = new ItemStack(getLevel().getItemRegistry());
+    private ItemStack mItemInUse = new ItemStack();
     private PlayerInventoryProxy.SlotData mItemInUseSlot = new PlayerInventoryProxy.SlotData(-1, ContainerID.CONTAINER_ID_NONE);
     protected int mItemInUseDuration = 0;
     private short mSleepCounter = 0;
@@ -216,7 +216,7 @@ public abstract class Player extends Mob {
         super._setHeightOffset(1.62001f);
         this.setPlayerGameType(this.mPlayerGameType);
         Inventory inventory = new Inventory(this);
-        this.mInventoryProxy = new PlayerInventoryProxy(getLevel().getItemRegistry(), inventory);
+        this.mInventoryProxy = new PlayerInventoryProxy(inventory);
         this.mHudContainerManagerModel = new HudContainerManagerModel(ContainerID.CONTAINER_ID_NONE, this);
         this.mInventoryProxy.init(this.mHudContainerManagerModel);
 //        this._registerElytraLoopSound();

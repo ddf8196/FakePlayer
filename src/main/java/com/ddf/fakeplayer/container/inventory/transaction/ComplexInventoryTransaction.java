@@ -3,7 +3,6 @@ package com.ddf.fakeplayer.container.inventory.transaction;
 import com.ddf.fakeplayer.actor.player.Player;
 import com.ddf.fakeplayer.container.inventory.InventoryAction;
 import com.ddf.fakeplayer.container.inventory.InventorySource;
-import com.ddf.fakeplayer.item.ItemRegistry;
 import com.ddf.fakeplayer.util.NotImplemented;
 
 import java.util.ArrayList;
@@ -13,9 +12,9 @@ public class ComplexInventoryTransaction {
     ComplexInventoryTransaction.Type mType;
     InventoryTransaction mTransaction;
 
-    public ComplexInventoryTransaction(ItemRegistry itemRegistry, ComplexInventoryTransaction.Type type) {
+    public ComplexInventoryTransaction(Type type) {
         this.mType = type;
-        this.mTransaction = new InventoryTransaction(itemRegistry);
+        this.mTransaction = new InventoryTransaction();
     }
 
     public ComplexInventoryTransaction(ComplexInventoryTransaction.Type type, final InventoryTransaction transaction) {

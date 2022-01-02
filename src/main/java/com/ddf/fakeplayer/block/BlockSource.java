@@ -26,8 +26,8 @@ public class BlockSource {
     private Level mLevel;
     private ChunkSource mChunkSource;
     private Dimension mDimension;
-    private final /*Height*/short mMaxHeight = 0;
-    //private ArrayList<BlockFetchResult> mTempBlockFetchResult = new ArrayList<>();
+    private final /*Height*/short mMaxHeight;
+    private ArrayList<BlockFetchResult> mTempBlockFetchResult = new ArrayList<>();
     private BlockPos mPlaceChunkPos = new BlockPos(ChunkPos.INVALID, 0);
     private ArrayList<BlockSourceListener> mListeners = new ArrayList<>();
     private ChunkPos mLastChunkPos = ChunkPos.INVALID;
@@ -39,7 +39,6 @@ public class BlockSource {
     //private BlockActorList mTempBlockEntityList = new ArrayList<>();
     private ArrayList<AABB> mTempCubeList = new ArrayList<>();
 
-    @NotImplemented
     public BlockSource(Level level, Dimension dimension, ChunkSource source, boolean publicSource, boolean allowUnpopulatedChunks) {
         this.mOwnerThreadID = Thread.currentThread();
         this.mAllowUnpopulatedChunks = allowUnpopulatedChunks;
@@ -47,8 +46,8 @@ public class BlockSource {
         this.mLevel = level;
         this.mChunkSource = source;
         this.mDimension = dimension;
-        //this.mMaxHeight = dimension.getHeight();
-        //this.mDefaultBrightness = dimension.getDefaultBrightness();
+        this.mMaxHeight = dimension.getHeight();
+        this.mDefaultBrightness = dimension.getDefaultBrightness();
         if (publicSource) {
             this.addListener(level);
             for (BlockSourceListener mListener : this.mListeners) {
@@ -81,12 +80,11 @@ public class BlockSource {
         return this.mLevel;
     }
 
-    @NotImplemented
     public final boolean hasBlock(final BlockPos pos) {
-//        LevelChunk lc = this.getChunkAt(pos);
-//        if (lc != null && !lc.getPosition().equals(ChunkPos.INVALID)) {
-//            return !lc.isReadOnly();
-//        }
+        LevelChunk lc = this.getChunkAt(pos);
+        if (lc != null && !lc.getPosition().equals(ChunkPos.INVALID)) {
+            return !lc.isReadOnly();
+        }
         return false;
     }
 
@@ -122,15 +120,13 @@ public class BlockSource {
         }
     }
 
-    @NotImplemented
     public final Block getBlock(final BlockPos pos) {
-        return BedrockBlocks.mAir;
-//        if (pos.y < 0 || pos.y >= this.mMaxHeight)
-//            return BedrockBlocks.mAir;
-//        LevelChunk c = this.getChunk(new ChunkPos(pos));
-//        if (c == null)
-//            return BedrockBlocks.mAir;
-//        return c.getBlock(new ChunkBlockPos(pos));
+        if (pos.y < 0 || pos.y >= this.mMaxHeight)
+            return BedrockBlocks.mAir;
+        LevelChunk c = this.getChunk(new ChunkPos(pos));
+        if (c == null)
+            return BedrockBlocks.mAir;
+        return c.getBlock(new ChunkBlockPos(pos));
     }
 
     public final Block getExtraBlock(final BlockPos p) {
@@ -154,34 +150,30 @@ public class BlockSource {
             return this.getBlock(p);
     }
 
-    @NotImplemented
     public final LevelChunk getChunk(final ChunkPos pos) {
-        return null;
-//        if (this.mLastChunk != null && this.mLastChunkPos.equals(pos))
-//            return this.mLastChunk;
-//        if (this.mAllowUnpopulatedChunks)
-//            this.mLastChunk = this.mChunkSource.getGeneratedChunk(pos);
-//        else
-//            this.mLastChunk = this.mChunkSource.getAvailableChunk(pos);
-//        if (this.mLastChunk != null)
-//            this.mLastChunkPos = this.mLastChunk.getPosition();
-//        else
-//            this.mLastChunkPos = ChunkPos.INVALID;
-//        return this.mLastChunk;
+        if (this.mLastChunk != null && this.mLastChunkPos.equals(pos))
+            return this.mLastChunk;
+        if (this.mAllowUnpopulatedChunks)
+            this.mLastChunk = this.mChunkSource.getGeneratedChunk(pos);
+        else
+            this.mLastChunk = this.mChunkSource.getAvailableChunk(pos);
+        if (this.mLastChunk != null)
+            this.mLastChunkPos = this.mLastChunk.getPosition();
+        else
+            this.mLastChunkPos = ChunkPos.INVALID;
+        return this.mLastChunk;
     }
 
     public final LevelChunk getChunkAt(final BlockPos pos) {
         return this.getChunk(new ChunkPos(pos));
     }
 
-    @NotImplemented
     public final boolean hasBorderBlock(final BlockPos pos) {
-        return false;
-//        LevelChunk chunk = this.getChunkAt(pos);
-//        if (chunk != null) {
-//            return chunk.getBorder(new ChunkBlockPos(pos));
-//        } else {
-//            return false;
-//        }
+        LevelChunk chunk = this.getChunkAt(pos);
+        if (chunk != null) {
+            return chunk.getBorder(new ChunkBlockPos(pos));
+        } else {
+            return false;
+        }
     }
 }

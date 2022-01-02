@@ -1,10 +1,14 @@
 package com.ddf.fakeplayer.nbt;
 
+import com.ddf.fakeplayer.util.IDataInput;
+import com.ddf.fakeplayer.util.IDataOutput;
 import com.ddf.fakeplayer.util.NotImplemented;
+import com.ddf.fakeplayer.util.ValueHolder;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 
 public class CompoundTag implements Tag, Iterable<Map.Entry<String, Tag>>, Cloneable {
     private final HashMap<String, Tag> mTags = new HashMap<>();
@@ -124,6 +128,10 @@ public class CompoundTag implements Tag, Iterable<Map.Entry<String, Tag>>, Clone
         return null;
     }
 
+    public final Tag put(String name, Tag tag) {
+        return this.mTags.put(name, tag);
+    }
+
     public final void putBoolean(String name, boolean value) {
         this.mTags.put(name, new ByteTag((byte) (value ? 1 : 0)));
     }
@@ -172,6 +180,18 @@ public class CompoundTag implements Tag, Iterable<Map.Entry<String, Tag>>, Clone
         this.mTags.put(name, value);
     }
 
+    public final Map<String, Tag> rawView() {
+        return this.mTags;
+    }
+
+    public final int size() {
+        return this.mTags.size();
+    }
+
+    public final void clear() {
+        this.mTags.clear();
+    }
+
     @Override
     public final CompoundTag clone() {
         CompoundTag compoundTag = new CompoundTag();
@@ -179,6 +199,24 @@ public class CompoundTag implements Tag, Iterable<Map.Entry<String, Tag>>, Clone
             compoundTag.mTags.put(entry.getKey(), entry.getValue().copy());
         }
         return compoundTag;
+    }
+
+    @NotImplemented
+    @Override
+    public void write(IDataOutput dos) {
+
+    }
+
+    @Override
+    public void load(IDataInput dis) {
+        this.mTags.clear();
+        ValueHolder<String> name = new ValueHolder<>();
+        while (dis.numBytesLeft() != 0) {
+            Tag tag = Tag.readNamedTag(dis, name);
+            if (tag == null || tag.getId() == Type.End_1)
+                break;
+            this.put(name.get(), tag);
+        }
     }
 
     @Override
@@ -199,5 +237,25 @@ public class CompoundTag implements Tag, Iterable<Map.Entry<String, Tag>>, Clone
     @Override
     public Iterator<Map.Entry<String, Tag>> iterator() {
         return this.mTags.entrySet().iterator();
+    }
+
+    @Override
+    public boolean equals(Tag rhs) {
+        if (!Tag.super.equals(rhs))
+            return false;
+        return Objects.equals(this.mTags, ((CompoundTag) rhs).mTags);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CompoundTag tag = (CompoundTag) o;
+        return Objects.equals(mTags, tag.mTags);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mTags);
     }
 }

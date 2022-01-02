@@ -10,15 +10,15 @@ public class ItemReleaseInventoryTransaction extends ComplexInventoryTransaction
     private ItemStack mItem;
     private Vec3 mFromPos;
 
-    public ItemReleaseInventoryTransaction(ItemRegistry itemRegistry) {
-        super(itemRegistry, Type.ItemReleaseTransaction);
+    public ItemReleaseInventoryTransaction() {
+        super(Type.ItemReleaseTransaction);
     }
 
     public ItemReleaseInventoryTransaction(final InventoryTransaction transaction) {
         super(Type.ItemReleaseTransaction, transaction);
         this.mActionType = ActionType.Release_0;
         this.mSlot = -1;
-        this.mItem = new ItemStack(transaction.itemRegistry);
+        this.mItem = new ItemStack();
         this.mFromPos = new Vec3();
     }
 

@@ -6,15 +6,13 @@ import com.ddf.fakeplayer.item.ItemStack;
 import com.ddf.fakeplayer.nbt.CompoundTag;
 
 public class InventoryTransactionItemGroup {
-    private ItemRegistry itemRegistry;
     private int mItemId;
     private int mItemAux;
     private CompoundTag mTag;
     private int mCount;
     private boolean mOverflow;
 
-    public InventoryTransactionItemGroup(ItemRegistry itemRegistry, final ItemStack item, int count) {
-        this.itemRegistry = itemRegistry;
+    public InventoryTransactionItemGroup(final ItemStack item, int count) {
         this.mItemId = item.getId();
         this.mItemAux = item.getAuxValue();
         this.mCount = count;
@@ -64,12 +62,12 @@ public class InventoryTransactionItemGroup {
     }
 
     public final ItemStack getItemInstance() {
-        Item item = itemRegistry.getItem(this.mItemId);
+        Item item = ItemRegistry.getItem(this.mItemId);
         if (item != null) {
             int auxValue = this.mItemAux;
-            return new ItemStack(itemRegistry, item, 1, auxValue, this.mTag);
+            return new ItemStack(item, 1, auxValue, this.mTag);
         }
-        return new ItemStack(itemRegistry);
+        return new ItemStack();
     }
 
     public final boolean hasOverflow() {

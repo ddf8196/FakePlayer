@@ -1,5 +1,6 @@
 package com.ddf.fakeplayer.network;
 
+import com.ddf.fakeplayer.block.*;
 import com.ddf.fakeplayer.client.Client;
 import com.ddf.fakeplayer.actor.Actor;
 import com.ddf.fakeplayer.actor.ActorDataIDs;
@@ -10,21 +11,26 @@ import com.ddf.fakeplayer.actor.attribute.BaseAttributeMap;
 import com.ddf.fakeplayer.actor.attribute.SharedAttributes;
 import com.ddf.fakeplayer.actor.mob.Mob;
 import com.ddf.fakeplayer.actor.player.*;
-import com.ddf.fakeplayer.block.BlockPos;
 import com.ddf.fakeplayer.container.inventory.PlayerInventoryProxy;
 import com.ddf.fakeplayer.container.ContainerID;
 import com.ddf.fakeplayer.container.inventory.transaction.ComplexInventoryTransaction;
 import com.ddf.fakeplayer.container.inventory.transaction.InventoryTransactionError;
+import com.ddf.fakeplayer.item.ItemRegistry;
 import com.ddf.fakeplayer.json.*;
 import com.ddf.fakeplayer.level.GameType;
 import com.ddf.fakeplayer.level.Level;
 import com.ddf.fakeplayer.level.MultiPlayerLevel;
+import com.ddf.fakeplayer.level.chunk.ChunkPos;
+import com.ddf.fakeplayer.level.chunk.LevelChunk;
 import com.ddf.fakeplayer.level.dimension.ChangeDimensionRequest;
+import com.ddf.fakeplayer.level.dimension.Dimension;
+import com.ddf.fakeplayer.level.generator.GeneratorType;
 import com.ddf.fakeplayer.util.*;
 import com.nimbusds.jwt.SignedJWT;
 import com.nukkitx.math.vector.Vector3f;
 import com.nukkitx.math.vector.Vector3i;
 import com.nukkitx.nbt.NbtMap;
+import com.nukkitx.protocol.bedrock.BedrockPacket;
 import com.nukkitx.protocol.bedrock.data.AttributeData;
 import com.nukkitx.protocol.bedrock.data.AuthoritativeMovementMode;
 import com.nukkitx.protocol.bedrock.data.entity.EntityData;
@@ -40,7 +46,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 
 public class ClientPacketHandler implements BedrockPacketHandler {
@@ -48,6 +56,8 @@ public class ClientPacketHandler implements BedrockPacketHandler {
     private Client client;
     private MultiPlayerLevel level;
     private FakePlayer player;
+    private List<BedrockPacket> unhandledPackets = new ArrayList<>();
+    private boolean startGamePacketReceived = false;
 
     public ClientPacketHandler(Client client) {
         this.logger = Logger.getLogger();
@@ -111,12 +121,20 @@ public class ClientPacketHandler implements BedrockPacketHandler {
     @SuppressWarnings("deprecation")
     @Override
     public boolean handle(StartGamePacket packet) {
-        client.getItemRegistry().initialize(packet.getItemEntries());
+        ItemRegistry.addUnknownItems(packet.getItemEntries());
+        client.getBedrockClient().getSession().getPacketCodec().getProtocolVersion();
+
+        if (packet.getBlockPalette() != null) {
+            level.getGlobalBlockPalette().initFromNbtMapList(packet.getBlockPalette());
+        }
+
         level.setDefaultGameType(DataConverter.gameType(packet.getLevelGameType()));
         level.setDefaultSpawn(DataConverter.blockPos(packet.getDefaultSpawn()));
         level.setLevelId(packet.getLevelId());
         level.getLevelData().setLevelName(packet.getLevelName());
         level.getLevelData().setCurrentTick(packet.getCurrentTick());
+        level.getLevelData().setGenerator(GeneratorType.values()[packet.getGeneratorId()]);
+
         level.setFinishedInitializing();
 
         player.setUniqueID(packet.getUniqueEntityId());
@@ -136,6 +154,17 @@ public class ClientPacketHandler implements BedrockPacketHandler {
         RequestChunkRadiusPacket response = new RequestChunkRadiusPacket();
         response.setRadius(client.getChunkRadius());
         client.sendPacket(response);
+
+        startGamePacketReceived = true;
+        for (BedrockPacket p : unhandledPackets) {
+            p.handle(this);
+        }
+        unhandledPackets.clear();
+        return false;
+    }
+
+    @Override
+    public boolean handle(LevelChunkPacket packet) {
         return false;
     }
 
@@ -152,12 +181,16 @@ public class ClientPacketHandler implements BedrockPacketHandler {
 
     @Override
     public boolean handle(InventoryContentPacket packet) {
+        if (!startGamePacketReceived) {
+            unhandledPackets.add(packet);
+            return false;
+        }
         switch (ContainerID.getByValue(packet.getContainerId())) {
             case CONTAINER_ID_INVENTORY: {
                 PlayerInventoryProxy inventory = player.getSupplies();
                 int i = 0;
                 for (ItemData itemData : packet.getContents()) {
-                    inventory.setItem(i++, DataConverter.itemStack(client.getItemRegistry(), itemData), ContainerID.CONTAINER_ID_INVENTORY);
+                    inventory.setItem(i++, DataConverter.itemStack(itemData), ContainerID.CONTAINER_ID_INVENTORY);
                 }
             }
             case CONTAINER_ID_ARMOR:
@@ -174,7 +207,11 @@ public class ClientPacketHandler implements BedrockPacketHandler {
 
     @Override
     public boolean handle(InventoryTransactionPacket packet) {
-        ComplexInventoryTransaction complexInventoryTransaction = DataConverter.complexInventoryTransaction(client.getItemRegistry(), packet);
+        if (!startGamePacketReceived) {
+            unhandledPackets.add(packet);
+            return false;
+        }
+        ComplexInventoryTransaction complexInventoryTransaction = DataConverter.complexInventoryTransaction(packet);
         //Inventory inventory = player.getSupplies().mInventory;
         if (complexInventoryTransaction != null) {
             InventoryTransactionError error = complexInventoryTransaction.handle(player, true);
@@ -189,6 +226,10 @@ public class ClientPacketHandler implements BedrockPacketHandler {
 
     @Override
     public boolean handle(InventorySlotPacket packet) {
+        if (!startGamePacketReceived) {
+            unhandledPackets.add(packet);
+            return false;
+        }
         return false;
     }
 

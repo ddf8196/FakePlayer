@@ -8,7 +8,7 @@ import java.util.ArrayList;
 @NotImplemented
 public class PickaxeItem extends DiggerItem {
     @NotImplemented
-    protected PickaxeItem(String name, int attackDamage, Tier tier, ArrayList<Block> blocks) {
-        super(name, attackDamage, tier, blocks);
+    protected PickaxeItem(String name, int id, int attackDamage, Tier tier, ArrayList<Block> blocks) {
+        super(name, id, attackDamage, tier, blocks);
     }
 }

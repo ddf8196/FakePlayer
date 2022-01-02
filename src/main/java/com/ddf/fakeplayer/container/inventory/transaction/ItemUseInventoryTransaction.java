@@ -1,7 +1,6 @@
 package com.ddf.fakeplayer.container.inventory.transaction;
 
 import com.ddf.fakeplayer.block.Block;
-import com.ddf.fakeplayer.item.ItemRegistry;
 import com.ddf.fakeplayer.item.ItemStack;
 import com.ddf.fakeplayer.level.Level;
 import com.ddf.fakeplayer.network.NetworkBlockPosition;
@@ -18,14 +17,14 @@ public class ItemUseInventoryTransaction extends ComplexInventoryTransaction {
     private Vec3 mFromPos;
     private Vec3 mClickPos;
 
-    public ItemUseInventoryTransaction(ItemRegistry itemRegistry) {
-        super(itemRegistry, Type.ItemUseTransaction);
+    public ItemUseInventoryTransaction() {
+        super(Type.ItemUseTransaction);
         this.mActionType = ActionType.Place_4;
         this.mPos = new NetworkBlockPosition();
         this.mTargetBlockId = 0;
         this.mFace = 0;
         this.mSlot = 0;
-        this.mItem = new ItemStack(itemRegistry);
+        this.mItem = new ItemStack();
         this.mFromPos = new Vec3();
         this.mClickPos = new Vec3();
     }
@@ -37,7 +36,7 @@ public class ItemUseInventoryTransaction extends ComplexInventoryTransaction {
         this.mTargetBlockId = 0;
         this.mFace = 0;
         this.mSlot = 0;
-        this.mItem = new ItemStack(transaction.itemRegistry);
+        this.mItem = new ItemStack();
         this.mFromPos = new Vec3();
         this.mClickPos = new Vec3();
     }
