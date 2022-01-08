@@ -10,10 +10,20 @@ Minecraft Bedrock Edition 假人客户端
 理论上也可在其他服务端及单人存档使用（暂时无法通过除BDS外的其他服务端的Xbox验证，单人存档使用需打开多人游戏）
 
 ## 安装及使用
-1. 安装Java8或更高版本
+### Windows
+1. 安装Java 8或更高版本
 2. 下载并解压FakePlayer-版本号.zip
-3. 运行解压出的bin目录下的FakePlayer-GUI（GUI模式）或FakePlayer（命令行模式） 
+3. 运行解压出的bin目录下的FakePlayer-GUI.bat（GUI模式）或FakePlayer.bat（命令行模式） 
    推荐以GUI模式启动，以下操作均为GUI模式下进行
+4. 点击服务器公钥后的查看按钮，选择"将公钥添加至server.properties",并选择BDS的server.properties，如添加时BDS正在运行，添加完成后需要重启BDS   
+（此步骤是添加额外公钥以通过BDS的Xbox验证，若服务器未开启online-mode（Xbox验证），此步骤可暂时跳过）   
+（除BDS外的其他服务端貌似均不支持利用配置文件添加额外公钥，所以目前无法利用此方法通过其他服务端的Xbox验证）
+5. 设置好服务器地址及端口，点击保存配置后添加假人即可（服务器地址一般使用默认的localhost即可，不建议远程连接假人）
+### Linux
+1. 安装Java 8或更高版本 (`apt/yum install`)
+2. 下载并解压FakePlayer-版本号.zip (`wget`, `unzip`)
+3. 运行解压出的bin目录下的FakePlayer-GUI（GUI模式）或FakePlayer（命令行模式） (`./FakePlayer-GUI`, `./FakePlayer`)  
+（一般需要先`chmod 777 ./FakePlayer`添加可执行权限， GUI版本应该不支持SSH, 需要桌面版系统）
 4. 点击服务器公钥后的查看按钮，选择"将公钥添加至server.properties",并选择BDS的server.properties，如添加时BDS正在运行，添加完成后需要重启BDS   
 （此步骤是添加额外公钥以通过BDS的Xbox验证，若服务器未开启online-mode（Xbox验证），此步骤可暂时跳过）   
 （除BDS外的其他服务端貌似均不支持利用配置文件添加额外公钥，所以目前无法利用此方法通过其他服务端的Xbox验证）
