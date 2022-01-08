@@ -4,7 +4,7 @@ import com.ddf.fakeplayer.container.ContainerID;
 
 public class InventorySource {
     private final InventorySourceType mType;
-    private final ContainerID mContainerId;
+    private ContainerID mContainerId;
     private final InventorySource.InventorySourceFlags mFlags;
 
     public InventorySource(ContainerID containerId) {
@@ -35,6 +35,26 @@ public class InventorySource {
 
     public static InventorySource fromCreativeInventory() {
         return new InventorySource(InventorySourceType.CreativeInventory, InventorySourceFlags.NoFlag);
+    }
+
+    public static InventorySource fromGlobalInventory() {
+        return new InventorySource(InventorySourceType.GlobalInventory);
+    }
+
+    public static InventorySource fromUntrackedInteractionUI(ContainerID containerId) {
+        InventorySource result = new InventorySource(InventorySourceType.UntrackedInteractionUI);
+        result.mContainerId = containerId;
+        return result;
+    }
+
+    public static InventorySource fromNONIMPLEMENTEDTODO(ContainerID containerId) {
+        InventorySource result = new InventorySource(InventorySourceType.NonImplementedFeatureTODO);
+        result.mContainerId = containerId;
+        return result;
+    }
+
+    public static InventorySource fromInvalid() {
+        return new InventorySource(InventorySourceType.InvalidInventory);
     }
 
     public final InventorySourceType getType() {

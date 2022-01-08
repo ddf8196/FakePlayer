@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public class ComplexInventoryTransaction {
-    ComplexInventoryTransaction.Type mType;
-    InventoryTransaction mTransaction;
+    private ComplexInventoryTransaction.Type mType;
+    private InventoryTransaction mTransaction;
 
     public ComplexInventoryTransaction(Type type) {
         this.mType = type;

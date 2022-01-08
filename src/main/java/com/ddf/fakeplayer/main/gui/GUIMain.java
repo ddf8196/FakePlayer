@@ -12,7 +12,9 @@ import com.ddf.fakeplayer.main.gui.dialog.PublicKeyDialog;
 import com.ddf.fakeplayer.util.Logger;
 import com.ddf.fakeplayer.util.Pair;
 import com.ddf.fakeplayer.main.Util;
+import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 import net.miginfocom.swing.MigLayout;
 
 import java.awt.*;
@@ -706,7 +708,19 @@ public class GUIMain extends Main {
     public static void main(Config config) {
 	    SwingUtilities.invokeLater(() -> {
 	        try {
-                FlatDarkLaf.setup();
+	        	switch (config.getTheme()) {
+					case "light":
+						FlatLightLaf.setup();
+						break;
+					case "dark":
+						FlatDarkLaf.setup();
+						break;
+					case "darcula":
+						FlatDarculaLaf.setup();
+						break;
+					default:
+						break;
+				}
                 GUIMain guiMain = new GUIMain(config);
                 guiMain.getFrame().setVisible(true);
             } catch (Exception e) {

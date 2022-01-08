@@ -2,6 +2,8 @@ package com.ddf.fakeplayer.state;
 
 import com.ddf.fakeplayer.nbt.CompoundTag;
 
+import java.util.function.Function;
+
 public abstract class ItemState {
     private final int mID;
     private final int mVariationCount;
@@ -15,11 +17,23 @@ public abstract class ItemState {
         this.mNode = new StateListNode(this);
     }
 
+    public static void forEachState(Function<ItemState, Boolean> a1) {
+        for (ItemState.StateListNode walk = ItemState.StateListNode.mHead; walk != null; walk = walk.mNext) {
+            if (!a1.apply(walk.mState)) {
+                break;
+            }
+        }
+    }
+
     public abstract void toNBT(CompoundTag tag, int val); //+2
     public abstract int fromNBT(final CompoundTag tag); //+3
 
     public final int getID() {
         return this.mID;
+    }
+
+    public final String getName() {
+        return this.mName;
     }
 
     public static class StateListNode {

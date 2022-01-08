@@ -615,6 +615,13 @@ public class Actor {
                 && !this.mRemoved;
     }
 
+    public final boolean isClient() {
+        if (this.hasLevel()) {
+            return this.getLevel().isClientSide();
+        }
+        return true;
+    }
+
     public final boolean isControlledByLocalInstance() {
         Player player = this.getLevel().getPlayer(this.getControllingPlayer());
         if (player != null) {
@@ -685,6 +692,15 @@ public class Actor {
     }
 
     public void setEquippedSlot(ArmorSlot slot, int item, int auxValue) {
+    }
+
+    public void setOffhandSlot(final ItemStack item) {
+//        if (this.hasLevel()) {
+//            ItemInstance previouslyCarriedItem = new ItemInstance(this.getOffhandSlot());
+//            ItemInstance carriedItem = new ItemInstance(item);
+//            this.getLevel().getActorEventCoordinator().sendActorCarriedItemChanged(this, previouslyCarriedItem, carriedItem, HandSlot.Offhand);
+//        }
+        this.mHand.setItem(HandSlot.Offhand.ordinal(), item);
     }
 
     @NotImplemented

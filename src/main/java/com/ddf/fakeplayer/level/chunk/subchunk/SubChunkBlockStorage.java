@@ -9,13 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-
 public interface SubChunkBlockStorage {
     boolean isUniform(final Block block);
     Block getBlock(/*ushort*/short index);
-    void setBlock(/*ushort*/short index, final Block block);
-    long getBlockTypeCapacity();
-    SubChunkBlockStorage.Type getType();
+    boolean setBlock(/*ushort*/short index, final Block block); //+4
+    int getBlockTypeCapacity(); //+5
+    SubChunkStorageUnit.Type getType();
     SubChunkBlockStorage makePrunedCopy();
     ISubChunkBlockStoragePaletted asPalettedStorage();
     void fetchBlocksInCylinder(final BlockPos positionOfChunk, final BlockPos pos, /*uint32_t*/int radius, /*uint32_t*/int height,
@@ -29,8 +28,8 @@ public interface SubChunkBlockStorage {
     static SubChunkBlockStorage makeDeserialized(IDataInput stream, final BlockPalette palette, SubChunkFormat format) {
         if (format != SubChunkFormat.v17_0_0) {
             if (format == SubChunkFormat.v1_3_0_0 || format == SubChunkFormat.v1_3_0_2) {
-                SubChunkStorageFormat internalFormat = new SubChunkStorageFormat(stream.readByte());
-                SubChunkBlockStorage ret = SubChunkBlockStorage.makeType(Type.getByValue(internalFormat.type), null);
+                SubChunkStorageUnit.SubChunkStorageFormat internalFormat = new SubChunkStorageUnit.SubChunkStorageFormat(stream.readByte());
+                SubChunkBlockStorage ret = SubChunkBlockStorage.makeType(SubChunkStorageUnit.Type.getByValue(internalFormat.type), null);
                 ret._deserialize(stream, palette, internalFormat.network);
                 return ret;
             } else {
@@ -49,10 +48,10 @@ public interface SubChunkBlockStorage {
     }
 
     static SubChunkBlockStorage makeUniform(final Block block) {
-        return new SubChunkBlockStoragePaletted(Type.Paletted1, block);
+        return new SubChunkBlockStoragePaletted(SubChunkStorageUnit.Type.Paletted1, block);
     }
 
-    static SubChunkBlockStorage makeType(SubChunkBlockStorage.Type type, final SubChunkBlockStorage old) {
+    static SubChunkBlockStorage makeType(SubChunkStorageUnit.Type type, final SubChunkBlockStorage old) {
         return new SubChunkBlockStoragePaletted(type, old);
     }
 
@@ -68,63 +67,33 @@ public interface SubChunkBlockStorage {
             column += sourceStride;
         }
         int blockCount = palette.size();
-        Type type = SubChunkBlockStorage.chooseTypeForBlockTypeCount(blockCount);
+        SubChunkStorageUnit.Type type = SubChunkBlockStorage.chooseTypeForBlockTypeCount(blockCount);
         SubChunkBlockStorage ret = SubChunkBlockStorage.makeType(type, null);
         ret._setAllBlocks(fullChunk, sourceOffset, sourceStride, palette.toArray(new Block[0]));
         return ret;
     }
 
-    static SubChunkBlockStorage.Type chooseTypeForBlockTypeCount(int blockCount) {
+    static SubChunkBlockStorage makeExpanded(final SubChunkBlockStorage old) {
+        SubChunkStorageUnit.Type type = SubChunkBlockStorage.chooseTypeForBlockTypeCount(old.getBlockTypeCapacity() + 1);
+        return SubChunkBlockStorage.makeType(type, old);
+    }
+
+    static SubChunkStorageUnit.Type chooseTypeForBlockTypeCount(int blockCount) {
         if (blockCount <= 2)
-            return Type.Paletted1;
+            return SubChunkStorageUnit.Type.Paletted1;
         if (blockCount <= 4)
-            return Type.Paletted2;
+            return SubChunkStorageUnit.Type.Paletted2;
         if (blockCount <= 8)
-            return Type.Paletted3;
+            return SubChunkStorageUnit.Type.Paletted3;
         if (blockCount <= 16)
-            return Type.Paletted4;
+            return SubChunkStorageUnit.Type.Paletted4;
         if (blockCount <= 32)
-            return Type.Paletted5;
+            return SubChunkStorageUnit.Type.Paletted5;
         if (blockCount <= 64)
-            return Type.Paletted6;
+            return SubChunkStorageUnit.Type.Paletted6;
         if (blockCount <= 256)
-            return Type.Paletted8;
-        return Type.Paletted16;
+            return SubChunkStorageUnit.Type.Paletted8;
+        return SubChunkStorageUnit.Type.Paletted16;
     }
 
-    enum Type {
-        Paletted1((byte) 0x01, 0b1),
-        Paletted2((byte) 0x02, 0b11),
-        Paletted3((byte) 0x03, 0b111),
-        Paletted4((byte) 0x04, 0b1111),
-        Paletted5((byte) 0x05, 0b11111),
-        Paletted6((byte) 0x06, 0b111111),
-        Paletted8((byte) 0x08, 0b11111111),
-        Paletted16((byte) 0x10, 0b111111111111);
-
-        private final byte bitsPerBlock;
-        private final int mask;
-
-        Type(byte bitsPerBlock, int mask) {
-            this.bitsPerBlock = bitsPerBlock;
-            this.mask = mask;
-        }
-
-        public int getBitsPerBlock() {
-            return bitsPerBlock;
-        }
-
-        public int getMask() {
-            return mask;
-        }
-
-        public static Type getByValue(int value) {
-            for (Type type : values()) {
-                if (type.getBitsPerBlock() == value) {
-                    return type;
-                }
-            }
-            return null;
-        }
-    }
 }

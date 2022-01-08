@@ -4,6 +4,8 @@ import com.ddf.fakeplayer.block.Block;
 import com.ddf.fakeplayer.block.BlockFetchResult;
 import com.ddf.fakeplayer.block.BlockPalette;
 import com.ddf.fakeplayer.block.BlockPos;
+import com.ddf.fakeplayer.nbt.CompoundTag;
+import com.ddf.fakeplayer.nbt.NbtIo;
 import com.ddf.fakeplayer.util.*;
 
 import java.util.*;
@@ -14,16 +16,16 @@ public class SubChunkBlockStoragePaletted implements ISubChunkBlockStoragePalett
     private final int[] mBlocks;
     private final Block[] mPalette;
     private final AtomicInteger mPaletteSize = new AtomicInteger();
-    private final SubChunkBlockStorage.Type type;
+    private final SubChunkStorageUnit.Type type;
 
-    private SubChunkBlockStoragePaletted(Type type) {
+    private SubChunkBlockStoragePaletted(SubChunkStorageUnit.Type type) {
         this.type = type;
-        int blocksPerInt = 32 / type.getBitsPerBlock();
-        this.mBlocks = new int[(int) Math.ceil(4096.0 / blocksPerInt)];
+        int blocksPerWord = 32 / type.getBitsPerBlock();
+        this.mBlocks = new int[(int) Math.ceil(4096.0 / blocksPerWord)];
         this.mPalette = new Block[(int) Math.pow(2, type.getBitsPerBlock())];
     }
 
-    public SubChunkBlockStoragePaletted(Type type, Block initBlock) {
+    public SubChunkBlockStoragePaletted(SubChunkStorageUnit.Type type, Block initBlock) {
         this(type);
         this.mPaletteSize.set(1);
         this.mPalette[0] = initBlock;
@@ -31,7 +33,7 @@ public class SubChunkBlockStoragePaletted implements ISubChunkBlockStoragePalett
     }
 
     @NotImplemented
-    public SubChunkBlockStoragePaletted(Type type, final SubChunkBlockStorage upgradeFrom) {
+    public SubChunkBlockStoragePaletted(SubChunkStorageUnit.Type type, final SubChunkBlockStorage upgradeFrom) {
         this(type);
 //        this.mPaletteSize.set(0);
 //        if (upgradeFrom != null) {
@@ -59,7 +61,7 @@ public class SubChunkBlockStoragePaletted implements ISubChunkBlockStoragePalett
 
     @Override
     public int[] getBlocks() {
-        return mBlocks;
+        return this.mBlocks;
     }
 
     @Override
@@ -69,7 +71,7 @@ public class SubChunkBlockStoragePaletted implements ISubChunkBlockStoragePalett
 
     @Override
     public Block[] getPalette() {
-        return mPalette;
+        return this.mPalette;
     }
 
     @NotImplemented
@@ -78,25 +80,56 @@ public class SubChunkBlockStoragePaletted implements ISubChunkBlockStoragePalett
         return false;
     }
 
-    @NotImplemented
     @Override
     public Block getBlock(short index) {
-        return null;
-    }
-
-    @NotImplemented
-    @Override
-    public void setBlock(short index, Block block) {
-
+        int bitsPerBlock = type.getBitsPerBlock();
+        int blocksPerWord = 32 / bitsPerBlock;
+        int mask = type.getMask();
+        return this.mPalette[(this.mBlocks[index / blocksPerWord] >> (bitsPerBlock * (index % blocksPerWord))) & mask];
     }
 
     @Override
-    public long getBlockTypeCapacity() {
-        return mPalette.length;
+    public boolean setBlock(short index, Block block) {
+        short existingID = this._findPaletteID(block);
+        if (existingID < 0) {
+            short size = (short) this.mPaletteSize.get();
+            if (size >= this.getBlockTypeCapacity()) {
+                return false;
+            } else {
+                this.mPalette[size] = block;
+                this.mPaletteSize.incrementAndGet();
+                this.setBlock(index, size);
+                return true;
+            }
+        } else {
+            this.setBlock(index, existingID);
+            return true;
+        }
+    }
+
+    private void setBlock(/*uint16_t*/short index, /*uint16_t*/short pid) {
+        int bitsPerBlock = type.getBitsPerBlock();
+        int blocksPerWord = 32 / bitsPerBlock;
+        int mask = type.getMask();
+        int lsh = bitsPerBlock * (index % blocksPerWord);
+        this.mBlocks[index / blocksPerWord] = ((pid & mask) << lsh) | ~(mask << lsh) & this.mBlocks[index / blocksPerWord];
+    }
+
+    private short _findPaletteID(final Block block) {
+        for (short i = 0; i < this.mPaletteSize.get(); ++i) {
+            if (this.mPalette[i] == block)
+                return i;
+        }
+        return -1;
     }
 
     @Override
-    public Type getType() {
+    public int getBlockTypeCapacity() {
+        return this.mPalette.length;
+    }
+
+    @Override
+    public SubChunkStorageUnit.Type getType() {
         return type;
     }
 
@@ -139,14 +172,17 @@ public class SubChunkBlockStoragePaletted implements ISubChunkBlockStoragePalett
             block |= bytes[i * 4 + 3] & 0xFF << 24;
             this.mBlocks[i] = block;
         }
-        int size = MathUtil.clamp(stream.readInt(), 1, this.mPalette.length);
+        int size = MathUtil.clamp(stream.readInt(), 1, this.getBlockTypeCapacity());
         if (network) {
             for (int i = 0; i < size; ++i) {
                 int runtimeId = stream.readInt();
                 this.mPalette[i] = globalPalette.getBlock(runtimeId);
             }
         } else {
-            throw new RuntimeException("Not implemented");
+            for (int i = 0; i < size; ++i) {
+                CompoundTag serId = NbtIo.read(stream);
+                this.mPalette[i] = globalPalette.getBlock(serId);
+            }
         }
         this.mPaletteSize.set(size);
         this._zeroIndicesGreaterEqualThan((short) size);
@@ -156,10 +192,6 @@ public class SubChunkBlockStoragePaletted implements ISubChunkBlockStoragePalett
     @Override
     public void _serialize(IDataOutput stream, boolean network) {
 
-    }
-
-    private void setBlock(/*uint16_t*/short index, /*uint16_t*/short pid) {
-        this.mBlocks[index >> 5] = ((pid & 1) << (index & 0x1F)) | ~(1 << (index & 0x1F)) & this.mBlocks[index >> 5];
     }
 
     private void _zeroIndicesGreaterEqualThan(/*uint16_t*/short max) {

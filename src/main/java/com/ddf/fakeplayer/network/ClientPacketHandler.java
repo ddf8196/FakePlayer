@@ -170,6 +170,11 @@ public class ClientPacketHandler implements BedrockPacketHandler {
 
     @Override
     public boolean handle(PlayStatusPacket packet) {
+        if (packet.getStatus() == PlayStatusPacket.Status.LOGIN_SUCCESS) {
+            ClientCacheStatusPacket packet1 = new ClientCacheStatusPacket();
+            packet1.setSupported(false);
+            client.sendPacket(packet1);
+        }
         if (packet.getStatus() == PlayStatusPacket.Status.PLAYER_SPAWN) {
             SetLocalPlayerAsInitializedPacket response = new SetLocalPlayerAsInitializedPacket();
             response.setRuntimeEntityId(player.getRuntimeID());

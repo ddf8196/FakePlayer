@@ -36,6 +36,7 @@ public class Config {
     private boolean webSocketEnabled = false;
     private int webSocketPort = 54321;
     private String language = "zh-cn";
+    private String theme = "darcula";
     private List<PlayerData> players = new ArrayList<>();
     private Map<String, CustomSkinData> customSkins = new LinkedHashMap<>();
     private transient KeyPair serverKeyPair;
@@ -212,6 +213,14 @@ public class Config {
         this.language = language;
     }
 
+    public String getTheme() {
+        return theme;
+    }
+
+    public void setTheme(String theme) {
+        this.theme = theme;
+    }
+
     public Map<String, CustomSkinData> getCustomSkins() {
         return customSkins;
     }
@@ -283,4 +292,11 @@ public class Config {
         return defaultPacketCodec;
     }
 
+    public Locale getLocale() {
+        return locale;
+    }
+
+    public void setLocale(Locale locale) {
+        this.locale = locale;
+    }
 }

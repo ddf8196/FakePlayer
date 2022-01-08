@@ -191,7 +191,7 @@ public class FillingContainer extends Container {
                 }
                 if (!onlyClearContainer) {
                     ItemStack dropItem = new ItemStack(this.mItems.get(slot));
-                    dropItem.setStackSize((byte) count);
+                    dropItem.setStackSize(count);
                     this.doDrop(dropItem, randomly);
                 }
                 ItemStack itemCopy = this.mItems.get(slot).clone();

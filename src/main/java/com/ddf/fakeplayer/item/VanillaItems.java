@@ -246,7 +246,7 @@ public class VanillaItems {
     }
 
     @NotImplemented
-    public static void registerItems() {
+    public static void registerItems(boolean enableExperimentalGameplay) {
         mApple = new Item("apple", 4 + 256);
         mApple.addTag(VanillaItemTags.Food);
         ItemRegistry.registerItem(mApple);

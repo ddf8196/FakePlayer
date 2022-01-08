@@ -28,7 +28,7 @@ public class SimpleContainer extends Container {
         if (slot >= 0 && slot < this.mItems.size()) {
             ItemStack newItem = new ItemStack(item);
             if (newItem.getStackSize() > this.getMaxStackSize()) {
-                newItem.setStackSize((byte) this.getMaxStackSize());
+                newItem.setStackSize(this.getMaxStackSize());
             }
             this.triggerTransactionChange(slot, this.mItems.get(slot), newItem);
             this.mItems.set(slot, newItem);

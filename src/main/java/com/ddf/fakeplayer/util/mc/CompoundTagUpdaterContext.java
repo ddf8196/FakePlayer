@@ -3,9 +3,9 @@ package com.ddf.fakeplayer.util.mc;
 import java.util.ArrayList;
 
 public class CompoundTagUpdaterContext {
-    byte mUpdaterVersion;
-    ArrayList<CompoundTagUpdater> mUpdaters;
-    boolean mIsSorted;
+    private byte mUpdaterVersion;
+    private ArrayList<CompoundTagUpdater> mUpdaters = new ArrayList<>();
+    private boolean mIsSorted;
 
     public int latestVersion() {
         if (this.mUpdaters.isEmpty())

@@ -3,7 +3,9 @@ package com.ddf.fakeplayer.actor.player;
 import com.ddf.fakeplayer.actor.*;
 import com.ddf.fakeplayer.actor.attribute.*;
 import com.ddf.fakeplayer.actor.mob.Mob;
+import com.ddf.fakeplayer.container.PlayerUIContainer;
 import com.ddf.fakeplayer.container.inventory.PlayerInventoryProxy;
+import com.ddf.fakeplayer.container.slot.PlayerUISlot;
 import com.ddf.fakeplayer.level.chunk.ChunkSource;
 import com.ddf.fakeplayer.level.dimension.VanillaDimensions;
 import com.ddf.fakeplayer.level.gamemode.GameMode;
@@ -141,7 +143,7 @@ public abstract class Player extends Mob {
     private Player.PositionMode mPositionMode = PositionMode.Normal_4;
     private ActorType mLastHurtBy = ActorType.Undefined_2;
     //private ItemGroup mCursorSelectedItemGroup = new ItemGroup();
-    //private PlayerUIContainer mPlayerUIContainer;
+    protected PlayerUIContainer mPlayerUIContainer;
     private InventoryTransactionManager mTransactionManager;
     private GameMode mGameMode;
     //private PlayerRespawnRandomizer mSpawnRandomizer = new PlayerRespawnRandomizer();
@@ -191,9 +193,9 @@ public abstract class Player extends Mob {
         this.mClientSubId = subid;
         this.mPlatformOnlineId = platformOnlineId;
         this.mPacketSender = packetSender;
-//        String name = "";
-//        int size = PlayerUISlot._count_17.getValue();
-//        this.mPlayerUIContainer = new PlayerUIContainer(name, 0, size);
+        String name = "";
+        int size = PlayerUISlot._count_17.getValue();
+        this.mPlayerUIContainer = new PlayerUIContainer(name, false, size);
         this.mTransactionManager = new InventoryTransactionManager(this);
         this.mPlayerGameType = playerGameType;
         for (int i = 0; i < CooldownType.Count_24.getValue(); i++) {
@@ -407,6 +409,21 @@ public abstract class Player extends Mob {
 
     public final PlayerInventoryProxy getSupplies() {
         return this.mInventoryProxy;
+    }
+
+    public final ItemStack getPlayerUIItem(PlayerUISlot slot) {
+        return this.mPlayerUIContainer.getItem(slot.ordinal());
+    }
+
+    public final void setPlayerUIItem(PlayerUISlot slot, final ItemStack item) {
+        int slotNum = slot.getValue();
+        ItemStack currentItem = this.mPlayerUIContainer.getItem(slotNum);
+        if (!item.equals(currentItem)) {
+            InventorySource containerId = InventorySource.fromContainerWindowID(ContainerID.CONTAINER_ID_PLAYER_ONLY_UI);
+            InventoryAction action = new InventoryAction(containerId, slotNum, currentItem, item);
+            this.mTransactionManager.addAction(action);
+            this.mPlayerUIContainer.setItem(slotNum, item);
+        }
     }
 
     public final float getDestroyProgress(final Block block) {

@@ -12,7 +12,7 @@ public final class SubChunkBrightnessStorage {
     }
 
     public final void reset(boolean maxSkyLight, boolean fullyLit) {
-        if ( fullyLit ) {
+        if (fullyLit) {
             for (LightPair lightPair : mLight) {
                 lightPair.setRaw((byte) 0xFF);
             }

@@ -27,10 +27,7 @@ import com.nukkitx.math.vector.Vector3i;
 import com.nukkitx.protocol.bedrock.data.ClientPlayMode;
 import com.nukkitx.protocol.bedrock.data.InputMode;
 import com.nukkitx.protocol.bedrock.data.PlayerActionType;
-import com.nukkitx.protocol.bedrock.packet.AnimatePacket;
-import com.nukkitx.protocol.bedrock.packet.PlayerActionPacket;
-import com.nukkitx.protocol.bedrock.packet.PlayerAuthInputPacket;
-import com.nukkitx.protocol.bedrock.packet.TextPacket;
+import com.nukkitx.protocol.bedrock.packet.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -199,11 +196,11 @@ public class FakePlayer extends LocalPlayer {
         if (super.getLevel().isServerAuthoritativeMovement()) {
             sendPlayerAuthInput();
         }
-        ItemStack selectedItem = super.getSelectedItem();
+        ItemStack selectedItem = this.getSelectedItem();
         if (selectedItem.getItem() == VanillaItems.mTrident) {
             if (!isUsingItem()) {
                 this.getGameMode().baseUseItem(selectedItem);
-            } else if(VanillaItems.mTrident.getMaxUseDuration(getCarriedItem()) - super.mItemInUseDuration > 10) {
+            } else if(VanillaItems.mTrident.getMaxUseDuration(getCarriedItem()) - this.mItemInUseDuration > 10) {
                 this.getGameMode().releaseUsingItem();
             }
         }

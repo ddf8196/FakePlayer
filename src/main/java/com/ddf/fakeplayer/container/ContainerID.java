@@ -9,7 +9,9 @@ public enum ContainerID {
     CONTAINER_ID_ARMOR((byte) 0x78),
     CONTAINER_ID_CREATIVE((byte) 0x79),
     CONTAINER_ID_SELECTION_SLOTS((byte) 0x7A),
-    CONTAINER_ID_PLAYER_ONLY_UI((byte) 0x7C);
+    CONTAINER_ID_PLAYER_ONLY_UI((byte) 0x7C),
+    CONTAINER_ID_UNKNOWN_0xFB((byte) 0xFB), //-5
+    CONTAINER_ID_UNKNOWN_0xFC((byte) 0xFC); //-4
 
     private final byte value;
 

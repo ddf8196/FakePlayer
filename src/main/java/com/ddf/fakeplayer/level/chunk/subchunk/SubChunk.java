@@ -14,7 +14,7 @@ public final class SubChunk {
     private final DirtyTicksCounter mDirtyTicksCounter = new DirtyTicksCounter();
     private SubChunkBrightnessStorage mLight;
     private final SubChunkBlockStorage[] mBlocks = new SubChunkBlockStorage[2];
-    private final SubChunkBlockStorage[] mBlocksReadPtr = new SubChunkBlockStorage[2];
+//    private final SubChunkBlockStorage[] mBlocksReadPtr = new SubChunkBlockStorage[2];
     private final SpinLock mWriteLock = new SpinLock();
 
     public SubChunk() {
@@ -27,7 +27,8 @@ public final class SubChunk {
 
     public final void initialize(final Block initBlock, boolean maxSkyLight, boolean fullyLit, SpinLock spinLock) {
         for (int i = 0; i < 2; ++i) {
-            this.mBlocksReadPtr[i] = null;
+//            this.mBlocksReadPtr[i] = null;
+            this.mBlocks[i] = null;
         }
         try (LockGuard<SpinLock> writeLock = new LockGuard<>(this.mWriteLock)) {
             if (initBlock != null) {
@@ -41,17 +42,37 @@ public final class SubChunk {
     }
 
     public final Block getBlock(short index) {
-        return this.mBlocksReadPtr[0].getBlock(index);
+//        return this.mBlocksReadPtr[0].getBlock(index);
+        return this.mBlocks[0].getBlock(index);
     }
 
     public final Block getExtraBlock(short index) {
-        return this.mBlocksReadPtr[1].getBlock(index);
+//        return this.mBlocksReadPtr[1].getBlock(index);
+        return this.mBlocks[1].getBlock(index);
     }
 
     public final void setAllBlocks(Block[] fullChunk, int sourceOffset, int sourceStride) {
         SubChunkBlockStorage storage = SubChunkBlockStorage.makeFromRawData(fullChunk, sourceOffset, sourceStride);
         try (LockGuard<SpinLock> writeLock = new LockGuard<>(this.mWriteLock)) {
             this._replaceBlocks(0, storage, writeLock);
+        }
+    }
+
+    private void _setBlock(int layer, /*uint16_t*/short index, final Block block) {
+        try (LockGuard<SpinLock> writeLock = new LockGuard<>(this.mWriteLock)) {
+            SubChunkBlockStorage replacement;
+            if (this.mBlocks[layer] == null) {
+                replacement = SubChunkBlockStorage.makeUniform(BedrockBlocks.mAir);
+                replacement.setBlock(index, block);
+                this._replaceBlocks(layer, replacement, writeLock);
+                return;
+            }
+            if (!this.mBlocks[layer].setBlock(index, block)) {
+                SubChunkBlockStorage old = this.mBlocks[layer];
+                replacement = SubChunkBlockStorage.makeExpanded(old);
+                replacement.setBlock(index, block);
+                this._replaceBlocks(layer, replacement, writeLock);
+            }
         }
     }
 
@@ -76,7 +97,7 @@ public final class SubChunk {
 
     private void _replaceBlocks(/*uint8_t*/int layer, SubChunkBlockStorage newStorage, LockGuard<SpinLock> a4) {
         this.mBlocks[layer] = newStorage;
-        this.mBlocksReadPtr[layer] = this.mBlocks[layer];
+//        this.mBlocksReadPtr[layer] = this.mBlocks[layer];
     }
 
     public final void deserialize(IDataInput stream, final BlockPalette palette) {

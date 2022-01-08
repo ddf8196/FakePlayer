@@ -46,6 +46,10 @@ public class Color {
         this.a = a_;
     }
 
+    public static Color fromRGB(int col) {
+        return Color.from255Range((col << 16) & 0xFF, (col << 8) & 0xFF, col & 0xFF, 255);
+    }
+
     public static Color fromARGB(int col) {
         return Color.from255Range((col << 16) & 0xFF, (col << 8) & 0xFF, col & 0xFF, (col << 24) & 0xFF);
     }

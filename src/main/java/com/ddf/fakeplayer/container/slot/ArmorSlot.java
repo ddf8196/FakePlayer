@@ -5,5 +5,9 @@ public enum ArmorSlot {
     Torso,
     Legs,
     Feet,
-    _count_1
+    _count_1;
+
+    public static ArmorSlot toArmorSlot(int index) {
+        return values()[index];
+    }
 }

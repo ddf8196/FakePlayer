@@ -611,7 +611,7 @@ public class ItemStackBase {
         return this;
     }
 
-    public final void setStackSize(final byte inCount) {
+    public final void setStackSize(final int inCount) {
         this.set(inCount);
     }
 

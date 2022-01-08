@@ -1,5 +1,6 @@
 package com.ddf.fakeplayer.item;
 
+import com.ddf.fakeplayer.block.Block;
 import com.ddf.fakeplayer.block.BlockLegacy;
 import com.ddf.fakeplayer.item.items.UnknownItem;
 import com.ddf.fakeplayer.util.JsonUtil;
@@ -36,7 +37,15 @@ public class ItemRegistry {
         mItemAliasLookupMap.put(alias, name);
     }
 
-    public static Item getItem(int id) {
+    public static Item getItem(final Block block) {
+        return ItemRegistry.getItem(block.getLegacyBlock().getBlockItemId());
+    }
+
+    public static Item getItem(final BlockLegacy block) {
+        return ItemRegistry.getItem(block.getBlockItemId());
+    }
+
+    public static Item getItem(final int id) {
         return mIdToItemMap.get(id);
     }
 
@@ -66,7 +75,7 @@ public class ItemRegistry {
 
             String fullName = itemNamespace + ":" + itemName;
             String blockTestName = "tile." + fullName;
-            Item outItem = null;
+            Item outItem;
             if (fullName.contains("tile.") || ItemRegistry.mNameToItemMap.containsKey(blockTestName)) {
                 if (ItemRegistry.mItemAliasLookupMap.containsKey(fullName)) {
                     fullName = ItemRegistry.mItemAliasLookupMap.get(fullName);
@@ -74,16 +83,16 @@ public class ItemRegistry {
                     itemName = result.outItemName;
                     itemNamespace = result.outItemNamespace;
                 }
-                if (ItemRegistry.mNameToItemMap.containsKey(fullName)) {
-                    outItem = ItemRegistry.mNameToItemMap.get(fullName);
-                } else {
-                    if (fullName.indexOf("tile.", 0) != -1) {
-                        outItem = null;
-                        return new ItemLookupResult(outItem, outItemAux);
-                    }
-                    String blockTestName_0 = itemNamespace + ":tile." + itemName;
-                    outItem = ItemRegistry.mNameToItemMap.getOrDefault(blockTestName_0, null);
+            }
+            if (ItemRegistry.mNameToItemMap.containsKey(fullName)) {
+                outItem = ItemRegistry.mNameToItemMap.get(fullName);
+            } else {
+                if (fullName.contains("tile.")) {
+                    outItem = null;
+                    return new ItemLookupResult(outItem, outItemAux);
                 }
+                String blockTestName_0 = itemNamespace + ":tile." + itemName;
+                outItem = ItemRegistry.mNameToItemMap.getOrDefault(blockTestName_0, null);
             }
             return new ItemLookupResult(outItem, outItemAux);
         }

@@ -6,6 +6,8 @@ import com.ddf.fakeplayer.container.ContainerID;
 import com.ddf.fakeplayer.container.inventory.InventoryAction;
 import com.ddf.fakeplayer.container.inventory.InventorySource;
 import com.ddf.fakeplayer.container.inventory.InventorySourceType;
+import com.ddf.fakeplayer.container.slot.ArmorSlot;
+import com.ddf.fakeplayer.container.slot.PlayerUISlot;
 import com.ddf.fakeplayer.item.ItemStack;
 import com.ddf.fakeplayer.util.NotImplemented;
 
@@ -31,37 +33,35 @@ public class InventoryTransaction {
     public final void _logTransaction(boolean isClientSide) {
     }
 
-    @NotImplemented
     private void _dropCreatedItems(Player p) {
-//        for (Map.Entry<InventorySource, ArrayList<InventoryAction>> entry : this.mActions.entrySet()) {
-//            for (InventoryAction action : entry.getValue()) {
-//                if (action.getSource().getContainerId() == ContainerID.CONTAINER_ID_PLAYER_ONLY_UI && action.getSlot() == PlayerUISlot.CreatedItemOutput) {
-//                    int StackSize = action.getFromItem().getStackSize();
-//                    int toDropCount = StackSize - action.getToItem().getStackSize();
-//                    if (toDropCount > 0) {
-//                        ItemStack toDrop = new ItemStack(action.getFromItem());
-//                        toDrop.setStackSize((byte) toDropCount);
-//                        InventoryTransactionManager TransactionManager = p.getTransactionManager();
-//                        TransactionManager.addAction(new InventoryAction(InventorySource.fromWorldInteraction(InventorySource.InventorySourceFlags.NoFlag), 1, toDrop, ItemStack.EMPTY_ITEM));
-//                        p.drop(toDrop, false);
-//                        ItemStack currentItem = p.getPlayerUIItem(PlayerUISlot.CreatedItemOutput);
-//                        ItemStack other = action.getFromItem();
-//                        if (currentItem.isStackable(other)) {
-//                            ItemStack toLeave = new ItemStack(currentItem);
-//                            int toLeaveSize = currentItem.getStackSize() - toDropCount;
-//                            if (toLeaveSize < 0)
-//                                toLeaveSize = currentItem.getStackSize();
-//                            if (toLeaveSize != action.getToItem().getStackSize()) {
-//                                toLeaveSize = action.getToItem().getStackSize();
-//                            }
-//                            toLeave.setStackSize(toLeaveSize);
-//                            p.getTransactionManager().addAction(new InventoryAction(InventorySource.fromContainerWindowID(ContainerID.CONTAINER_ID_INVENTORY), PlayerUISlot.CreatedItemOutput, currentItem, toLeave));
-//                            p.setPlayerUIItem(PlayerUISlot.CreatedItemOutput, toLeave);
-//                        }
-//                    }
-//                }
-//            }
-//        }
+        for (Map.Entry<InventorySource, ArrayList<InventoryAction>> entry : this.mActions.entrySet()) {
+            for (InventoryAction action : entry.getValue()) {
+                if (action.getSource().getContainerId() == ContainerID.CONTAINER_ID_PLAYER_ONLY_UI && action.getSlot() == PlayerUISlot.CreatedItemOutput.getValue()) {
+                    int toDropCount = action.getFromItem().getStackSize() - action.getToItem().getStackSize();
+                    if (toDropCount > 0) {
+                        ItemStack toDrop = new ItemStack(action.getFromItem());
+                        toDrop.setStackSize(toDropCount);
+                        InventoryTransactionManager TransactionManager = p.getTransactionManager();
+                        TransactionManager.addAction(new InventoryAction(InventorySource.fromWorldInteraction(InventorySource.InventorySourceFlags.NoFlag), 1, toDrop, ItemStack.EMPTY_ITEM));
+                        p.drop(toDrop, false);
+                        ItemStack currentItem = p.getPlayerUIItem(PlayerUISlot.CreatedItemOutput);
+                        ItemStack other = action.getFromItem();
+                        if (currentItem.isStackable(other)) {
+                            ItemStack toLeave = new ItemStack(currentItem);
+                            int toLeaveSize = currentItem.getStackSize() - toDropCount;
+                            if (toLeaveSize < 0)
+                                toLeaveSize = currentItem.getStackSize();
+                            if (toLeaveSize != action.getToItem().getStackSize()) {
+                                toLeaveSize = action.getToItem().getStackSize();
+                            }
+                            toLeave.setStackSize(toLeaveSize);
+                            p.getTransactionManager().addAction(new InventoryAction(InventorySource.fromContainerWindowID(ContainerID.CONTAINER_ID_INVENTORY), PlayerUISlot.CreatedItemOutput.getValue(), currentItem, toLeave));
+                            p.setPlayerUIItem(PlayerUISlot.CreatedItemOutput, toLeave);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public final void addAction(final InventoryAction action) {
@@ -123,8 +123,29 @@ public class InventoryTransaction {
                             return InventoryTransactionError.NoError;
                         return InventoryTransactionError.AuthorityMismatch;
                     };
-//                case CreativeInventory:
-//                    break;
+                case CreativeInventory:
+                    return (player, action, isSenderAuthority) -> {
+                        if (!isSenderAuthority && !player.isInCreativeMode())
+                            return InventoryTransactionError.AuthorityMismatch;
+                        if (action.getSlot() == 0) {
+                            if (!action.getFromItem().toBoolean() && action.getToItem().toBoolean()) {
+                                return InventoryTransactionError.NoError;
+                            }
+                        }
+                        if (action.getSlot() != 1) {
+                            return InventoryTransactionError.Unknown_4;
+                        }
+                        if (!action.getFromItem().toBoolean() || action.getToItem().toBoolean()) {
+                            return InventoryTransactionError.Unknown_4;
+                        }
+//                      ------------------------------------------
+//                      ------------------------------------------
+//                      ------------------------------------------
+//                      ------------------------------------------
+//                      ------------------------------------------
+//                      ------------------------------------------
+                        return InventoryTransactionError.NoError;
+                    };
                 case NonImplementedFeatureTODO:
                     return (player, action, isSenderAuthority) -> InventoryTransactionError.NoError;
                 default:
@@ -179,8 +200,46 @@ public class InventoryTransaction {
                     return (player, action) -> InventoryTransactionError.Unknown_4;
             }
         } else {
-            ContainerID ContainerId = source.getContainerId();
-            if (ContainerId != ContainerID.CONTAINER_ID_INVENTORY) {
+            ContainerID containerId = source.getContainerId();
+            if (containerId != ContainerID.CONTAINER_ID_INVENTORY) {
+                switch (containerId) {
+                    case CONTAINER_ID_OFFHAND:
+                        return (player, action) -> {
+                            player.setOffhandSlot(action.getToItem());
+                            return InventoryTransactionError.NoError;
+                        };
+                    case CONTAINER_ID_ARMOR:
+                        return (player, action) -> {
+                            player.setArmor(ArmorSlot.toArmorSlot(action.getSlot()), action.getToItem());
+                            return InventoryTransactionError.NoError;
+                        };
+                    case CONTAINER_ID_PLAYER_ONLY_UI:
+                        return (player, action) -> {
+                            if (action.getSlot() < 0x33) {
+                                if (player.isClient() && action.getSlot() == PlayerUISlot.CreatedItemOutput.getValue()) {
+                                    ItemStack currentItem = player.getPlayerUIItem(PlayerUISlot.CreatedItemOutput);
+                                    ItemStack toItem = action.getToItem();
+                                    player.getTransactionManager().addAction(
+                                            new InventoryAction(
+                                                    InventorySource.fromContainerWindowID(ContainerID.CONTAINER_ID_PLAYER_ONLY_UI),
+                                                    PlayerUISlot.CreatedItemOutput.getValue(),
+                                                    currentItem,
+                                                    toItem
+                                            ));
+                                } else {
+                                    player.setPlayerUIItem(PlayerUISlot.getByValue(action.getSlot()), action.getToItem());
+                                }
+                            }
+                            return InventoryTransactionError.NoError;
+                        };
+                    default:
+                        return (player, action) -> {
+                            //---------------------------------------
+                            //---------------------------------------
+                            //---------------------------------------
+                            return InventoryTransactionError.NoError;
+                        };
+                }
             } else {
                 return (player, action) -> {
                     player.getSupplies().setItem(action.getSlot(), action.getToItem(), action.getSource().getContainerId());
@@ -188,7 +247,6 @@ public class InventoryTransaction {
                 };
             }
         }
-        return null;
     }
 
     public final InventoryTransactionError executeFull(Player p, boolean isSenderAuthority) {
@@ -252,7 +310,7 @@ public class InventoryTransaction {
                         count_0 -= instance_0.getMaxStackSize();
                     }
                     if (count_0 != 0) {
-                        instance_0.setStackSize((byte) count_0);
+                        instance_0.setStackSize(count_0);
                         this.addAction(new InventoryAction(InventorySource.fromCreativeInventory(), 0, ItemStack.EMPTY_ITEM, instance_0));
                     }
                 } else {
@@ -265,7 +323,7 @@ public class InventoryTransaction {
                         count -= instance.getMaxStackSize();
                     }
                     if (count != 0) {
-                        instance.setStackSize((byte) count);
+                        instance.setStackSize(count);
                         this.addAction(new InventoryAction(InventorySource.fromCreativeInventory(), 1, instance, ItemStack.EMPTY_ITEM));
                     }
                 }
