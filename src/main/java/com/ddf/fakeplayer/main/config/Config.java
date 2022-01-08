@@ -36,7 +36,7 @@ public class Config {
     private boolean webSocketEnabled = false;
     private int webSocketPort = 54321;
     private String language = "zh-cn";
-    private String theme = "darcula";
+    private String theme = "dark";
     private List<PlayerData> players = new ArrayList<>();
     private Map<String, CustomSkinData> customSkins = new LinkedHashMap<>();
     private transient KeyPair serverKeyPair;

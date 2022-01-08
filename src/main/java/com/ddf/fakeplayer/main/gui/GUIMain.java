@@ -117,7 +117,7 @@ public class GUIMain extends Main {
 			JFileChooser fileChooser = new JFileChooser();
 			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			fileChooser.setAcceptAllFileFilterUsed(false);
-			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(I18N.get("menu.file.configFileDescription"), "yaml"));
+			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(I18N.get("fileFilter.description.configFile"), "yaml"));
 			int result = fileChooser.showSaveDialog(frame);
 			if (result == JFileChooser.APPROVE_OPTION) {
                 String path = fileChooser.getSelectedFile().getAbsolutePath();
@@ -140,7 +140,7 @@ public class GUIMain extends Main {
 			JFileChooser fileChooser = new JFileChooser();
 			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			fileChooser.setAcceptAllFileFilterUsed(false);
-			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(I18N.get("menu.file.configFileDescription"), "yaml"));
+			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(I18N.get("fileFilter.description.configFile"), "yaml"));
 			int result = fileChooser.showOpenDialog(frame);
 			if (result == JFileChooser.APPROVE_OPTION) {
                 try {

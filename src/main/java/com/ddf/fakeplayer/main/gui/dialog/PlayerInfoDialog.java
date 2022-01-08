@@ -2,13 +2,22 @@ package com.ddf.fakeplayer.main.gui.dialog;
 
 import com.ddf.fakeplayer.client.Client;
 import com.ddf.fakeplayer.main.I18N;
+import com.ddf.fakeplayer.main.config.CustomSkinData;
 import com.ddf.fakeplayer.main.config.PlayerData;
 import com.ddf.fakeplayer.main.gui.GUIMain;
+import com.ddf.fakeplayer.util.Image;
+import com.ddf.fakeplayer.util.SkinUtil;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Objects;
 
 public class PlayerInfoDialog extends JDialog {
     public static final int TYPE_ADD = 0;
@@ -25,6 +34,8 @@ public class PlayerInfoDialog extends JDialog {
     private JCheckBox allowChatMessageControl;
     private JButton ok;
     private JButton cancel;
+
+    private SkinComboBoxModel skinComboBoxModel;
 
     public PlayerInfoDialog(GUIMain main) {
         this(main, TYPE_ADD, null);
@@ -45,6 +56,7 @@ public class PlayerInfoDialog extends JDialog {
             this.playerSkin = null;
         }
         initLayout();
+        initListener();
         initData();
     }
 
@@ -54,10 +66,7 @@ public class PlayerInfoDialog extends JDialog {
         JLabel nameLabel = new JLabel(I18N.get("label.playerName"));
         name = new JTextField();
         JLabel skinLabel = new JLabel(I18N.get("label.playerSkin"));
-        skin = new JComboBox<>(new String[]{
-                "steve",
-                "alex"
-        });
+        skin = new JComboBox<>();
         allowChatMessageControl = new JCheckBox(I18N.get("checkBox.allowChatMessageControl"));
         JPanel buttonBar = new JPanel();
         ok = new JButton(I18N.get("button.ok"));
@@ -84,16 +93,54 @@ public class PlayerInfoDialog extends JDialog {
         setLocationRelativeTo(getOwner());
     }
 
+    private void initListener() {
+        skin.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    JFileChooser fileChooser = new JFileChooser();
+
+                    fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                    fileChooser.setAcceptAllFileFilterUsed(false);
+                    fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(I18N.get("fileFilter.description.skinFile"), "png"));
+                    int result = fileChooser.showOpenDialog(PlayerInfoDialog.this);
+                    if (result == JFileChooser.APPROVE_OPTION) {
+                        File file = fileChooser.getSelectedFile();
+                        Image image = new Image();
+                        image.load(file);
+//                        String name = JOptionPane.showInputDialog(PlayerInfoDialog.this, I18N.get(""));
+                        String name = file.getName();
+                        CustomSkinData skinData = new CustomSkinData();
+                        skinData.setImageWidth(image.getWidth());
+                        skinData.setImageHeight(image.getHeight());
+                        skinData.setImageData(SkinUtil.encodeSkinToBase64(image));
+                        main.getConfig().addCustomSkin(name, skinData);
+                        skinComboBoxModel.add(name);
+                        skin.setSelectedItem(name);
+                    }
+                }
+            }
+        });
+    }
+
     private void initData() {
+        skinComboBoxModel = new SkinComboBoxModel();
+        skin.setModel(skinComboBoxModel);
+        pack();
         switch (type) {
             case TYPE_ADD:
                 setTitle(I18N.get("title.addFakePlayer"));
+                skin.setSelectedItem("steve");
                 break;
             case TYPE_EDIT:
                 setTitle(I18N.get("title.editFakePlayer"));
                 PlayerData data = main.getConfig().getPlayerData(playerName);
                 name.setText(data.getName());
-                skin.setSelectedItem(data.getSkin());
+                String skinType = data.getSkin();
+                if ("steve".equals(skinType) || "alex".equals(skinType))
+                    skin.setSelectedItem(skinType);
+                else
+                    skin.setSelectedItem(data.getCustomSkin());
                 allowChatMessageControl.setSelected(data.isAllowChatMessageControl());
                 break;
         }
@@ -104,7 +151,7 @@ public class PlayerInfoDialog extends JDialog {
 
     private void addOrEdit() {
         String playerName = name.getText();
-        String skin = this.skin.getSelectedItem().toString();
+        String skin = Objects.toString(this.skin.getSelectedItem());
         boolean allowChatMessageControl = this.allowChatMessageControl.isSelected();
         switch (type) {
             case TYPE_ADD: {
@@ -117,6 +164,10 @@ public class PlayerInfoDialog extends JDialog {
                     return;
                 }
                 PlayerData playerData = new PlayerData(playerName, skin, allowChatMessageControl);
+                if (!"steve".equals(skin) && !"alex".equals(skin)) {
+                    playerData.setSkin("custom");
+                    playerData.setCustomSkin(skin);
+                }
                 main.addPlayer(playerData);
                 dispose();
                 break;
@@ -135,6 +186,10 @@ public class PlayerInfoDialog extends JDialog {
                     client.setAllowChatMessageControl(allowChatMessageControl);
                 } else {
                     PlayerData playerData = new PlayerData(playerName, skin, allowChatMessageControl);
+                    if (!"steve".equals(skin) && !"alex".equals(skin)) {
+                        playerData.setSkin("custom");
+                        playerData.setCustomSkin(skin);
+                    }
                     main.removePlayer(this.playerName);
                     main.addPlayer(playerData);
                 }
@@ -142,5 +197,41 @@ public class PlayerInfoDialog extends JDialog {
             }
         }
         dispose();
+    }
+
+    private class SkinComboBoxModel extends AbstractListModel<String> implements ComboBoxModel<String> {
+        private String selectedItem;
+        private ArrayList<String> strings = new ArrayList<>();
+
+        SkinComboBoxModel() {
+            strings.add("steve");
+            strings.add("alex");
+            strings.addAll(main.getConfig().getCustomSkins().keySet());
+        }
+
+        public void add(String name) {
+            strings.add(name);
+            fireIntervalAdded(this, strings.size() - 2, strings.size() - 1);
+        }
+
+        @Override
+        public void setSelectedItem(Object anItem) {
+            selectedItem = Objects.toString(anItem);
+        }
+
+        @Override
+        public String getSelectedItem() {
+            return selectedItem;
+        }
+
+        @Override
+        public int getSize() {
+            return strings.size();
+        }
+
+        @Override
+        public String getElementAt(int index) {
+            return strings.get(index);
+        }
     }
 }
