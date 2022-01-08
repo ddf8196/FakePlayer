@@ -30,10 +30,10 @@ public class PublicKeyDialog extends JDialog {
     private void initLayout() {
         content = new JPanel();
         JPanel publicKeyPanel = new JPanel();
-        JLabel publicKeyLabel = new JLabel("服务器公钥:");
+        JLabel publicKeyLabel = new JLabel(I18N.get("publicKeyDialog.label.publicKey"));
         JScrollPane publicKeyScrollPane = new JScrollPane();
         publicKey = new JTextArea();
-        add = new JButton("将公钥添加至server.properties");
+        add = new JButton(I18N.get("publicKeyDialog.button.add"));
         JPanel spacer = new JPanel();
         JPanel buttonBar = new JPanel();
         ok = new JButton(I18N.get("button.ok"));
@@ -101,17 +101,17 @@ public class PublicKeyDialog extends JDialog {
                 try {
                     properties.load(path);
                 } catch (IOException exception) {
-                    JOptionPane.showMessageDialog(this, "配置文件加载失败: " + exception.toString());
+                    JOptionPane.showMessageDialog(this, I18N.get("publicKeyDialog.message.loadBDSConfigFail") + " " + exception.toString());
                     return;
                 }
                 properties.putProperty("trusted-key", main.getConfig().getServerPublicKey());
                 try {
                     properties.save(path);
                 } catch (IOException exception) {
-                    JOptionPane.showMessageDialog(this, "配置文件保存失败" + exception.toString());
+                    JOptionPane.showMessageDialog(this, I18N.get("publicKeyDialog.message.saveBDSConfigFail") + " " + exception.toString());
                     return;
                 }
-                JOptionPane.showMessageDialog(this, "添加成功");
+                JOptionPane.showMessageDialog(this, I18N.get("publicKeyDialog.message.addPublicKeySucceed"));
                 dispose();
             }
         });

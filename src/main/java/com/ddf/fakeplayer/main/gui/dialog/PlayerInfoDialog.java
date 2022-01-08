@@ -63,11 +63,11 @@ public class PlayerInfoDialog extends JDialog {
     private void initLayout() {
         JPanel content = new JPanel();
         JPanel playerInfoPanel = new JPanel();
-        JLabel nameLabel = new JLabel(I18N.get("label.playerName"));
+        JLabel nameLabel = new JLabel(I18N.get("guiMain.label.playerName"));
         name = new JTextField();
-        JLabel skinLabel = new JLabel(I18N.get("label.playerSkin"));
+        JLabel skinLabel = new JLabel(I18N.get("guiMain.label.playerSkin"));
         skin = new JComboBox<>();
-        allowChatMessageControl = new JCheckBox(I18N.get("checkBox.allowChatMessageControl"));
+        allowChatMessageControl = new JCheckBox(I18N.get("guiMain.checkBox.allowChatMessageControl"));
         JPanel buttonBar = new JPanel();
         ok = new JButton(I18N.get("button.ok"));
         cancel = new JButton(I18N.get("button.cancel"));
@@ -102,7 +102,7 @@ public class PlayerInfoDialog extends JDialog {
 
                     fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                     fileChooser.setAcceptAllFileFilterUsed(false);
-                    fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(I18N.get("fileFilter.description.skinFile"), "png"));
+                    fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(I18N.get("playerInfoDialog.fileFilter.description.skinFile"), "png"));
                     int result = fileChooser.showOpenDialog(PlayerInfoDialog.this);
                     if (result == JFileChooser.APPROVE_OPTION) {
                         File file = fileChooser.getSelectedFile();
@@ -156,11 +156,11 @@ public class PlayerInfoDialog extends JDialog {
         switch (type) {
             case TYPE_ADD: {
                 if (playerName == null || playerName.isEmpty()) {
-                    JOptionPane.showMessageDialog(main.getFrame(), I18N.get("message.emptyPlayerName"));
+                    JOptionPane.showMessageDialog(main.getFrame(), I18N.get("playerInfoDialog.message.emptyPlayerName"));
                     return;
                 }
                 if (main.getClient(playerName) != null) {
-                    JOptionPane.showMessageDialog(main.getFrame(), I18N.get("message.playerAlreadyExists"));
+                    JOptionPane.showMessageDialog(main.getFrame(), I18N.get("playerInfoDialog.message.playerAlreadyExists"));
                     return;
                 }
                 PlayerData playerData = new PlayerData(playerName, skin, allowChatMessageControl);
@@ -174,11 +174,11 @@ public class PlayerInfoDialog extends JDialog {
             }
             case TYPE_EDIT: {
                 if (playerName == null || playerName.isEmpty()) {
-                    JOptionPane.showMessageDialog(main.getFrame(), I18N.get("message.emptyPlayerName"));
+                    JOptionPane.showMessageDialog(main.getFrame(), I18N.get("playerInfoDialog.message.emptyPlayerName"));
                     return;
                 }
                 if (!playerName.equals(this.playerName) && main.getClient(playerName) != null) {
-                    JOptionPane.showMessageDialog(main.getFrame(), I18N.get("message.playerAlreadyExists"));
+                    JOptionPane.showMessageDialog(main.getFrame(), I18N.get("playerInfoDialog.message.playerAlreadyExists"));
                     return;
                 }
                 if (playerName.equals(this.playerName) && skin.equals(playerSkin)) {

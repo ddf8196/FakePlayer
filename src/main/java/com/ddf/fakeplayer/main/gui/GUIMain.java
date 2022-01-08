@@ -73,7 +73,7 @@ public class GUIMain extends Main {
 		initListener();
 
         try {
-            logger.log(I18N.get("log.configFileLoaded"), ": ", config.getConfigPath().toRealPath());
+            logger.log(I18N.get("log.configFileLoaded"), " ", config.getConfigPath().toRealPath());
         } catch (IOException e) {
             e.printStackTrace();
             config.save();
@@ -109,15 +109,15 @@ public class GUIMain extends Main {
 		JMenuBar menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);
 
-		JMenu fileMenu = new JMenu(I18N.get("menu.file"));
+		JMenu fileMenu = new JMenu(I18N.get("guiMain.menu.file"));
 		menuBar.add(fileMenu);
 
-		JMenuItem exportConfig = new JMenuItem(I18N.get("menu.file.exportConfig"));
+		JMenuItem exportConfig = new JMenuItem(I18N.get("guiMain.menu.file.exportConfig"));
 		exportConfig.addActionListener(e -> {
 			JFileChooser fileChooser = new JFileChooser();
 			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			fileChooser.setAcceptAllFileFilterUsed(false);
-			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(I18N.get("fileFilter.description.configFile"), "yaml"));
+			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(I18N.get("guiMain.fileFilter.description.configFile"), "yaml"));
 			int result = fileChooser.showSaveDialog(frame);
 			if (result == JFileChooser.APPROVE_OPTION) {
                 String path = fileChooser.getSelectedFile().getAbsolutePath();
@@ -127,7 +127,7 @@ public class GUIMain extends Main {
                 try {
                     config.save(Paths.get(path));
                 } catch (IOException ioException) {
-                    logger.log(I18N.get("log.exportConfigFail") + ": ", ioException);
+                    logger.log(I18N.get("log.exportConfigFail") + " ", ioException);
                     return;
                 }
                 logger.log(I18N.get("log.exportConfigSucceed"));
@@ -135,12 +135,12 @@ public class GUIMain extends Main {
 		});
 		fileMenu.add(exportConfig);
 
-		JMenuItem importConfig = new JMenuItem(I18N.get("menu.file.importConfig"));
+		JMenuItem importConfig = new JMenuItem(I18N.get("guiMain.menu.file.importConfig"));
 		importConfig.addActionListener(e -> {
 			JFileChooser fileChooser = new JFileChooser();
 			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			fileChooser.setAcceptAllFileFilterUsed(false);
-			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(I18N.get("fileFilter.description.configFile"), "yaml"));
+			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter(I18N.get("guiMain.fileFilter.description.configFile"), "yaml"));
 			int result = fileChooser.showOpenDialog(frame);
 			if (result == JFileChooser.APPROVE_OPTION) {
                 try {
@@ -151,7 +151,7 @@ public class GUIMain extends Main {
                     clients.forEach(Client::close);
                     initData();
                 } catch (IOException ioException) {
-                    logger.log(I18N.get("log.importConfigFail"), ": ", ioException);
+                    logger.log(I18N.get("log.importConfigFail"), " ", ioException);
                     return;
                 }
                 logger.log(I18N.get("log.importConfigSucceed"));
@@ -160,7 +160,7 @@ public class GUIMain extends Main {
 		fileMenu.add(importConfig);
 		fileMenu.addSeparator();
 
-		JMenuItem saveConfig = new JMenuItem(I18N.get("menu.file.saveConfig"));
+		JMenuItem saveConfig = new JMenuItem(I18N.get("guiMain.menu.file.saveConfig"));
 		saveConfig.addActionListener(e -> saveConfig());
 		fileMenu.add(saveConfig);
 		fileMenu.addSeparator();
@@ -172,19 +172,19 @@ public class GUIMain extends Main {
 //		fileMenu.add(settings);
 //		fileMenu.addSeparator();
 
-		JMenuItem exit = new JMenuItem(I18N.get("menu.file.exit"));
+		JMenuItem exit = new JMenuItem(I18N.get("guiMain.menu.file.exit"));
 		exit.addActionListener(e -> exit());
 		fileMenu.add(exit);
 
-		JMenu helpMenu = new JMenu(I18N.get("menu.help"));
+		JMenu helpMenu = new JMenu(I18N.get("guiMain.menu.help"));
 		menuBar.add(helpMenu);
 
-		JMenuItem showHelp = new JMenuItem(I18N.get("menu.help.showHelp"));
+		JMenuItem showHelp = new JMenuItem(I18N.get("guiMain.menu.help.showHelp"));
 		showHelp.addActionListener(e -> Util.tryOpenBrowser("https://github.com/ddf8196/FakePlayer/wiki"));
 		helpMenu.add(showHelp);
 		helpMenu.addSeparator();
 
-		JMenuItem about = new JMenuItem(I18N.get("menu.help.about"));
+		JMenuItem about = new JMenuItem(I18N.get("guiMain.menu.help.about"));
 		about.addActionListener(e -> {
 			AboutDialog dialog = new AboutDialog(this);
 			dialog.setVisible(true);
@@ -194,24 +194,24 @@ public class GUIMain extends Main {
 
 	private void initPopupMenu() {
 		playersTableMenu1 = new JPopupMenu();
-		JMenuItem connect = new JMenuItem(I18N.get("popupMenu.playersTable.connect"));
+		JMenuItem connect = new JMenuItem(I18N.get("guiMain.popupMenu.playersTable.connect"));
 		connect.addActionListener(e -> getSelectedClient().connect(config.getServerAddress(), config.getServerPort()));
 		playersTableMenu1.add(connect);
 
-		JMenuItem disconnect = new JMenuItem(I18N.get("popupMenu.playersTable.disconnect"));
+		JMenuItem disconnect = new JMenuItem(I18N.get("guiMain.popupMenu.playersTable.disconnect"));
 		disconnect.addActionListener(e -> getSelectedClient().stop());
 		playersTableMenu1.add(disconnect);
 
-		JMenuItem edit = new JMenuItem(I18N.get("popupMenu.playersTable.edit"));
+		JMenuItem edit = new JMenuItem(I18N.get("guiMain.popupMenu.playersTable.edit"));
 		edit.addActionListener(e -> showEditPlayerDialog());
 		playersTableMenu1.add(edit);
 
-		JMenuItem remove = new JMenuItem(I18N.get("popupMenu.playersTable.remove"));
+		JMenuItem remove = new JMenuItem(I18N.get("guiMain.popupMenu.playersTable.remove"));
 		remove.addActionListener(e -> removePlayer(getSelectedClient().getPlayerName()));
 		playersTableMenu1.add(remove);
 
 		playersTableMenu2 = new JPopupMenu();
-		JMenuItem connectSelected = new JMenuItem(I18N.get("popupMenu.playersTable.connectSelected"));
+		JMenuItem connectSelected = new JMenuItem(I18N.get("guiMain.popupMenu.playersTable.connectSelected"));
 		connectSelected.addActionListener(e -> {
 			for (int i : playersTable.getSelectedRows()) {
 				Client client = getClient(playersTableModel.getClientName(playersTable.convertRowIndexToModel(i)));
@@ -222,7 +222,7 @@ public class GUIMain extends Main {
 		});
 		playersTableMenu2.add(connectSelected);
 
-		JMenuItem disconnectSelected = new JMenuItem(I18N.get("popupMenu.playersTable.disconnectSelected"));
+		JMenuItem disconnectSelected = new JMenuItem(I18N.get("guiMain.popupMenu.playersTable.disconnectSelected"));
 		disconnectSelected.addActionListener(e -> {
 			for (int i : playersTable.getSelectedRows()) {
 				Client client = getClient(playersTableModel.getClientName(playersTable.convertRowIndexToModel(i)));
@@ -233,7 +233,7 @@ public class GUIMain extends Main {
 		});
 		playersTableMenu2.add(disconnectSelected);
 
-		JMenuItem removeSelected = new JMenuItem(I18N.get("popupMenu.playersTable.removeSelected"));
+		JMenuItem removeSelected = new JMenuItem(I18N.get("guiMain.popupMenu.playersTable.removeSelected"));
 		removeSelected.addActionListener(e -> {
 			List<String> list = new ArrayList<>();
 			for (int i : playersTable.getSelectedRows()) {
@@ -250,22 +250,22 @@ public class GUIMain extends Main {
 		playersTable = new JTable();
 		JPanel right = new JPanel();
 		configPanel = new JPanel();
-		JLabel serverAddressLabel = new JLabel(I18N.get("label.serverAddress"));
+		JLabel serverAddressLabel = new JLabel(I18N.get("guiMain.label.serverAddress"));
 		serverAddress = new JTextField();
-		JLabel serverPortLabel = new JLabel(I18N.get("label.serverPort"));
+		JLabel serverPortLabel = new JLabel(I18N.get("guiMain.label.serverPort"));
 		serverPort = new JTextField();
-		JLabel publicKeyLabel = new JLabel(I18N.get("label.publicKey"));
-		publicKeyButton = new JButton(I18N.get("button.publicKey"));
-		autoReconnect = new JCheckBox(I18N.get("checkBox.autoReconnect"));
+		JLabel publicKeyLabel = new JLabel(I18N.get("guiMain.label.publicKey"));
+		publicKeyButton = new JButton(I18N.get("guiMain.button.publicKey"));
+		autoReconnect = new JCheckBox(I18N.get("guiMain.checkBox.autoReconnect"));
 		JSeparator separator1 = new JSeparator();
 		webSocketPanel = new JPanel();
-		webSocketEnabled = new JCheckBox(I18N.get("checkBox.webSocketEnabled"));
-		JLabel webSocketPortLabel = new JLabel(I18N.get("label.webSocketPort"));
+		webSocketEnabled = new JCheckBox(I18N.get("guiMain.checkBox.webSocketEnabled"));
+		JLabel webSocketPortLabel = new JLabel(I18N.get("guiMain.label.webSocketPort"));
 		webSocketPort = new JTextField();
 		JSeparator separator2 = new JSeparator();
-		addFakePlayer = new JButton(I18N.get("button.addFakePlayer"));
-		connectAll = new JButton(I18N.get("button.connectAll"));
-		disconnectAll = new JButton(I18N.get("button.disconnectAll"));
+		addFakePlayer = new JButton(I18N.get("guiMain.button.addFakePlayer"));
+		connectAll = new JButton(I18N.get("guiMain.button.connectAll"));
+		disconnectAll = new JButton(I18N.get("guiMain.button.disconnectAll"));
 		logScrollPane = new JScrollPane();
 		log = new JTextArea();
 
@@ -429,7 +429,7 @@ public class GUIMain extends Main {
 				try {
 					int port = Integer.parseInt(webSocketPort.getText());
 					if (!Util.isValidPort(port)) {
-						JOptionPane.showMessageDialog(frame, I18N.get("message.invalidPort"));
+						JOptionPane.showMessageDialog(frame, I18N.get("guiMain.message.invalidPort"));
 						webSocketPort.setText(Integer.toString(config.getWebSocketPort()));
 						webSocketPort.requestFocus();
 					}
@@ -529,7 +529,7 @@ public class GUIMain extends Main {
 		try {
 			config.save();
 		} catch (IOException e) {
-			logger.log(I18N.get("log.saveConfigFail"), ": ", e);
+			logger.log(I18N.get("log.saveConfigFail"), " ", e);
 			e.printStackTrace();
 		}
 	}
@@ -596,9 +596,9 @@ public class GUIMain extends Main {
 		public String getColumnName(int column) {
 			switch (column) {
 				case 0:
-					return I18N.get("playersTable.name");
+					return I18N.get("guiMain.playersTable.name");
 				case 1:
-					return I18N.get("playersTable.status");
+					return I18N.get("guiMain.playersTable.status");
 				default:
 					return "";
 			}
