@@ -184,18 +184,20 @@ public class DataConverter {
 
     public static InventorySource inventorySource(com.nukkitx.protocol.bedrock.data.inventory.InventorySource inventorySource) {
         switch (inventorySource.getType()) {
-//            case INVALID:
-//                return null;
+            case INVALID:
+                return InventorySource.fromInvalid();
             case CONTAINER:
                 return InventorySource.fromContainerWindowID(ContainerID.getByValue(inventorySource.getContainerId()));
-//            case GLOBAL:
-//                return null;
+            case GLOBAL:
+                return InventorySource.fromGlobalInventory();
             case WORLD_INTERACTION:
                 return InventorySource.fromWorldInteraction(InventorySource.InventorySourceFlags.values()[inventorySource.getFlag().ordinal()]);
             case CREATIVE:
                 return InventorySource.fromCreativeInventory();
             case UNTRACKED_INTERACTION_UI:
+                return InventorySource.fromUntrackedInteractionUI(ContainerID.getByValue(inventorySource.getContainerId()));
             case NON_IMPLEMENTED_TODO:
+                return InventorySource.fromNONIMPLEMENTEDTODO(ContainerID.getByValue(inventorySource.getContainerId()));
             default:
                 return null;
         }
@@ -203,18 +205,20 @@ public class DataConverter {
 
     public static com.nukkitx.protocol.bedrock.data.inventory.InventorySource inventorySource(InventorySource inventorySource) {
         switch (inventorySource.getType()) {
-//            case InvalidInventory:
-//                return null;
+            case InvalidInventory:
+                return com.nukkitx.protocol.bedrock.data.inventory.InventorySource.fromInvalid();
             case ContainerInventory:
                 return com.nukkitx.protocol.bedrock.data.inventory.InventorySource.fromContainerWindowId(inventorySource.getContainerId().getValue());
-//            case GlobalInventory:
-//                return null;
+            case GlobalInventory:
+                return com.nukkitx.protocol.bedrock.data.inventory.InventorySource.fromGlobalInventory();
             case WorldInteraction:
                 return com.nukkitx.protocol.bedrock.data.inventory.InventorySource.fromWorldInteraction(com.nukkitx.protocol.bedrock.data.inventory.InventorySource.Flag.values()[inventorySource.getFlags().ordinal()]);
             case CreativeInventory:
                 return com.nukkitx.protocol.bedrock.data.inventory.InventorySource.fromCreativeInventory();
             case UntrackedInteractionUI:
+                return com.nukkitx.protocol.bedrock.data.inventory.InventorySource.fromUntrackedInteractionUI(inventorySource.getContainerId().getValue());
             case NonImplementedFeatureTODO:
+                return com.nukkitx.protocol.bedrock.data.inventory.InventorySource.fromNonImplementedTodo(inventorySource.getContainerId().getValue());
             default:
                 return null;
         }

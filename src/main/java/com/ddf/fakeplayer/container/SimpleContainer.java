@@ -6,13 +6,15 @@ import com.ddf.fakeplayer.item.ItemStack;
 import java.util.ArrayList;
 
 public class SimpleContainer extends Container {
-    private int mSize;
+    private final int mSize;
     private ArrayList<ItemStack> mItems = new ArrayList<>();
 
     public SimpleContainer(String name, boolean customName, int size, ContainerType containerType) {
         super(containerType, name, customName);
         this.mSize = size;
-        this.mItems.ensureCapacity(this.mSize);
+        for (int i = 0; i < size; i++) {
+            this.mItems.add(ItemStack.EMPTY_ITEM);
+        }
     }
 
     @Override

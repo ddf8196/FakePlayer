@@ -153,7 +153,13 @@ public class InventoryTransaction {
             }
         } else {
             ContainerID ContainerId = source.getContainerId();
-            if (ContainerId != ContainerID.CONTAINER_ID_INVENTORY) {
+            if (ContainerId == ContainerID.CONTAINER_ID_INVENTORY) {
+                return (player, action, isSenderAuthority) -> {
+                    //---------------------------------------
+                    //---------------------------------------
+                    //---------------------------------------
+                    return InventoryTransactionError.NoError;
+                };
             } else {
                return (player, action, isSenderAuthority) -> {
                    PlayerInventoryProxy Supplies = player.getSupplies();
@@ -167,7 +173,6 @@ public class InventoryTransaction {
                };
             }
         }
-        return null;
     }
 
     @NotImplemented

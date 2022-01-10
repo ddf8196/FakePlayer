@@ -56,6 +56,40 @@ Minecraft Bedrock Edition 假人客户端
 * 具体消息格式见[FakePlayer Wiki](https://github.com/ddf8196/FakePlayer/wiki/WebSocket-API)
 * WebSocket API仅为本地进程间通信设计，消息采用明文传输，不考虑安全性，因此请勿尝试远程连接WebSocket，也请不要对外开放WebSocket端口
 
+## Contributors
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/ddf8196">
+        <img src="https://avatars.githubusercontent.com/u/73578766?s=100&v=4" width="60px;" alt=""/><br/>
+        <sub><b>ddf8196</b></sub>
+      </a><br/>
+      <a href="https://github.com/ddf8196/FakePlayer/commits?author=ddf8196" title="Code">💻</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Jasonzyt">
+        <img src="https://avatars.githubusercontent.com/u/66063199?s=100&v=4" width="60px;" alt=""/><br/>
+        <sub><b>Jasonzyt</b></sub>
+      </a><br/>
+      <a href="https://github.com/ddf8196/FakePlayer/commits?author=Jasonzyt" title="Code">💻</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/xiaoqch">
+        <img src="https://avatars.githubusercontent.com/u/37901097?s=100&v=4" width="60px;" alt=""/><br/>
+        <sub><b>xiaoqch</b></sub>
+      </a><br/>
+      <a href="https://github.com/ddf8196/FakePlayer/commits?author=xiaoqch" title="Code">💻</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/TimothyGrass">
+        <img src="https://avatars.githubusercontent.com/u/77906640?s=100&v=4" width="60px;" alt=""/><br/>
+        <sub><b>TimothyGrass</b></sub>
+      </a><br/>
+      <a href="https://github.com/ddf8196/FakePlayer/blob/main/src/main/resources/i18n/Messages_en_US.properties" title="Translation">🌍</a>
+    </td>
+  </tr>
+</table>
+
 ## 使用的第三方库
 * [Protocol](https://github.com/CloudburstMC/Protocol) ([Apache License 2.0](https://github.com/CloudburstMC/Protocol/blob/develop/LICENSE))
 * [Gson](https://github.com/google/gson) ([Apache License 2.0](https://github.com/google/gson/blob/master/LICENSE))
