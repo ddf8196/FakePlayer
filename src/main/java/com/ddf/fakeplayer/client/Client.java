@@ -117,7 +117,7 @@ public class Client implements Closeable {
                     packetCodec = ProtocolVersionUtil.getPacketCodec(bedrockPong.getProtocolVersion());
                 } catch (Throwable t) {
                     packetCodec = defaultPacketCodec;
-                    logger.log(playerName, " 协议版本获取失败,尝试使用默认协议版本(", defaultPacketCodec.getProtocolVersion(), ")连接");
+                    logger.logI18N("log.client.getProtocolVersionFail", playerName, defaultPacketCodec.getProtocolVersion());
                 }
                 bedrockClient.setRakNetVersion(ProtocolVersionUtil.getRakNetProtocolVersion(packetCodec));
 
@@ -133,10 +133,10 @@ public class Client implements Closeable {
                     setState(State.CONNECTED);
                     session.addDisconnectHandler(disconnectReason -> runOnClientThread(() ->  {
                         setState(State.DISCONNECTED);
-                        logger.log(playerName, " 已断开连接: ", disconnectReason.name());
+                        logger.logI18N("log.client.disconnected", playerName, disconnectReason.name());
                         reconnectOrStop(address, port);
                     }));
-                    logger.log(player.getName(), " 已连接");
+                    logger.logI18N("log.client.connected", player.getName());
                     this.session = session;
                     session.setPacketCodec(packetCodec);
                     session.setBatchHandler((bedrockSession, byteBuf, collection) -> {
@@ -153,7 +153,7 @@ public class Client implements Closeable {
                 }
                 setState(State.DISCONNECTED);
                 reconnectOrStop(address, port);
-                logger.log(playerName, " 已断开连接: ", throwable);
+                logger.logI18N("log.client.disconnected", playerName, throwable);
             }
         });
     }
@@ -163,7 +163,7 @@ public class Client implements Closeable {
             reconnectTask = new ReconnectTask(Client.this, address, port, reconnectDelay + ThreadLocalRandom.current().nextInt((int) Math.min(reconnectDelay, Integer.MAX_VALUE)));
         } else {
             setState(State.STOPPED);
-            logger.log(playerName, "已停止");
+            logger.logI18N("log.client.stopped", playerName);
         }
     }
 
@@ -219,7 +219,7 @@ public class Client implements Closeable {
                 disconnect();
                 if (!wasConnected && getState() != State.STOPPED) {
                     setState(State.STOPPED);
-                    logger.log(playerName, "已停止");
+                    logger.logI18N("log.client.stopped", playerName);
                 }
             } finally {
                 if (latch != null)

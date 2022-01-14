@@ -79,6 +79,15 @@ public class Message {
     public static class PlayerData {
         private Integer state;
         private Boolean allowChatControl;
+        private String skin;
+
+        public String getSkin() {
+            return skin;
+        }
+
+        public void setSkin(String skin) {
+            this.skin = skin;
+        }
 
         public Boolean isAllowChatControl() {
             return allowChatControl;
@@ -105,8 +114,17 @@ public class Message {
         private Integer state;
         private String version;
         private Boolean allowChatControl;
+        private Boolean autoConnect;
         private List<String> list;
         private Map<String, PlayerData> playersData;
+
+        public Boolean isAutoConnect() {
+            return autoConnect;
+        }
+
+        public void setAutoConnect(Boolean autoConnect) {
+            this.autoConnect = autoConnect;
+        }
 
         public Map<String, PlayerData> getPlayersData() {
             return playersData;

@@ -1,5 +1,7 @@
 package com.ddf.fakeplayer.util;
 
+import com.ddf.fakeplayer.main.I18N;
+
 import java.time.format.DateTimeFormatter;
 
 public abstract class Logger {
@@ -15,4 +17,8 @@ public abstract class Logger {
     }
 
     public abstract void log(Object... log);
+
+    public void logI18N(String key, Object... args) {
+        log(I18N.format(key, args));
+    }
 }

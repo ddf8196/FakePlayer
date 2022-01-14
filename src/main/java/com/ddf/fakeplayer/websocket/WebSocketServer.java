@@ -1,6 +1,7 @@
 package com.ddf.fakeplayer.websocket;
 
 import com.ddf.fakeplayer.client.Client;
+import com.ddf.fakeplayer.main.I18N;
 import com.ddf.fakeplayer.main.Main;
 import com.ddf.fakeplayer.VersionInfo;
 import com.ddf.fakeplayer.main.config.PlayerData;
@@ -24,13 +25,13 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
 
     @Override
     public void onStart() {
-        logger.log("WebSocket已启动, 地址: ", getAddress().getAddress().getHostAddress(), ":" + getPort());
+        logger.logI18N("log.websocket.serverStarted", getAddress().getAddress().getHostAddress(), getPort());
     }
 
     @Override
     public void stop(int timeout) throws InterruptedException {
         super.stop(timeout);
-        logger.log("WebSocket已停止");
+        logger.logI18N("log.websocket.serverStopped");
     }
 
     @Override
@@ -41,14 +42,14 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
         }
         String remoteAddress = conn.getRemoteSocketAddress().getAddress().getHostAddress()
                 + ":" + conn.getRemoteSocketAddress().getPort();
-        logger.log(remoteAddress, " 已连接到WebSocket");
+        logger.logI18N("log.websocket.connectionOpened", remoteAddress);
     }
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
         String remoteAddress = conn.getRemoteSocketAddress().getAddress().getHostAddress()
                 + ":" + conn.getRemoteSocketAddress().getPort();
-        logger.log(remoteAddress, " 已断开WebSocket连接");
+        logger.log("log.websocket.connectionClosed", remoteAddress);
     }
 
     public void sendAddPlayerMessage(Client client) {
@@ -110,7 +111,7 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
                 if (id != null) response.setId(id);
                 if (data == null) {
                     response.getData().setSuccess(false);
-                    response.getData().setReason("data不能为空");
+                    response.getData().setReason(I18N.get("websocket.msg.reason.nullData"));
                     conn.send(response.toString());
                     break;
                 }
@@ -118,34 +119,36 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
                 response.getData().setName(name);
                 if (name == null || name.isEmpty()) {
                     response.getData().setSuccess(false);
-                    response.getData().setReason("名称不能为空");
+                    response.getData().setReason(I18N.get("websocket.msg.reason.nullName"));
                     conn.send(response.toString());
                     break;
                 }
                 if (main.getClient(name) != null) {
                     response.getData().setSuccess(false);
-                    response.getData().setReason("假人已存在");
+                    response.getData().setReason(I18N.get("websocket.msg.reason.alreadyExists"));
                     conn.send(response.toString());
                     break;
                 }
                 String skin = data.getSkin();
                 if (skin == null) {
                     response.getData().setSuccess(false);
-                    response.getData().setReason("皮肤不能为空");
+                    response.getData().setReason(I18N.get("websocket.msg.reason.nullSkin"));
                     conn.send(response.toString());
                     break;
                 }
                 Boolean allowCC = data.isAllowChatControl();
                 if (allowCC == null) allowCC = false;
+                Boolean autoConnect = data.isAutoConnect();
+                if (autoConnect == null) autoConnect = true;
                 switch (skin) {
                     default:
                         response.getData().setSuccess(false);
-                        response.getData().setReason("无效的皮肤: " + skin);
+                        response.getData().setReason(I18N.get("websocket.msg.reason.invalidSkin") + " " + skin);
                         conn.send(response.toString());
                         break;
                     case "steve":
                     case "alex":
-                        main.addPlayer(new PlayerData(name, skin, allowCC));
+                        main.addPlayer(new PlayerData(name, skin, allowCC), autoConnect);
                         response.getData().setSuccess(true);
                         response.getData().setReason("");
                         conn.send(response.toString());
@@ -159,7 +162,7 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
                 if (id != null) { response.setId(id); }
                 if (data == null) {
                     response.getData().setSuccess(false);
-                    response.getData().setReason("data不能为空");
+                    response.getData().setReason(I18N.get("websocket.msg.reason.nullData"));
                     conn.send(response.toString());
                     break;
                 }
@@ -167,13 +170,13 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
                 response.getData().setName(name);
                 if (name == null || name.isEmpty()) {
                     response.getData().setSuccess(false);
-                    response.getData().setReason("名称不能为空");
+                    response.getData().setReason(I18N.get("websocket.msg.reason.nullName"));
                     conn.send(response.toString());
                     break;
                 }
                 if (main.getClient(name) == null) {
                     response.getData().setSuccess(false);
-                    response.getData().setReason("假人不存在");
+                    response.getData().setReason(I18N.get("websocket.msg.reason.notExist"));
                     conn.send(response.toString());
                     break;
                 }
@@ -189,7 +192,7 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
                 if (id != null) response.setId(id);
                 if (data == null) {
                     response.getData().setSuccess(false);
-                    response.getData().setReason("data不能为空");
+                    response.getData().setReason(I18N.get("websocket.msg.reason.nullData"));
                     conn.send(response.toString());
                     break;
                 }
@@ -197,20 +200,22 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
                 response.getData().setName(name);
                 if (name == null || name.isEmpty()) {
                     response.getData().setSuccess(false);
-                    response.getData().setReason("名称不能为空");
+                    response.getData().setReason(I18N.get("websocket.msg.reason.nullName"));
                     conn.send(response.toString());
                     break;
                 }
                 Client client = main.getClient(name);
                 if (client == null) {
                     response.getData().setSuccess(false);
-                    response.getData().setReason("假人不存在");
+                    response.getData().setReason(I18N.get("websocket.msg.reason.notExist"));
                     conn.send(response.toString());
                     break;
                 }
                 Boolean allowCC = main.getConfig().getPlayerData(name).isAllowChatMessageControl();
+                String skin = main.getConfig().getPlayerData(name).getSkin();
                 response.getData().setState(client.getState().ordinal());
                 response.getData().setAllowChatControl(allowCC);
+                response.getData().setSkin(skin);
                 response.getData().setSuccess(true);
                 response.getData().setReason("");
                 conn.send(response.toString());
@@ -223,9 +228,11 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
                 main.getClients().forEach(client -> {
                     String name = client.getPlayerName();
                     Message.PlayerData data = new Message.PlayerData();
+                    Boolean allowCC = main.getConfig().getPlayerData(name).isAllowChatMessageControl();
+                    String skin = main.getConfig().getPlayerData(name).getSkin();
                     data.setState(client.getState().ordinal());
-                    data.setAllowChatControl(main.getConfig().getPlayerData(name)
-                            .isAllowChatMessageControl());
+                    data.setAllowChatControl(allowCC);
+                    data.setSkin(skin);
                     playersData.put(name, data);
                 });
                 response.getData().setPlayersData(playersData);
@@ -238,7 +245,7 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
                 if (id != null) response.setId(id);
                 if (data == null) {
                     response.getData().setSuccess(false);
-                    response.getData().setReason("data不能为空");
+                    response.getData().setReason(I18N.get("websocket.msg.reason.nullData"));
                     conn.send(response.toString());
                     break;
                 }
@@ -246,14 +253,14 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
                 response.getData().setName(name);
                 if (name == null || name.isEmpty()) {
                     response.getData().setSuccess(false);
-                    response.getData().setReason("名称不能为空");
+                    response.getData().setReason(I18N.get("websocket.msg.reason.nullName"));
                     conn.send(response.toString());
                     break;
                 }
                 Client client = main.getClient(name);
                 if (client == null) {
                     response.getData().setSuccess(false);
-                    response.getData().setReason("假人不存在");
+                    response.getData().setReason(I18N.get("websocket.msg.reason.notExist"));
                     conn.send(response.toString());
                     break;
                 }
@@ -269,7 +276,7 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
                 if (id != null) response.setId(id);
                 if (data == null) {
                     response.getData().setSuccess(false);
-                    response.getData().setReason("data不能为空");
+                    response.getData().setReason(I18N.get("websocket.msg.reason.nullData"));
                     conn.send(response.toString());
                     break;
                 }
@@ -277,14 +284,14 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
                 response.getData().setName(name);
                 if (name == null || name.isEmpty()) {
                     response.getData().setSuccess(false);
-                    response.getData().setReason("名称不能为空");
+                    response.getData().setReason(I18N.get("websocket.msg.reason.nullName"));
                     conn.send(response.toString());
                     break;
                 }
                 Client client = main.getClient(name);
                 if (client == null) {
                     response.getData().setSuccess(false);
-                    response.getData().setReason("假人不存在");
+                    response.getData().setReason(I18N.get("websocket.msg.reason.notExist"));
                     conn.send(response.toString());
                     break;
                 }
@@ -348,7 +355,7 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
                 if (id != null) response.setId(id);
                 if (data == null) {
                     response.getData().setSuccess(false);
-                    response.getData().setReason("data不能为空");
+                    response.getData().setReason(I18N.get("websocket.msg.reason.nullData"));
                     conn.send(response.toString());
                     break;
                 }
@@ -356,20 +363,20 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
                 response.getData().setName(name);
                 if (name == null || name.isEmpty()) {
                     response.getData().setSuccess(false);
-                    response.getData().setReason("名称不能为空");
+                    response.getData().setReason(I18N.get("websocket.msg.reason.nullName"));
                     conn.send(response.toString());
                     break;
                 }
                 if (data.isAllowChatControl() == null) {
                     response.getData().setSuccess(false);
-                    response.getData().setReason("allowChatControl不能为空");
+                    response.getData().setReason(I18N.get("websocket.msg.reason.nullACC"));
                     conn.send(response.toString());
                     break;
                 }
                 Client client = main.getClient(name);
                 if (client == null) {
                     response.getData().setSuccess(false);
-                    response.getData().setReason("假人不存在");
+                    response.getData().setReason(I18N.get("websocket.msg.reason.notExist"));
                     conn.send(response.toString());
                     break;
                 }

@@ -46,12 +46,17 @@ public abstract class Main {
         addPlayer(new PlayerData(name, skin));
     }
 
-    public synchronized void addPlayer(PlayerData playerData) {
+    public synchronized void addPlayer(PlayerData playerData, Boolean connect) {
         config.addPlayerData(playerData);
         Client client = addClient(playerData);
-        client.connect(config.getServerAddress(), config.getServerPort());
+        if (connect)
+            client.connect(config.getServerAddress(), config.getServerPort());
         if (webSocketServer != null && config.isWebSocketEnabled())
             webSocketServer.sendAddPlayerMessage(client);
+    }
+
+    public synchronized void addPlayer(PlayerData playerData) {
+        addPlayer(playerData, true);
     }
 
     public synchronized void removePlayer(String name) {

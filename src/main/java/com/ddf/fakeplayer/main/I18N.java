@@ -59,6 +59,22 @@ public class I18N {
         return FALLBACK_BUNDLE.getString(key);
     }
 
+    public static String format(String key, Object... args) {
+        String fmt = get(key);
+        if (args.length == 0) {
+            return fmt;
+        }
+        return String.format(fmt, args);
+    }
+
+    public static String format(String key, Locale locale, Object... args) {
+        String fmt = get(key, locale);
+        if (args.length == 0) {
+            return fmt;
+        }
+        return String.format(fmt, args);
+    }
+
     public static Locale getCurrentLocale() {
         return currentLocale;
     }
