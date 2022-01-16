@@ -1,5 +1,6 @@
 package com.ddf.fakeplayer.main.cli;
 
+import com.ddf.fakeplayer.client.Client;
 import com.ddf.fakeplayer.main.I18N;
 import com.ddf.fakeplayer.main.config.Config;
 import com.ddf.fakeplayer.main.Main;
@@ -132,7 +133,7 @@ public class CLIMain extends Main {
 
     public void stop() {
         clients.forEach(client -> client.setStop(true));
-        clients.forEach(client -> client.stop(true));
+        clients.forEach(Client::close);
         stopWebSocket();
         stopped = true;
     }
