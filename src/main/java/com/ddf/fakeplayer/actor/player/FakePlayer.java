@@ -10,8 +10,10 @@ import com.ddf.fakeplayer.item.VanillaItems;
 import com.ddf.fakeplayer.js.JSLoader;
 import com.ddf.fakeplayer.js.Script;
 import com.ddf.fakeplayer.level.Level;
+import com.ddf.fakeplayer.main.I18N;
 import com.ddf.fakeplayer.util.*;
 import com.ddf.fakeplayer.util.command.CommandDispatcherUtil;
+import com.ddf.fakeplayer.util.command.EnumArgument;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
@@ -20,6 +22,8 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.tree.ArgumentCommandNode;
+import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.nukkitx.math.vector.Vector2f;
 import com.nukkitx.math.vector.Vector3f;
@@ -44,6 +48,18 @@ public class FakePlayer extends LocalPlayer {
     public long syncRuntimeID = 0;
     private final List<FakePlayer.OnPlayerChatListener> onPlayerChatListeners = Collections.synchronizedList(new ArrayList<>());
     private final CommandDispatcher<Player> chatCommandDispatcher = new CommandDispatcher<>();
+    private final HashMap<String, CommandNode<Player>> chatCommandNodes = new HashMap<>();
+    private final HashMap<String, String> chatCommandDesc = new HashMap<String, String>(){{
+        put("help",            I18N.get("cmd.desc.help"));
+        put("getVersion",      I18N.get("cmd.desc.getVersion"));
+        put("getPos",          I18N.get("cmd.desc.getPos"));
+        put("getInventory",    I18N.get("cmd.desc.getInventory"));
+        put("getSelectedSlot", I18N.get("cmd.desc.getSelectedSlot"));
+        put("selectSlot",      I18N.get("cmd.desc.selectSlot"));
+        put("dropSlot",        I18N.get("cmd.desc.dropSlot"));
+        put("dropAll",         I18N.get("cmd.desc.dropAll"));
+        put("sync",            I18N.get("cmd.desc.sync"));
+    }};
     private final List<Script> scripts = new ArrayList<>();
     private final Queue<String> scriptsToLoad = new LinkedList<>();
 
@@ -62,73 +78,110 @@ public class FakePlayer extends LocalPlayer {
             } catch (CommandSyntaxException ignored) {}
         });
 
-        registerChatCommand("help", context -> {
-            this.sendChatMessage(
-                    "help - 查看帮助信息\n" +
-                    "getVersion - 获取假人客户端版本\n" +
-                    "getPos - 获取假人当前坐标\n" +
-                    "getInventory - 获取假人背包内容\n" +
-                    "getSelectedSlot - 获取假人当前选择的快捷栏槽位\n" +
-                    "selectSlot [0~8] - 设置假人选择的快捷栏槽位\n" +
-                    "dropSlot - 丢弃假人当前选择的物品\n" +
-                    "dropSlot [0~35] - 丢弃假人背包中指定槽位中的物品\n" +
-                    "dropAll - 丢弃假人背包中全部的物品\n" +
-                    "sync start - 开始将假人的坐标和视角与玩家同步\n" +
-                    "sync stop - 停止将假人的坐标和视角与玩家同步"
-            );
-            return Command.SINGLE_SUCCESS;
-        });
+        registerChatCommand("help",
+                context -> {
+                    StringBuilder builder = new StringBuilder();
+                    builder.append("\n");
+                    int maxLength = 0;
+                    for (Map.Entry<String, CommandNode<Player>> entry : chatCommandNodes.entrySet()) {
+                        CommandNode<Player> node = entry.getValue();
+                        String nodeName = node.getName();
+                        maxLength = Integer.max(nodeName.length(), maxLength);
+                    }
+                    for (Map.Entry<String, CommandNode<Player>> entry : chatCommandNodes.entrySet()) {
+                        CommandNode<Player> node = entry.getValue();
+                        String nodeName = node.getName();
+                        String nodeDesc = chatCommandDesc.get(nodeName);
+                        if (nodeDesc == null) {
+                            nodeDesc = "None";
+                        }
+                        builder.append(String.format(ColorFormat.AQUA + "%-" + maxLength + "s" + ColorFormat.RESET + " - %s\n", nodeName, nodeDesc));
+                    }
+                    sendChatCommandMessage(builder);
+                    return Command.SINGLE_SUCCESS;
+                });
+        registerChatCommand("help",
+                singletonList("cmd"),
+                singletonList(string()),
+                context -> {
+                    String myName = getName();
+                    String cmd = context.getArgument("cmd", String.class);
+                    CommandNode<Player> node = chatCommandNodes.get(cmd);
+                    if (node == null) {
+                        sendChatCommandError(I18N.get("cmd.msg.help.cmdNotFound"));
+                        return 2;
+                    }
+                    String nodeDesc = chatCommandDesc.get(cmd);
+                    if (nodeDesc == null) {
+                        nodeDesc = I18N.get("cmd.msg.help.noDesc");
+                    }
+                    StringBuilder builder = new StringBuilder();
+                    builder.append("\n")
+                            .append(ColorFormat.AQUA).append(cmd).append(":\n")
+                            .append(ColorFormat.RESET).append(nodeDesc).append("\n")
+                            .append(I18N.get("cmd.msg.help.usage")).append("\n");
+                    List<String> usages = getChatCommandUsage(node, "- " + myName);
+                    for (String u : usages) {
+                        builder.append(u).append("\n");
+                    }
+                    builder.deleteCharAt(builder.length() - 1);
+                    this.sendChatCommandMessage(builder);
+                    return Command.SINGLE_SUCCESS;
+                });
         registerChatCommand("getVersion", context -> {
-            this.sendChatMessage("FakePlayer " + VersionInfo.VERSION);
+            this.sendChatCommandMessage("FakePlayer " , VersionInfo.VERSION, "\nGitHub: https://github.com/ddf8196/FakePlayer");
             return Command.SINGLE_SUCCESS;
         });
         registerChatCommand("getPos", context -> {
             Vec3 pos = super.getPos();
-            this.sendChatMessage(ColorFormat.GREEN + "[" + super.getDimensionId() + "] " + ColorFormat.AQUA + (int)pos.x + ", " + (int)(pos.y - super.mHeightOffset) + ", " + (int)pos.z + ColorFormat.RESET);
+            this.sendChatCommandMessage(ColorFormat.GREEN, "[", super.getDimensionId(), "] ", ColorFormat.AQUA, (int)pos.x, ", ", (int)(pos.y - super.mHeightOffset), ", ", (int)pos.z, ColorFormat.RESET);
             return Command.SINGLE_SUCCESS;
         });
         registerChatCommand("getInventory", context -> {
             boolean empty = true, first = true;
-            StringBuilder builder = new StringBuilder("背包内容:\n");
+            StringBuilder builder = new StringBuilder(I18N.get("cmd.msg.getInventory.content") + "\n");
             ArrayList<ItemStack> slots = super.getSupplies().getSlots();
             for (int i = 0, j = 0; i < super.getSupplies().getContainerSize(ContainerID.CONTAINER_ID_INVENTORY); i++) {
                 if (slots.get(i).toBoolean()) {
                     empty = false;
-                    if (first)
+                    if (first) {
                         first = false;
-                    else
+                    }
+                    else {
                         builder.append(ColorFormat.YELLOW)
                                 .append(", ")
                                 .append(ColorFormat.RESET);
-                    if (j % 2 == 0 && j != 0)
-                        builder.append("\n");
-                    builder.append(ColorFormat.GREEN)
-                            .append("[")
-                            .append(i)
-                            .append("]")
-                            .append(ColorFormat.YELLOW)
-                            .append("[")
-                            .append(ColorFormat.AQUA)
-                            .append(slots.get(i).getItem().getFullItemName())
-                            .append(ColorFormat.YELLOW)
-                            .append(", ")
-                            .append(ColorFormat.GREEN)
-                            .append(slots.get(i).getStackSize())
-                            .append(ColorFormat.YELLOW)
-                            .append("]")
-                            .append(ColorFormat.RESET);
+                    }
+                    if (j % 2 == 0 && j != 0) {
+                        builder.append("\n")
+                                .append(ColorFormat.GREEN)
+                                .append("[")
+                                .append(i)
+                                .append("]")
+                                .append(ColorFormat.YELLOW)
+                                .append("[")
+                                .append(ColorFormat.AQUA)
+                                .append(slots.get(i).getItem().getFullItemName())
+                                .append(ColorFormat.YELLOW)
+                                .append(", ")
+                                .append(ColorFormat.GREEN)
+                                .append(slots.get(i).getStackSize())
+                                .append(ColorFormat.YELLOW)
+                                .append("]")
+                                .append(ColorFormat.RESET);
+                    }
                     ++j;
                 }
             }
             if (!empty) {
-                this.sendChatMessage(builder.toString());
+                this.sendChatCommandMessage(builder);
             } else {
-                this.sendChatMessage("空");
+                this.sendChatCommandMessage(I18N.get("cmd.msg.empty"));
             }
             return Command.SINGLE_SUCCESS;
         });
         registerChatCommand("getSelectedSlot", context -> {
-            this.sendChatMessage(Integer.toString(super.getSelectedItemSlot()));
+            this.sendChatCommandMessage(super.getSelectedItemSlot());
             return Command.SINGLE_SUCCESS;
         });
         registerChatCommand("selectSlot",
@@ -162,15 +215,15 @@ public class FakePlayer extends LocalPlayer {
             return Command.SINGLE_SUCCESS;
         });
         registerChatCommand("sync",
-                singletonList("type"),
-                singletonList(string()),
+                singletonList("operation"),
+                singletonList(EnumArgument.enumArg("start", "stop")),
                 context -> {
-                    String type = context.getArgument("type", String.class);
+                    String op = context.getArgument("operation", String.class);
                     Player player = context.getSource();
-                    if (type.equals("start") && player != null) {
+                    if (op.equals("start") && player != null) {
                         sync = true;
                         syncRuntimeID = player.getRuntimeID();
-                    } else if (type.equals("stop")) {
+                    } else if (op.equals("stop")) {
                         sync = false;
                         syncRuntimeID = 0;
                     }
@@ -275,10 +328,12 @@ public class FakePlayer extends LocalPlayer {
     }
 
     public LiteralCommandNode<Player> registerChatCommand(String name, Command<Player> command) {
-        return chatCommandDispatcher.register(
+        LiteralCommandNode<Player> node = chatCommandDispatcher.register(
                 LiteralArgumentBuilder
                         .<Player>literal(name)
                         .executes(command));
+        chatCommandNodes.put(name, node);
+        return node;
     }
 
     public LiteralCommandNode<Player> registerChatCommand(String name, List<String> argumentNames, List<ArgumentType<?>> argumentTypes, Command<Player> command) {
@@ -296,11 +351,55 @@ public class FakePlayer extends LocalPlayer {
             last = first;
         }
         literal.then(first);
-        return chatCommandDispatcher.register(literal);
+        LiteralCommandNode<Player> node = chatCommandDispatcher.register(literal);
+        chatCommandNodes.put(name, node);
+        return node;
     }
 
     public void unregisterChatCommand(String name) {
         CommandDispatcherUtil.unregister(chatCommandDispatcher, name);
+    }
+
+    public void addChatCommandDescribe(String name, String desc) {
+        chatCommandDesc.put(name, desc);
+    }
+
+    public List<String> getChatCommandUsage(CommandNode<Player> node, String prefix) {
+        List<String> result = new ArrayList<>();
+        if (node.getCommand() != null) {
+            result.add(prefix);
+        }
+        String text = "";
+        if (node.toString().contains("argument")) {
+            String type = ((ArgumentCommandNode<Player, ?>) node).getType().toString();
+            text = "<" + node.getName() + ": " + type + ">";
+        } else {
+            text = node.getName();
+        }
+        if (node.getChildren().isEmpty()) {
+            result.add(prefix + " " + text);
+            return result;
+        }
+        for (CommandNode<Player> arg : node.getChildren()) {
+            result.addAll(getChatCommandUsage(arg, prefix + " " + text));
+        }
+        return result;
+    }
+
+    public void sendChatCommandError(Object... msg) {
+        StringBuilder builder = new StringBuilder();
+        for (Object obj : msg) {
+            builder.append(obj);
+        }
+        sendChatMessage(ColorFormat.RED + "[ERROR] " + ColorFormat.RESET + builder);
+    }
+
+    public void sendChatCommandMessage(Object... msg) {
+        StringBuilder builder = new StringBuilder();
+        for (Object obj : msg) {
+            builder.append(obj);
+        }
+        sendChatMessage(builder.toString());
     }
 
     public void onPlayerChat(String source, String message, String xuid, String platformChatId) {
