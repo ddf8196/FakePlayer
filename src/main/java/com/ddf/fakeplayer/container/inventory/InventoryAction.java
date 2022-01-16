@@ -2,6 +2,8 @@ package com.ddf.fakeplayer.container.inventory;
 
 import com.ddf.fakeplayer.item.ItemStack;
 
+import java.util.Objects;
+
 public class InventoryAction {
     private final InventorySource mSource;
     private final /*uint32_t*/int mSlot;
@@ -29,5 +31,18 @@ public class InventoryAction {
 
     public final ItemStack getToItem() {
         return this.mToItem;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        InventoryAction action = (InventoryAction) o;
+        return mSlot == action.mSlot && Objects.equals(mSource, action.mSource) && Objects.equals(mFromItem, action.mFromItem) && Objects.equals(mToItem, action.mToItem);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mSource, mSlot, mFromItem, mToItem);
     }
 }

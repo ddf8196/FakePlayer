@@ -153,7 +153,7 @@ public class InventoryTransaction {
             }
         } else {
             ContainerID ContainerId = source.getContainerId();
-            if (ContainerId == ContainerID.CONTAINER_ID_INVENTORY) {
+            if (ContainerId != ContainerID.CONTAINER_ID_INVENTORY) {
                 return (player, action, isSenderAuthority) -> {
                     //---------------------------------------
                     //---------------------------------------
@@ -162,11 +162,11 @@ public class InventoryTransaction {
                 };
             } else {
                return (player, action, isSenderAuthority) -> {
-                   PlayerInventoryProxy Supplies = player.getSupplies();
+                   PlayerInventoryProxy supplies = player.getSupplies();
                    InventorySource Source = action.getSource();
-                   if (action.getSlot() >= Supplies.getContainerSize(Source.getContainerId()))
+                   if (action.getSlot() >= supplies.getContainerSize(Source.getContainerId()))
                        return InventoryTransactionError.SizeMismatch;
-                   ItemStack currentItem = Supplies.getItem(action.getSlot(), action.getSource().getContainerId());
+                   ItemStack currentItem = supplies.getItem(action.getSlot(), action.getSource().getContainerId());
                    if (currentItem.matches(action.getFromItem()) || isSenderAuthority)
                        return InventoryTransactionError.NoError;
                    return InventoryTransactionError.SourceItemMismatch;
@@ -182,22 +182,24 @@ public class InventoryTransaction {
             switch (Type) {
                 case WorldInteraction:
                     return (player, action) -> {
-                        if (action.getSlot() != 0 || action.getFromItem().toBoolean() || !action.getToItem().toBoolean())
-                            return action.getSlot() == 1 && action.getFromItem().toBoolean() && !action.getToItem().toBoolean()
-                                    ? InventoryTransactionError.NoError : InventoryTransactionError.Unknown_4;
-                        player.drop(action.getToItem(), action.getSource().getFlags() != InventorySource.InventorySourceFlags.NoFlag);
-                        return InventoryTransactionError.NoError;
+                        if (action.getSlot() == 0 && !action.getFromItem().toBoolean() && action.getToItem().toBoolean()) {
+                            player.drop(action.getToItem(), action.getSource().getFlags() != InventorySource.InventorySourceFlags.NoFlag);
+                            return InventoryTransactionError.NoError;
+                        }
+                        if (action.getSlot() == 1 && action.getFromItem().toBoolean() && !action.getToItem().toBoolean()) {
+                            return InventoryTransactionError.NoError;
+                        }
+                        return InventoryTransactionError.Unknown_4;
                     };
                 case CreativeInventory:
                     return (player, action) -> {
-                        if (action.getSlot() != 0 || action.getFromItem().toBoolean() || !action.getToItem().toBoolean()) {
-                            if (action.getSlot() == 1 && action.getFromItem().toBoolean() && !action.getToItem().toBoolean()){
-                                return InventoryTransactionError.NoError;
-                            }
-                            return InventoryTransactionError.Unknown_4;
-                        } else {
+                        if (action.getSlot() == 0 && !action.getFromItem().toBoolean() && action.getToItem().toBoolean()) {
                             return InventoryTransactionError.NoError;
                         }
+                        if (action.getSlot() == 1 && action.getFromItem().toBoolean() && !action.getToItem().toBoolean()){
+                            return InventoryTransactionError.NoError;
+                        }
+                        return InventoryTransactionError.Unknown_4;
                     };
                 case NonImplementedFeatureTODO:
                     return (player, action) -> InventoryTransactionError.NoError;
@@ -288,7 +290,7 @@ public class InventoryTransaction {
                 VerifyFunction checkFunction = this.getVerifyFunction(source.getKey());
                 for (InventoryAction action : source.getValue()) {
                     InventoryTransactionError error = checkFunction.call(p, action, isSenderAuthority);
-                    if ( error != InventoryTransactionError.NoError) {
+                    if (error != InventoryTransactionError.NoError) {
                         this._dropCreatedItems(p);
                         return error;
                     }

@@ -49,7 +49,7 @@ public class Item {
     private Vec3 mRenderingAdjTrans = new Vec3(0.0f);
     private Vec3 mRenderingAdjRot = new Vec3(0.0f);
     private float mRenderingAdjScale = 1.0f;
-    private short mId;
+//    private short mId;
     private String mDescriptionId;
     private String mRawNameId;
     private String mNamespace = "minecraft";
@@ -78,7 +78,7 @@ public class Item {
     private ArrayList<Function<Void, Void>> mOnResetBAIcallbacks = new ArrayList<>();
 
     public Item(String nameId, int id) {
-        this.mId = (short) id;
+//        this.mId = (short) id;
         this.mDescriptionId = Item.ICON_DESCRIPTION_PREFIX + nameId;
         this.mRawNameId = nameId;
         int auxValue = 0;
@@ -116,8 +116,9 @@ public class Item {
     }
 
     public short getId() {
-        return this.mId;
+//        return this.mId;
 //        return (short) registry.getId(this);
+        return (short) ItemRegistry.getId(this);
     }
 
     public final String getFullItemName() {

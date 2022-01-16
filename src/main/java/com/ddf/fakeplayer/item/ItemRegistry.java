@@ -16,15 +16,16 @@ public class ItemRegistry {
     public static HashMap<String, Item> mNameToItemMap = new HashMap<>();
     public static HashMap<String, String> mItemAliasLookupMap = new HashMap<>();
 
-    private static HashMap<Integer, Item> mIdToItemMap = new HashMap<>();
-    private static short mMaxItemID = Short.MIN_VALUE;
+    private static ThreadLocal<HashMap<Item, Integer>> itemToIdMap = ThreadLocal.withInitial(HashMap::new);
+    private static ThreadLocal<HashMap<Integer, Item>> mIdToItemMap = ThreadLocal.withInitial(HashMap::new);
+    private static ThreadLocal<Short> mMaxItemID = ThreadLocal.withInitial(() -> Short.MIN_VALUE);
 
     private ItemRegistry() {}
 
     public static void registerItem(Item item, Object... args) {
-        short actualId = item.getId();
-        mMaxItemID = (short) Math.max(actualId, mMaxItemID);
-        mIdToItemMap.put((int) actualId, item);
+//        short actualId = item.getId();
+//        mMaxItemID = (short) Math.max(actualId, mMaxItemID);
+//        mIdToItemMap.put((int) actualId, item);
         mNameToItemMap.put(item.getFullItemName(), item);
         mItemRegistry.add(item);
     }
@@ -46,17 +47,26 @@ public class ItemRegistry {
     }
 
     public static Item getItem(final int id) {
-        return mIdToItemMap.get(id);
+        return mIdToItemMap.get().get(id);
     }
 
-    public static void addUnknownItems(List<StartGamePacket.ItemEntry> itemEntries) {
+    public static void init(List<StartGamePacket.ItemEntry> itemEntries) {
         for (StartGamePacket.ItemEntry itemEntry : itemEntries) {
             String identifier = itemEntry.getIdentifier();
             Item item = mNameToItemMap.get(identifier);
             if (item == null) {
-                registerItem(new UnknownItem(identifier, itemEntry.getId()));
+                item = new UnknownItem(identifier, 0xABCD1234);
+                registerItem(item);
             }
+            short actualId = itemEntry.getId();
+            mMaxItemID.set((short) Math.max(actualId, mMaxItemID.get()));
+            mIdToItemMap.get().put((int) actualId, item);
+            itemToIdMap.get().put(item, (int) actualId);
         }
+    }
+
+    public static int getId(Item item) {
+        return itemToIdMap.get().getOrDefault(item, 0);
     }
 
     public static Item lookupByName(final String inString) {

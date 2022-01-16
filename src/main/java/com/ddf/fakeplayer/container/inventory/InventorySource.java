@@ -2,6 +2,8 @@ package com.ddf.fakeplayer.container.inventory;
 
 import com.ddf.fakeplayer.container.ContainerID;
 
+import java.util.Objects;
+
 public class InventorySource {
     private final InventorySourceType mType;
     private ContainerID mContainerId;
@@ -67,6 +69,19 @@ public class InventorySource {
 
     public final InventorySourceFlags getFlags() {
         return this.mFlags;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        InventorySource source = (InventorySource) o;
+        return mType == source.mType && mContainerId == source.mContainerId && mFlags == source.mFlags;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mType, mContainerId, mFlags);
     }
 
     public enum InventorySourceFlags {

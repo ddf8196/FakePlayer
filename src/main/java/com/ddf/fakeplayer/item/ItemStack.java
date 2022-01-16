@@ -10,7 +10,7 @@ import com.ddf.fakeplayer.nbt.CompoundTag;
 import com.ddf.fakeplayer.util.NotImplemented;
 
 public class ItemStack extends ItemStackBase implements Cloneable {
-    public static final ItemStack EMPTY_ITEM = new ItemStack(BedrockItems.mAir, 0, 0, null);
+    public static final ItemStack EMPTY_ITEM = new ItemStack(0, 0, 0, null);
     private ItemStackNetIdVariant mNetIdVariant = new ItemStackNetIdVariant();
 
     public ItemStack() {

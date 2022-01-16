@@ -20,10 +20,7 @@ import com.ddf.fakeplayer.json.*;
 import com.ddf.fakeplayer.level.GameType;
 import com.ddf.fakeplayer.level.Level;
 import com.ddf.fakeplayer.level.MultiPlayerLevel;
-import com.ddf.fakeplayer.level.chunk.ChunkPos;
-import com.ddf.fakeplayer.level.chunk.LevelChunk;
 import com.ddf.fakeplayer.level.dimension.ChangeDimensionRequest;
-import com.ddf.fakeplayer.level.dimension.Dimension;
 import com.ddf.fakeplayer.level.generator.GeneratorType;
 import com.ddf.fakeplayer.util.*;
 import com.nimbusds.jwt.SignedJWT;
@@ -121,8 +118,7 @@ public class ClientPacketHandler implements BedrockPacketHandler {
     @SuppressWarnings("deprecation")
     @Override
     public boolean handle(StartGamePacket packet) {
-        ItemRegistry.addUnknownItems(packet.getItemEntries());
-        client.getBedrockClient().getSession().getPacketCodec().getProtocolVersion();
+        ItemRegistry.init(packet.getItemEntries());
 
         if (packet.getBlockPalette() != null) {
             level.getGlobalBlockPalette().initFromNbtMapList(packet.getBlockPalette());
@@ -207,6 +203,11 @@ public class ClientPacketHandler implements BedrockPacketHandler {
 
     public boolean handle(PlayerHotbarPacket packet) {
         player.getSupplies().selectSlot(packet.getSelectedHotbarSlot(), ContainerID.getByValue(packet.getContainerId()));
+        return false;
+    }
+
+    @Override
+    public boolean handle(UpdateBlockPacket packet) {
         return false;
     }
 

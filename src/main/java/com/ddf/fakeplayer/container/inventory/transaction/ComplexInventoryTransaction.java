@@ -22,7 +22,22 @@ public class ComplexInventoryTransaction {
         this.mTransaction = new InventoryTransaction(transaction);
     }
 
-    @NotImplemented
+    public static ComplexInventoryTransaction fromType(ComplexInventoryTransaction.Type type) {
+        if (type == null) {
+            return null;
+        }
+        switch (type) {
+            case ItemUseTransaction:
+                return new ItemUseInventoryTransaction();
+            case ItemUseOnEntityTransaction:
+                return new ItemUseOnActorInventoryTransaction();
+            case ItemReleaseTransaction:
+                return new ItemReleaseInventoryTransaction();
+            default:
+                return new ComplexInventoryTransaction(type);
+        }
+    }
+
     public static ComplexInventoryTransaction fromType(ComplexInventoryTransaction.Type type, final InventoryTransaction transaction) {
         if (type == null) {
             return null;

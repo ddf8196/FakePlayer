@@ -773,7 +773,7 @@ public abstract class Player extends Mob {
                 this.mTransactionManager.getCurrentTransaction()._logTransaction(isClientSide);
                 this.mTransactionManager._logExpectedActions();
                 if (isClientSide) {
-                    ComplexInventoryTransaction transaction = ComplexInventoryTransaction.fromType(ComplexInventoryTransaction.Type.NormalTransaction, this.mTransactionManager.getCurrentTransaction());
+                    ComplexInventoryTransaction transaction = ComplexInventoryTransaction.fromType(ComplexInventoryTransaction.Type.InventoryMismatch_0);
                     this.mPacketSender.send(DataConverter.inventoryTransactionPacket(transaction));
                 }
                 this.mTransactionManager.reset();

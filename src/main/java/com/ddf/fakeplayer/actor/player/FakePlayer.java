@@ -269,7 +269,7 @@ public class FakePlayer extends LocalPlayer {
     }
 
     public final void sendInventoryMismatch() {
-        ComplexInventoryTransaction transaction = ComplexInventoryTransaction.fromType(ComplexInventoryTransaction.Type.InventoryMismatch_0, null);
+        ComplexInventoryTransaction transaction = ComplexInventoryTransaction.fromType(ComplexInventoryTransaction.Type.InventoryMismatch_0);
         sendComplexInventoryTransaction(transaction);
     }
 
