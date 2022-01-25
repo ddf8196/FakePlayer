@@ -69,10 +69,8 @@ public class ItemUseInventoryTransaction extends ComplexInventoryTransaction {
         return this.mSlot;
     }
 
-    @NotImplemented
     public final Block getTargetBlock(final Level level) {
-        return null;
-//        return level.getGlobalBlockPalette().getBlock(this.mTargetBlockId);
+        return level.getGlobalBlockPalette().getBlock(this.mTargetBlockId);
     }
 
     public final int getTargetBlockId() {

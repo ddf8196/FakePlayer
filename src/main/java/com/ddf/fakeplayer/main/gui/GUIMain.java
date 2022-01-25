@@ -210,6 +210,37 @@ public class GUIMain extends Main {
 		remove.addActionListener(e -> removePlayer(getSelectedClient().getPlayerName()));
 		playersTableMenu1.add(remove);
 
+		JMenuItem sendChatMessage = new JMenuItem(I18N.get("guiMain.popupMenu.playersTable.sendChatMessage"));
+		sendChatMessage.addActionListener(e -> {
+			Client client = getSelectedClient();
+			if (!client.isConnected()) {
+				JOptionPane.showMessageDialog(frame, I18N.get("guiMain.message.notConnected"));
+				return;
+			}
+			String message = JOptionPane.showInputDialog(frame, I18N.get("guiMain.message.inputChatMessage"));
+			if (message == null)
+				return;
+			client.getPlayer().sendChatMessage(message);
+		});
+		playersTableMenu1.add(sendChatMessage);
+
+		JMenuItem executeCommand = new JMenuItem(I18N.get("guiMain.popupMenu.playersTable.executeCommand"));
+		executeCommand.addActionListener(e -> {
+			Client client = getSelectedClient();
+			if (!client.isConnected()) {
+				JOptionPane.showMessageDialog(frame, I18N.get("guiMain.message.notConnected"));
+				return;
+			}
+			String command = JOptionPane.showInputDialog(frame, I18N.get("guiMain.message.inputCommand"));
+			if (command == null)
+				return;
+			if (!command.startsWith("/"))
+				command = "/" + command;
+			if (client.isConnected())
+				client.getPlayer().sendCommandRequest(command);
+		});
+		playersTableMenu1.add(executeCommand);
+
 		playersTableMenu2 = new JPopupMenu();
 		JMenuItem connectSelected = new JMenuItem(I18N.get("guiMain.popupMenu.playersTable.connectSelected"));
 		connectSelected.addActionListener(e -> {

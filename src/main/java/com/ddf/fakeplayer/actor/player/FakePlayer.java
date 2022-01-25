@@ -31,6 +31,8 @@ import com.nukkitx.math.vector.Vector3i;
 import com.nukkitx.protocol.bedrock.data.ClientPlayMode;
 import com.nukkitx.protocol.bedrock.data.InputMode;
 import com.nukkitx.protocol.bedrock.data.PlayerActionType;
+import com.nukkitx.protocol.bedrock.data.command.CommandOriginData;
+import com.nukkitx.protocol.bedrock.data.command.CommandOriginType;
 import com.nukkitx.protocol.bedrock.packet.*;
 
 import java.io.IOException;
@@ -289,6 +291,14 @@ public class FakePlayer extends LocalPlayer {
         packet.setSourceName(super.getName());
         packet.setMessage(message);
         packet.setXuid(Long.toString(super.getClientUUID().getLeastSignificantBits()));
+        this.sendNetworkPacket(packet);
+    }
+
+    public final void sendCommandRequest(String command) {
+        CommandRequestPacket packet = new CommandRequestPacket();
+        CommandOriginData commandOrigin = new CommandOriginData(CommandOriginType.PLAYER, UUID.randomUUID(), "", -1);
+        packet.setCommandOriginData(commandOrigin);
+        packet.setCommand(command);
         this.sendNetworkPacket(packet);
     }
 
