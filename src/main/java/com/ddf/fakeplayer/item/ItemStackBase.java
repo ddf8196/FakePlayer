@@ -12,6 +12,7 @@ import com.ddf.fakeplayer.block.BlockTypeRegistry;
 import com.ddf.fakeplayer.item.enchant.Enchant;
 import com.ddf.fakeplayer.item.enchant.EnchantUtils;
 import com.ddf.fakeplayer.item.enchant.ItemEnchants;
+import com.ddf.fakeplayer.item.recipe.RecipeIngredient;
 import com.ddf.fakeplayer.level.LevelSoundEvent;
 import com.ddf.fakeplayer.nbt.CompoundTag;
 import com.ddf.fakeplayer.nbt.ListTag;
@@ -22,7 +23,7 @@ import com.ddf.fakeplayer.util.NotImplemented;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
-@SuppressWarnings("all")
+//@SuppressWarnings("all")
 public class ItemStackBase {
     public static final String TAG_CHARGED_ITEM = "chargedItem";
     public static final String TAG_ENCHANTS = "ench";
@@ -47,7 +48,6 @@ public class ItemStackBase {
     protected ItemStackBase() {
         this.init(0, 0, 0);
     }
-
 
     protected ItemStackBase(final int id) {
         this.init(id, 1, 0);
@@ -83,12 +83,11 @@ public class ItemStackBase {
         this.init(item, count, auxValue, _userData);
     }
 
-    @NotImplemented
     protected ItemStackBase(final ItemStackBase rhs) {
         this.mBlock = rhs.mBlock;
         if (this.mBlock != null && rhs.mAuxValue == 0x7FFF) {
-            //this.init(this.mBlock.getLegacyBlock(), rhs.mCount);
-            //this.mAuxValue = 0x7FFF;
+            this.init(this.mBlock.getLegacyBlock(), rhs.mCount);
+            this.mAuxValue = 0x7FFF;
         } else {
             this.init(rhs.getId(), rhs.mCount, rhs.mAuxValue);
         }
@@ -99,12 +98,12 @@ public class ItemStackBase {
         this._cloneComponents(rhs);
     }
 
-//    protected ItemStackBase(final RecipeIngredient ingredient) {
-//        this.mBlock = ingredient.getBlock();
-//        int id = ingredient.getItem().getId();
-//        int count_ = ingredient.getStackSize();
-//        this.init(id, count_, ingredient.getAuxValue());
-//    }
+    protected ItemStackBase(final RecipeIngredient ingredient) {
+        this.mBlock = ingredient.getBlock();
+        int id = ingredient.getItem().getId();
+        int count_ = ingredient.getStackSize();
+        this.init(id, count_, ingredient.getAuxValue());
+    }
 
     protected ItemStackBase(final Block block, int count, final CompoundTag _userData) {
         this.mBlock = block;
@@ -118,7 +117,8 @@ public class ItemStackBase {
         this.init(block, count);
     }
 
-//    protected ItemStackBase(final BlockLegacy block, int count, short auxValue) {
+    @NotImplemented
+    protected ItemStackBase(final BlockLegacy block, int count, short auxValue) {
 //        if ( auxValue == 0x7FFF ) {
 //            this.mBlock = block.getDefaultState();
 //            this.init(block, count);
@@ -128,7 +128,7 @@ public class ItemStackBase {
 //            if (this.mBlock != null)
 //                this.init(block, count);
 //        }
-//    }
+    }
 
     final boolean _setItem(int id) {
         this.mItem = ItemRegistry.getItem(id);
@@ -250,7 +250,7 @@ public class ItemStackBase {
     private void init(final Item item, int count, int auxValue, final CompoundTag userData) {
         BlockLegacy blockType = item.getLegacyBlock();
         if (blockType != null) {
-//            if (item.getId(registry) >= 256) {
+//            if (item.getId() >= 256) {
 //                this.mBlock = blockType.tryGetStateFromLegacyData(auxValue);
 //                this.init(item.getId(registry), count, auxValue);
 //            } else {
@@ -270,9 +270,8 @@ public class ItemStackBase {
             this.mUserData = userData.clone();
     }
 
-    @NotImplemented
     private void init(final BlockLegacy block, int count) {
-        //this.init(block.getBlockItemId(), count, 0);
+        this.init(block.getBlockItemId(), count, 0);
     }
 
     public void clearChargedItem() {
@@ -294,8 +293,7 @@ public class ItemStackBase {
         if (this.mBlock == null || this.mAuxValue == 0x7FFF)
             return this.mAuxValue;
         else
-            return 0;
-            //return this.mBlock.getDataDEPRECATED();
+            return this.mBlock.getDataDEPRECATED();
     }
 
     public final int getIdAux() {
@@ -350,23 +348,21 @@ public class ItemStackBase {
             return ItemInstance.EMPTY_ITEM;
     }
 
-    @NotImplemented
     public final ItemDescriptor getDescriptor() {
         if (this.mBlock != null) {
-//            if (this.mAuxValue == 0x7FFF) {
-//                return new ItemDescriptor(this.mBlock.getLegacyBlock());
-//            } else {
-//                return new ItemDescriptor(this.mBlock);
-//            }
+            if (this.mAuxValue == 0x7FFF) {
+                return new ItemDescriptor(this.mBlock.getLegacyBlock());
+            } else {
+                return new ItemDescriptor(this.mBlock);
+            }
         } else if (this.mItem != null) {
-//            if (this.mItem.getMaxDamage() > 0)
-//                return new ItemDescriptor(this.mItem, this.getDamageValue());
-//            else
-//                return new ItemDescriptor(this.mItem, this.mAuxValue);
+            if (this.mItem.getMaxDamage() > 0)
+                return new ItemDescriptor(this.mItem, this.getDamageValue());
+            else
+                return new ItemDescriptor(this.mItem, this.mAuxValue);
         } else {
             return new ItemDescriptor();
         }
-        return null;
     }
 
     public ItemEnchants getEnchantsFromUserData() {

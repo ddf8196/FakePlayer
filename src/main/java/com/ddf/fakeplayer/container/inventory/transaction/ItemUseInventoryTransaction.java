@@ -69,9 +69,14 @@ public class ItemUseInventoryTransaction extends ComplexInventoryTransaction {
         return this.mSlot;
     }
 
+    @NotImplemented
     public final Block getTargetBlock(final Level level) {
         return null;
 //        return level.getGlobalBlockPalette().getBlock(this.mTargetBlockId);
+    }
+
+    public final int getTargetBlockId() {
+        return this.mTargetBlockId;
     }
 
     public final ItemUseInventoryTransaction setSelectedItem(final ItemStack item) {
@@ -114,7 +119,12 @@ public class ItemUseInventoryTransaction extends ComplexInventoryTransaction {
 //        this.mTargetBlockId = targetBlock.getRuntimeId();
         return this;
     }
-    
+
+    public final ItemUseInventoryTransaction setTargetBlockId(final int targetBlockId) {
+        this.mTargetBlockId = targetBlockId;
+        return this;
+    }
+
     public enum ActionType {
         Place_4,
         Use_1,

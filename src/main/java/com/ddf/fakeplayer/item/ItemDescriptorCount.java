@@ -35,4 +35,8 @@ public class ItemDescriptorCount extends ItemDescriptor {
         super(a2);
         this.mStackSize = a2.mStackSize;
     }
+
+    public final /*uint16_t*/int getStackSize() {
+        return this.mStackSize;
+    }
 }

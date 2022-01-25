@@ -12,7 +12,7 @@ import com.ddf.fakeplayer.block.BlockLegacy;
 import com.ddf.fakeplayer.block.BlockPalette;
 import com.ddf.fakeplayer.block.BlockPos;
 import com.ddf.fakeplayer.block.BlockSourceListener;
-import com.ddf.fakeplayer.item.ItemRegistry;
+import com.ddf.fakeplayer.item.recipe.Recipes;
 import com.ddf.fakeplayer.level.chunk.ChunkPos;
 import com.ddf.fakeplayer.level.dimension.ChangeDimensionRequest;
 import com.ddf.fakeplayer.level.dimension.Dimension;
@@ -63,7 +63,7 @@ public abstract class Level implements BlockSourceListener/*, IWorldRegistriesPr
     //private BehaviorFactory mBehaviorFactory = new BehaviorFactory();
     //private BehaviorTreeGroup mBehaviorTreeDefinitions;
     private BlockPalette mGlobalBlockPalette = new BlockPalette(this);
-    //private Recipes mRecipes;
+    private Recipes mRecipes;
     private HashMap<Integer, Dimension> mDimensions = new HashMap<>();
     //private PortalForcer mPortalForcer;
     //private Level.BossEventListenerList mBossEventListeners = new ArrayList<>();

@@ -110,6 +110,7 @@ public class DataConverter {
                 packet.setClickPosition(vector3f(transaction.getClickPosition()));
                 packet.setPlayerPosition(vector3f(transaction.getFromPosition()));
                 packet.setActionType(transaction.getActionType().ordinal());
+                packet.setBlockRuntimeId(transaction.getTargetBlockId());
             }
             break;
             case ItemUseOnEntityTransaction: {

@@ -283,5 +283,4 @@ public class JsFakePlayer extends JsPlayer {
     public boolean useItemOnBlock(JsItemStack itemStack, JsBlockLocation blockLocation, int direction, int faceLocationX, int faceLocationY) {
         return false;
     }
-
 }

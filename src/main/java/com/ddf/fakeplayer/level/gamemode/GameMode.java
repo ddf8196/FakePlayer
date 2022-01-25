@@ -124,7 +124,7 @@ public class GameMode {
         BlockSource region = this.mPlayer.getRegion();
         Player entity = this.mPlayer;
         ItemStack SelectedItem = entity.getSelectedItem();
-        if (region.checkBlockDestroyPermissions(entity, pos, SelectedItem, false) ) {
+        if (region.checkBlockDestroyPermissions(entity, pos, SelectedItem, false)) {
             ValueHolder<Boolean> successHolder = new ValueHolder<>(success);
             ItemUseInventoryTransaction transaction = new ItemUseInventoryTransaction();
             PlayerInventoryProxy supplies = this.mPlayer.getSupplies();

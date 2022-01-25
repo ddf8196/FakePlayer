@@ -144,32 +144,29 @@ public class FakePlayer extends LocalPlayer {
             for (int i = 0, j = 0; i < super.getSupplies().getContainerSize(ContainerID.CONTAINER_ID_INVENTORY); i++) {
                 if (slots.get(i).toBoolean()) {
                     empty = false;
-                    if (first) {
+                    if (first)
                         first = false;
-                    }
-                    else {
+                    else
                         builder.append(ColorFormat.YELLOW)
                                 .append(", ")
                                 .append(ColorFormat.RESET);
-                    }
-                    if (j % 2 == 0 && j != 0) {
-                        builder.append("\n")
-                                .append(ColorFormat.GREEN)
-                                .append("[")
-                                .append(i)
-                                .append("]")
-                                .append(ColorFormat.YELLOW)
-                                .append("[")
-                                .append(ColorFormat.AQUA)
-                                .append(slots.get(i).getItem().getFullItemName())
-                                .append(ColorFormat.YELLOW)
-                                .append(", ")
-                                .append(ColorFormat.GREEN)
-                                .append(slots.get(i).getStackSize())
-                                .append(ColorFormat.YELLOW)
-                                .append("]")
-                                .append(ColorFormat.RESET);
-                    }
+                    if (j % 2 == 0 && j != 0)
+                        builder.append("\n");
+                    builder.append(ColorFormat.GREEN)
+                            .append("[")
+                            .append(i)
+                            .append("]")
+                            .append(ColorFormat.YELLOW)
+                            .append("[")
+                            .append(ColorFormat.AQUA)
+                            .append(slots.get(i).getItem().getFullItemName())
+                            .append(ColorFormat.YELLOW)
+                            .append(", ")
+                            .append(ColorFormat.GREEN)
+                            .append(slots.get(i).getStackSize())
+                            .append(ColorFormat.YELLOW)
+                            .append("]")
+                            .append(ColorFormat.RESET);
                     ++j;
                 }
             }

@@ -35,6 +35,10 @@ public class Block {
         return this.mLegacyBlock.getAABB(regionDEPRECATED, pos, this, bufferValue, isClipping);
     }
 
+    public short getDataDEPRECATED() {
+        return this.mData;
+    }
+
     public final Block getDefaultState() {
         return this.mLegacyBlock.getDefaultState();
     }

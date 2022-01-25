@@ -11,6 +11,8 @@ import com.ddf.fakeplayer.actor.attribute.BaseAttributeMap;
 import com.ddf.fakeplayer.actor.attribute.SharedAttributes;
 import com.ddf.fakeplayer.actor.mob.Mob;
 import com.ddf.fakeplayer.actor.player.*;
+import com.ddf.fakeplayer.container.inventory.InventoryAction;
+import com.ddf.fakeplayer.container.inventory.InventorySource;
 import com.ddf.fakeplayer.container.inventory.PlayerInventoryProxy;
 import com.ddf.fakeplayer.container.ContainerID;
 import com.ddf.fakeplayer.container.inventory.transaction.ComplexInventoryTransaction;
@@ -189,10 +191,15 @@ public class ClientPacketHandler implements BedrockPacketHandler {
         switch (ContainerID.getByValue(packet.getContainerId())) {
             case CONTAINER_ID_INVENTORY: {
                 PlayerInventoryProxy inventory = player.getSupplies();
-                int i = 0;
-                for (ItemData itemData : packet.getContents()) {
-                    inventory.setItem(i++, DataConverter.itemStack(itemData), ContainerID.CONTAINER_ID_INVENTORY);
-                }
+                inventory.createTransactionContext((container, slot, oldItem, newItem) -> {
+                    InventoryAction action = new InventoryAction(InventorySource.fromContainerWindowID(ContainerID.CONTAINER_ID_INVENTORY), slot, oldItem, newItem);
+                    player.getTransactionManager().addExpectedAction(action);
+                }, () -> {
+                    int i = 0;
+                    for (ItemData itemData : packet.getContents()) {
+                        inventory.setItem(i++, DataConverter.itemStack(itemData), ContainerID.CONTAINER_ID_INVENTORY);
+                    }
+                });
             }
             case CONTAINER_ID_ARMOR:
             case CONTAINER_ID_OFFHAND:

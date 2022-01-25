@@ -74,8 +74,48 @@ public class ItemDescriptor {
         this.mValid = a2.mValid;
     }
 
+    public final Item getItem() {
+        return this.mItem;
+    }
+
+    public final short getId() {
+        if (!this.mValid)
+            return -1;
+        if (this.mItem == null)
+            return 0;
+        return this.mItem.getId();
+    }
+
+    public final short getAuxValue() {
+        if (this.mBlock == null || this.mAuxValue == 0x7FFF )
+            return this.mAuxValue;
+        else
+            return this.mBlock.getDataDEPRECATED();
+    }
+
+    public final Block getBlock() {
+        return this.mBlock;
+    }
+
+    public final BlockLegacy getLegacyBlock() {
+        if (this.mItem == null)
+            return null;
+        return this.mItem.getLegacyBlock();
+    }
+
+    public final boolean isValid() {
+        return this.mValid;
+    }
+
     public final void setAuxValue(short auxValue) {
         this.mAuxValue = (short) MathUtil.clamp(auxValue, 0, Short.MAX_VALUE);
+    }
+
+    public final boolean sameItem(final ItemDescriptor b) {
+        if (this.mItem != null) {
+            return this.mItem == b.mItem;
+        }
+        return false;
     }
 
     public final boolean sameItemAndAux(final ItemStack itemStack) {
@@ -88,6 +128,17 @@ public class ItemDescriptor {
             } else {
                 result = this.mAuxValue == itemStack.getAuxValue() && result;
             }
+        }
+        return result;
+    }
+
+    public final boolean sameItemAndAux(final ItemDescriptor b) {
+        boolean result = this.sameItem(b);
+        if ( this.mAuxValue != 0x7FFF && b.mAuxValue != 0x7FFF) {
+            if ( this.mBlock != null)
+                return this.mBlock == b.mBlock && result;
+            else
+                return this.mAuxValue == b.mAuxValue && result;
         }
         return result;
     }
