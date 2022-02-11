@@ -3,6 +3,8 @@ package com.ddf.fakeplayer.json.skin;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.Locale;
+
 public class SkinData {
     private static final Gson GSON = new Gson();
     private AnimatedImageData[] AnimatedImageData;
@@ -142,7 +144,7 @@ public class SkinData {
     }
 
     public void setDeviceModel(String deviceModel) {
-        DeviceModel = deviceModel;
+        DeviceModel = deviceModel.toUpperCase(Locale.ROOT);
     }
 
     public int getDeviceOS() {

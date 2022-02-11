@@ -260,7 +260,7 @@ public class Client implements Closeable {
         skin.setCurrentInputMode(1);
         skin.setDefaultInputMode(1);
         skin.setDeviceId(deviceId.toString());
-        skin.setDeviceModel("DeviceModel");
+        skin.setDeviceModel("FakePlayer");
         skin.setDeviceOS(1);
         skin.setGameVersion(packetCodec.getMinecraftVersion());
         skin.setGuiScale(0);

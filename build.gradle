@@ -31,7 +31,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.nukkitx.protocol:bedrock-v475:2.9.4-SNAPSHOT'
+    implementation 'com.nukkitx.protocol:bedrock-v486:2.9.5-SNAPSHOT'
     implementation 'com.google.code.gson:gson:2.8.7'
     implementation 'org.yaml:snakeyaml:1.29'
     implementation 'com.formdev:flatlaf:1.5'

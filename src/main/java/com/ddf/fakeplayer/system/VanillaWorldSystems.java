@@ -9,6 +9,7 @@ import com.ddf.fakeplayer.util.mc.CompoundTagUpdaterContext;
 import com.ddf.fakeplayer.util.mc.ResourcePackManager;
 import com.ddf.fakeplayer.util.mc.VanillaBlockUpdater;
 import com.nukkitx.nbt.NbtMap;
+import com.nukkitx.protocol.bedrock.v475.Bedrock_v475;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -23,7 +24,7 @@ public class VanillaWorldSystems extends WorldSystems {
         BedrockBlockTypes.registerBlocks();
         VanillaBlockTypes.registerBlocks();
         //Register unknown blocks
-        for (NbtMap nbtMap : ProtocolVersionUtil.getBlockPalette(ProtocolVersionUtil.getLatestPacketCodec())) {
+        for (NbtMap nbtMap : ProtocolVersionUtil.getBlockPalette(Bedrock_v475.V475_CODEC)) {
             NbtMap block = nbtMap.getCompound("block");
             String name = block.getString("name");
             int id = nbtMap.getInt("id");
