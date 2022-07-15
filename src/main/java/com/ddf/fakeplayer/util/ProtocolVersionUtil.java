@@ -22,6 +22,7 @@ import com.nukkitx.protocol.bedrock.v475.Bedrock_v475;
 import com.nukkitx.protocol.bedrock.v486.Bedrock_v486;
 import com.nukkitx.protocol.bedrock.v503.Bedrock_v503;
 import com.nukkitx.protocol.bedrock.v527.Bedrock_v527;
+import com.nukkitx.protocol.bedrock.v534.Bedrock_v534;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -60,6 +61,7 @@ public class ProtocolVersionUtil {
         registerPacketCodec(Bedrock_v486.V486_CODEC, 10, null);
         registerPacketCodec(Bedrock_v503.V503_CODEC, 10, null);
         registerPacketCodec(Bedrock_v527.V527_CODEC, 10, null);
+        registerPacketCodec(Bedrock_v534.V534_CODEC, 10, null);
         codecMap = Collections.unmodifiableMap(codecMap);
         rakNetVersionMap = Collections.unmodifiableMap(rakNetVersionMap);
         blockPaletteMap = Collections.unmodifiableMap(blockPaletteMap);

@@ -1,5 +1,5 @@
 ## 更新内容
-* 支持1.19.1版本(协议版本527)
+* 支持1.19.10版本(协议版本534)
 
 ## Change Log
-* Support 1.19.1 version (Protocol 527)
+* Support MC v1.19.10 (Protocol 534)
