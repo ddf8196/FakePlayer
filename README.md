@@ -9,6 +9,14 @@ Minecraft Bedrock Edition 假人客户端
 为BDS开发的假人客户端，利用网络协议模拟真实玩家登录服务器，并可通过BDS的Xbox验证   
 理论上也可在其他服务端及单人存档使用（暂时无法通过除BDS外的其他服务端的Xbox验证，单人存档使用需打开多人游戏）
 
+## 注意事项 | Q&A
+* 假人和正常玩家一样，不能绕过白名单，在开启了白名单的服务器中使用需要手动将假人名称添加至白名单中
+* 如果出现假人总是掉线重连，且信息为disconnectionScreen.timeout，请将server.properties中的player-idle-timeout设为0
+* 如果点开bat，控制台一闪就没了，可能是以下几种情况：
+  1. Java版本错误
+  2. Windows下**路径太长**
+  3. 待补充
+
 ## 安装及使用
 ### Windows
 1. 安装Java 8或更高版本
@@ -28,10 +36,6 @@ Minecraft Bedrock Edition 假人客户端
 （此步骤是添加额外公钥以通过BDS的Xbox验证，若服务器未开启online-mode（Xbox验证），此步骤可暂时跳过）   
 （除BDS外的其他服务端貌似均不支持利用配置文件添加额外公钥，所以目前无法利用此方法通过其他服务端的Xbox验证）
 5. 设置好服务器地址及端口，点击保存配置后添加假人即可（服务器地址一般使用默认的localhost即可，不建议远程连接假人）
-
-## 注意事项
-* 假人和正常玩家一样，不能绕过白名单，在开启了白名单的服务器中使用需要手动将假人名称添加至白名单中
-* 如果出现假人总是掉线重连，且信息为disconnectionScreen.timeout，请将server.properties中的player-idle-timeout设为0
 
 ## 功能
 * 较为稳定的挂机
