@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.ddf.fakeplayer'
-version '0.5.8-alpha'
+version '0.5.9-alpha'
 
 repositories {
     maven {
@@ -31,7 +31,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.nukkitx.protocol:bedrock-v545:2.9.11-SNAPSHOT'
+    implementation 'com.nukkitx.protocol:bedrock-v554:2.9.12-SNAPSHOT'
     implementation 'com.google.code.gson:gson:2.8.7'
     implementation 'org.yaml:snakeyaml:1.29'
     implementation 'com.formdev:flatlaf:1.5'

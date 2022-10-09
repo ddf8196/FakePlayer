@@ -126,12 +126,12 @@ public class Client implements Closeable {
                     level.getGlobalBlockPalette().initFromNbtMapList(ProtocolVersionUtil.getBlockPalette(packetCodec));
                 }
 
-                bedrockClient.connect(addressToConnect, 1, TimeUnit.SECONDS).whenComplete((session, throwable) -> runOnClientThread(() ->  {
+                bedrockClient.connect(addressToConnect, 1, TimeUnit.SECONDS).whenComplete((session, throwable) -> runOnClientThread(() -> {
                     if (throwable != null) {
                         return;
                     }
                     setState(State.CONNECTED);
-                    session.addDisconnectHandler(disconnectReason -> runOnClientThread(() ->  {
+                    session.addDisconnectHandler(disconnectReason -> runOnClientThread(() -> {
                         setState(State.DISCONNECTED);
                         logger.logI18N("log.client.disconnected", playerName, disconnectReason.name());
                         reconnectOrStop(address, port);
@@ -177,16 +177,16 @@ public class Client implements Closeable {
         return this.packetSender;
     }
 
-    public String getHostAddress(){
+    public String getHostAddress() {
         return session.getAddress().getAddress().getHostAddress();
     }
 
-    public int getPort(){
+    public int getPort() {
         return session.getAddress().getPort();
     }
 
-    public boolean isConnected(){
-        return session!= null && !session.isClosed();
+    public boolean isConnected() {
+        return session != null && !session.isClosed();
     }
 
     public void disconnect() {
@@ -229,7 +229,8 @@ public class Client implements Closeable {
         if (wait) {
             try {
                 latch.await();
-            } catch (InterruptedException ignored) {}
+            } catch (InterruptedException ignored) {
+            }
         }
     }
 
@@ -254,7 +255,7 @@ public class Client implements Closeable {
         return extraData;
     }
 
-    public SkinData createSkinData(){
+    public SkinData createSkinData() {
         SkinData skin = SkinData.createFromSkinJson(skinType.getSkinDataJson());
         skin.setClientRandomId(ThreadLocalRandom.current().nextLong());
         skin.setCurrentInputMode(1);
@@ -567,7 +568,8 @@ public class Client implements Closeable {
                 }
                 try {
                     Thread.sleep(MIN_TICK_TIME - time);
-                } catch (InterruptedException ignored) {}
+                } catch (InterruptedException ignored) {
+                }
             }
         }
 
