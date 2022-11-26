@@ -95,6 +95,8 @@ public class Config {
                 e.printStackTrace();
             }
             config.locale = Locale.forLanguageTag(config.language);
+            // 将可能的新增config写回
+            config.save();
             return config;
         }
     }
