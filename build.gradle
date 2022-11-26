@@ -18,11 +18,11 @@ repositories {
     }
     maven {
         name 'nukkitx-repo-release'
-        url 'https://repo.nukkitx.com/maven-releases/'
+        url 'https://repo.opencollab.dev/maven-releases/'
     }
     maven {
         name 'nukkitx-repo-snapshot'
-        url 'https://repo.nukkitx.com/maven-snapshots/'
+        url 'https://repo.opencollab.dev/maven-snapshots/'
     }
     maven {
         name 'minecraft-libraries'
