@@ -78,11 +78,32 @@ Minecraft Bedrock Edition 假人客户端
       <a href="https://github.com/ddf8196/FakePlayer/commits?author=Jasonzyt" title="Code">💻</a>
     </td>
     <td align="center">
+      <a href="https://github.com/yqs112358">
+        <img src="https://avatars.githubusercontent.com/u/37969157?s=100&v=4" width="60px;" alt=""/><br/>
+        <sub><b>yqs112358</b></sub>
+      </a><br/>
+      <a href="https://github.com/ddf8196/FakePlayer/commits?author=yqs112358" title="Code">💻</a>
+    </td>
+    <td align="center">
       <a href="https://github.com/xiaoqch">
         <img src="https://avatars.githubusercontent.com/u/37901097?s=100&v=4" width="60px;" alt=""/><br/>
         <sub><b>xiaoqch</b></sub>
       </a><br/>
       <a href="https://github.com/ddf8196/FakePlayer/commits?author=xiaoqch" title="Code">💻</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/CivicXFB">
+        <img src="https://avatars.githubusercontent.com/u/61540722?s=100&v=4" width="60px;" alt=""/><br/>
+        <sub><b>CivicXFB</b></sub>
+      </a><br/>
+      <a href="https://github.com/ddf8196/FakePlayer/commits?author=CivicXFB" title="Code">💻</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/hhhxiao">
+        <img src="https://avatars.githubusercontent.com/u/33011851?s=100&v=4" width="60px;" alt=""/><br/>
+        <sub><b>AgNO3</b></sub>
+      </a><br/>
+      <a href="https://github.com/ddf8196/FakePlayer/commits?author=hhhxiao" title="Code">💻</a>
     </td>
     <td align="center">
       <a href="https://github.com/TimothyGrass">
