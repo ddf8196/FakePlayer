@@ -109,12 +109,18 @@ public abstract class Main {
                 case CONNECTED:
                     if (webSocketServer != null && config.isWebSocketEnabled())
                         webSocketServer.sendConnectPlayerMessage(client1);
+                    config.getPlayerData(client1.getPlayerName()).setOnlineStatus(true);
                     break;
                 case DISCONNECTED:
                     if (webSocketServer != null && config.isWebSocketEnabled())
                         webSocketServer.sendDisconnectPlayerMessage(client1);
+                    config.getPlayerData(client1.getPlayerName()).setOnlineStatus(false);
                     break;
             }
+            // 将状态更改写回到文件
+            try
+            { config.save(); }
+            catch(IOException ignored){}
         });
         clients.add(client);
         return client;

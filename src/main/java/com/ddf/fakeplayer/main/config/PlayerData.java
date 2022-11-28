@@ -8,6 +8,7 @@ public class PlayerData {
     private String skin = "steve";
     private String customSkin = "";
     private boolean allowChatMessageControl = true;
+    private boolean onlineStatus = false;
     private List<String> scripts = new ArrayList<>();
 
     public PlayerData() {}
@@ -56,6 +57,14 @@ public class PlayerData {
 
     public void setAllowChatMessageControl(boolean allowChatMessageControl) {
         this.allowChatMessageControl = allowChatMessageControl;
+    }
+
+    public boolean getOnlineStatus() {
+        return onlineStatus;
+    }
+
+    public void setOnlineStatus(boolean status) {
+        this.onlineStatus = status;
     }
 
     public List<String> getScripts() {

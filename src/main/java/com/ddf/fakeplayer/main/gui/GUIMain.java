@@ -245,8 +245,12 @@ public class GUIMain extends Main {
 		JMenuItem connectSelected = new JMenuItem(I18N.get("guiMain.popupMenu.playersTable.connectSelected"));
 		connectSelected.addActionListener(e -> {
 			for (int i : playersTable.getSelectedRows()) {
-				Client client = getClient(playersTableModel.getClientName(playersTable.convertRowIndexToModel(i)));
-				if (client != null) {
+				String clientName = playersTableModel.getClientName(playersTable.convertRowIndexToModel(i));
+				Client client = getClient(clientName);
+				if (client != null && config.getPlayerData(clientName).getOnlineStatus())
+				{
+					// 如果上一次退出前是在线状态，则connect
+					// 否则不自动连接
 					client.connect(config.getServerAddress(), config.getServerPort());
 				}
 			}
