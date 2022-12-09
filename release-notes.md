@@ -1,7 +1,7 @@
 ## 更新内容
 
-* 支持1.19.40版本(协议版本557)
+* 支持1.19.50版本(协议版本560)
 
 ## Change Log
 
-* Support MC v1.19.40 (Protocol 557)
+* Support MC v1.19.50 (Protocol 560)
