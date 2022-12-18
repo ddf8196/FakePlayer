@@ -44,7 +44,10 @@ public class Config {
     private transient BedrockPacketCodec defaultPacketCodec = Bedrock_v408.V408_CODEC;
     private transient Locale locale;
 
+    private static final Object locker;      //多线程锁
+
     static {
+        locker = new Object();
         LoaderOptions loaderOptions = new LoaderOptions();
         DumperOptions dumperOptions = new DumperOptions();
         Representer representer = new Representer();
@@ -112,11 +115,13 @@ public class Config {
     }
 
     public void save(Path path) throws IOException {
-        String dump = YAML.dumpAsMap(this);
-        Files.write(path, dump.getBytes(StandardCharsets.UTF_8),
-                StandardOpenOption.CREATE,
-                StandardOpenOption.WRITE,
-                StandardOpenOption.TRUNCATE_EXISTING);
+        synchronized (locker) {
+            String dump = YAML.dumpAsMap(this);
+            Files.write(path, dump.getBytes(StandardCharsets.UTF_8),
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.WRITE,
+                    StandardOpenOption.TRUNCATE_EXISTING);
+        }
     }
 
     public boolean isDebug() {
@@ -252,8 +257,10 @@ public class Config {
     }
 
     public void addPlayerData(PlayerData playerData) {
-        players.removeIf(playerData1 -> playerData1.getName().equals(playerData.getName()));
-        players.add(playerData);
+        synchronized (locker) {
+            players.removeIf(playerData1 -> playerData1.getName().equals(playerData.getName()));
+            players.add(playerData);
+        }
     }
 
     @Deprecated
@@ -266,13 +273,17 @@ public class Config {
     }
 
     public void removePlayerData(String name) {
-        players.removeIf(playerData -> playerData.getName().equals(name));
+        synchronized (locker) {
+            players.removeIf(playerData -> playerData.getName().equals(name));
+        }
     }
 
     public PlayerData getPlayerData(String name) {
-        for (PlayerData playerData : players) {
-            if (playerData.getName().equals(name)) {
-                return playerData;
+        synchronized (locker) {
+            for (PlayerData playerData : players) {
+                if (playerData.getName().equals(name)) {
+                    return playerData;
+                }
             }
         }
         return null;
