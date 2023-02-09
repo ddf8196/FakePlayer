@@ -53,7 +53,7 @@ Minecraft Bedrock Edition 假人客户端
 * JavaScript API
 
 ## 支持的版本
-* 理论上支持1.7.0到1.19.50之间的所有版本
+* 理论上支持1.7.0到1.19.60之间的所有版本
 
 ## WebSocket API
 * FakePlayer提供WebSocket API以供其他插件/程序与FakePlayer进行通信，目前支持的操作有添加/删除假人，获取假人列表等

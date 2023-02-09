@@ -118,9 +118,10 @@ public abstract class Main {
                     break;
             }
             // 将状态更改写回到文件
-            try
-            { config.save(); }
-            catch(IOException ignored){}
+            try {
+                config.save();
+            } catch (IOException ignored) {
+            }
         });
         clients.add(client);
         return client;
@@ -185,14 +186,15 @@ public abstract class Main {
         if (webSocketServer != null) {
             try {
                 webSocketServer.stop();
-            } catch (InterruptedException ignored) {}
+            } catch (InterruptedException ignored) {
+            }
             webSocketServer = null;
         }
     }
 
     public static void main(String[] args) throws IOException, URISyntaxException {
         String jarPath = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-        if(System.getProperty("os.name").toLowerCase().startsWith("win")) {
+        if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
             jarPath = jarPath.replaceFirst("/", "");
         }
         if (jarPath.endsWith(".jar")) {
