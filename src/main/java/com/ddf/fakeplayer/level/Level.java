@@ -20,9 +20,9 @@ import com.ddf.fakeplayer.network.PacketSender;
 import com.ddf.fakeplayer.util.NotImplemented;
 import com.ddf.fakeplayer.util.mc.HitResult;
 import com.ddf.fakeplayer.util.Vec3;
-import com.nukkitx.math.vector.Vector3i;
-import com.nukkitx.protocol.bedrock.data.PlayerActionType;
-import com.nukkitx.protocol.bedrock.packet.PlayerActionPacket;
+import org.cloudburstmc.math.vector.Vector3i;
+import org.cloudburstmc.protocol.bedrock.data.PlayerActionType;
+import org.cloudburstmc.protocol.bedrock.packet.PlayerActionPacket;
 
 import java.util.*;
 import java.util.function.Function;

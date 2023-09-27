@@ -1,8 +1,7 @@
 package com.ddf.fakeplayer.level;
 
-import com.ddf.fakeplayer.item.ItemRegistry;
 import com.ddf.fakeplayer.network.PacketSender;
-import com.nukkitx.protocol.bedrock.packet.TickSyncPacket;
+import org.cloudburstmc.protocol.bedrock.packet.TickSyncPacket;
 
 public class MultiPlayerLevel extends Level {
     private long mLastSyncServerTick = 0;

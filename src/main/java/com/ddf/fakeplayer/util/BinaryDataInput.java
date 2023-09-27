@@ -1,6 +1,6 @@
 package com.ddf.fakeplayer.util;
 
-import com.nukkitx.nbt.util.stream.NetworkDataInputStream;
+import org.cloudburstmc.nbt.util.stream.NetworkDataInputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

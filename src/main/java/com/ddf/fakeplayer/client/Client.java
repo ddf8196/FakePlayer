@@ -3,6 +3,7 @@ package com.ddf.fakeplayer.client;
 import com.ddf.fakeplayer.Resources;
 import com.ddf.fakeplayer.actor.player.FakePlayer;
 import com.ddf.fakeplayer.item.ItemRegistry;
+import com.ddf.fakeplayer.item.ItemStackRequest;
 import com.ddf.fakeplayer.js.JSLoader;
 import com.ddf.fakeplayer.json.ExtraData;
 import com.ddf.fakeplayer.json.skin.SkinData;
@@ -12,13 +13,27 @@ import com.ddf.fakeplayer.network.ClientPacketSender;
 import com.ddf.fakeplayer.network.PacketSender;
 import com.ddf.fakeplayer.util.KeyUtil;
 import com.ddf.fakeplayer.util.Logger;
+import com.ddf.fakeplayer.util.PingUtil;
 import com.ddf.fakeplayer.util.ProtocolVersionUtil;
-import com.nukkitx.protocol.bedrock.*;
-import com.nukkitx.protocol.bedrock.data.inventory.ItemStackRequest;
-import com.nukkitx.protocol.bedrock.v408.Bedrock_v408;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioDatagramChannel;
+import org.cloudburstmc.netty.channel.raknet.RakChannelFactory;
+import org.cloudburstmc.netty.channel.raknet.config.RakChannelOption;
+import org.cloudburstmc.protocol.bedrock.BedrockClientSession;
+import org.cloudburstmc.protocol.bedrock.BedrockPong;
+import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
+import org.cloudburstmc.protocol.bedrock.codec.v567.Bedrock_v567;
+import org.cloudburstmc.protocol.bedrock.codec.v582.Bedrock_v582;
+import org.cloudburstmc.protocol.bedrock.netty.codec.packet.BedrockPacketCodec;
+import org.cloudburstmc.protocol.bedrock.netty.initializer.BedrockClientInitializer;
+import org.cloudburstmc.protocol.bedrock.packet.BedrockPacket;
 
 import java.io.Closeable;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.*;
@@ -26,12 +41,15 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Client implements Closeable {
+    private static final NioEventLoopGroup CLIENT_EVENT_LOOP_GROUP = new NioEventLoopGroup();
+
     private final AtomicBoolean stop = new AtomicBoolean(false);
     private final AtomicBoolean autoReconnect = new AtomicBoolean(true);
     private volatile long reconnectDelay = 1000;
-    private volatile BedrockPacketCodec packetCodec;
+    private volatile BedrockCodec packetCodec;
 
-    private volatile BedrockClient bedrockClient;
+//    private volatile BedrockClient bedrockClient;
+    private volatile Channel clientChannel;
     private volatile BedrockClientSession session;
     private volatile ClientPacketSender packetSender;
     private volatile ClientPacketHandler packetHandler;
@@ -47,7 +65,7 @@ public class Client implements Closeable {
     private final Map<Integer, ItemStackRequest> itemStackRequests = new ConcurrentHashMap<>();
     private State state;
     private final List<StateChangeListener> stateChangeListeners = Collections.synchronizedList(new ArrayList<>());
-    private BedrockPacketCodec defaultPacketCodec = Bedrock_v408.V408_CODEC;
+    private BedrockCodec defaultPacketCodec = Bedrock_v582.CODEC;
     private SkinType skinType = SkinType.STEVE;
     private int customSkinImageWidth;
     private int customSkinImageHeight;
@@ -109,6 +127,23 @@ public class Client implements Closeable {
                 player = new FakePlayer(level, playerName, playerUUID, this);
                 level.addEntity(player);
                 packetHandler = new ClientPacketHandler(this);
+
+                Bootstrap bootstrap = new Bootstrap()
+                        .channelFactory(RakChannelFactory.client(NioDatagramChannel.class))
+                        .group(CLIENT_EVENT_LOOP_GROUP.next());
+
+                final InetSocketAddress addressToConnect = new InetSocketAddress(address, port);
+                try {
+                    BedrockPong bedrockPong = PingUtil.ping(addressToConnect, 10, TimeUnit.SECONDS).get(10, TimeUnit.SECONDS);
+                    packetCodec = ProtocolVersionUtil.getPacketCodec(bedrockPong.protocolVersion());
+                } catch (Throwable t) {
+                    packetCodec = defaultPacketCodec;
+                    logger.logI18N("log.client.getProtocolVersionFail", playerName, defaultPacketCodec.getProtocolVersion());
+                }
+                bootstrap.option(RakChannelOption.RAK_PROTOCOL_VERSION, ProtocolVersionUtil.getRakNetProtocolVersion(packetCodec));
+                bootstrap.option(RakChannelOption.RAK_GUID, ThreadLocalRandom.current().nextLong());
+
+/*
                 bedrockClient = new BedrockClient(new InetSocketAddress(0));
                 bedrockClient.bind().join();
                 final InetSocketAddress addressToConnect = new InetSocketAddress(address, port);
@@ -120,12 +155,39 @@ public class Client implements Closeable {
                     logger.logI18N("log.client.getProtocolVersionFail", playerName, defaultPacketCodec.getProtocolVersion());
                 }
                 bedrockClient.setRakNetVersion(ProtocolVersionUtil.getRakNetProtocolVersion(packetCodec));
-
-                //1.16.100+
-                if (packetCodec.getProtocolVersion() >= 419 && ProtocolVersionUtil.getBlockPalette(packetCodec) != null) {
+*/
+                if (ProtocolVersionUtil.getBlockPalette(packetCodec) != null) {
                     level.getGlobalBlockPalette().initFromNbtMapList(ProtocolVersionUtil.getBlockPalette(packetCodec));
                 }
 
+                ChannelFuture channelFuture = bootstrap.handler(new BedrockClientInitializer() {
+                            @Override
+                            protected void initSession(BedrockClientSession session) {
+                                setState(State.CONNECTED);
+                                packetHandler.setDisconnectCallback(disconnectReason -> runOnClientThread(() -> {
+                                    setState(State.DISCONNECTED);
+                                    logger.logI18N("log.client.disconnected", playerName, disconnectReason);
+                                    reconnectOrStop(address, port);
+                                }));
+                                logger.logI18N("log.client.connected", player.getName());
+
+                                Client.this.session = session;
+                                // Connection established
+                                // Make sure to set the packet codec version you wish to use before sending out packets
+                                session.setCodec(packetCodec);
+                                // Remember to set a packet handler so you receive incoming packets
+                                session.setPacketHandler(packetHandler);
+                                // Now send packets...
+                                packetHandler.handleConnected();
+
+                            }
+                        })
+                        .connect(addressToConnect);
+
+                clientChannel = channelFuture.channel();
+                channelFuture.syncUninterruptibly();
+
+                /*
                 bedrockClient.connect(addressToConnect, 1, TimeUnit.SECONDS).whenComplete((session, throwable) -> runOnClientThread(() -> {
                     if (throwable != null) {
                         return;
@@ -147,9 +209,11 @@ public class Client implements Closeable {
                         packetHandler.handleConnected();
                     }
                 })).join();
+
+                 */
             } catch (Throwable throwable) {
-                if (bedrockClient != null) {
-                    bedrockClient.close();
+                if (clientChannel != null) {
+                    clientChannel.close();
                 }
                 setState(State.DISCONNECTED);
                 reconnectOrStop(address, port);
@@ -178,21 +242,30 @@ public class Client implements Closeable {
     }
 
     public String getHostAddress() {
-        return session.getAddress().getAddress().getHostAddress();
+        SocketAddress socketAddress = session.getSocketAddress();
+        if (socketAddress instanceof InetSocketAddress) {
+            return ((InetSocketAddress) socketAddress).getAddress().getHostAddress();
+        }
+        return "";
     }
 
     public int getPort() {
-        return session.getAddress().getPort();
+        SocketAddress socketAddress = session.getSocketAddress();
+        if (socketAddress instanceof InetSocketAddress) {
+            return ((InetSocketAddress) socketAddress).getPort();
+        }
+        return 0;
     }
 
     public boolean isConnected() {
-        return session != null && !session.isClosed();
+        return session != null && session.isConnected();
     }
 
     public void disconnect() {
         if (isConnected()) {
             setState(State.DISCONNECTING);
-            bedrockClient.close();
+            if (clientChannel != null)
+                clientChannel.close();
             receivedPackets.clear();
         }
     }
@@ -328,15 +401,15 @@ public class Client implements Closeable {
         this.reconnectDelay = reconnectDelay;
     }
 
-    public BedrockPacketCodec getPacketCodec() {
+    public BedrockCodec getPacketCodec() {
         return packetCodec;
     }
 
-    public BedrockPacketCodec getDefaultPacketCodec() {
+    public BedrockCodec getDefaultPacketCodec() {
         return defaultPacketCodec;
     }
 
-    public void setDefaultPacketCodec(BedrockPacketCodec defaultPacketCodec) {
+    public void setDefaultPacketCodec(BedrockCodec defaultPacketCodec) {
         this.defaultPacketCodec = defaultPacketCodec;
     }
 
@@ -348,13 +421,13 @@ public class Client implements Closeable {
         this.packetHandler = packetHandler;
     }
 
-    public BedrockClient getBedrockClient() {
-        return bedrockClient;
-    }
-
-    public void setBedrockClient(BedrockClient bedrockClient) {
-        this.bedrockClient = bedrockClient;
-    }
+//    public BedrockClient getBedrockClient() {
+//        return bedrockClient;
+//    }
+//
+//    public void setBedrockClient(BedrockClient bedrockClient) {
+//        this.bedrockClient = bedrockClient;
+//    }
 
     public BedrockClientSession getSession() {
         return session;

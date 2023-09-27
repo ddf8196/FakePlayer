@@ -34,13 +34,13 @@ import com.ddf.fakeplayer.util.ColorFormat;
 import com.ddf.fakeplayer.util.DataConverter;
 import com.ddf.fakeplayer.util.NotImplemented;
 import com.ddf.fakeplayer.util.Vec3;
-import com.nukkitx.math.vector.Vector3i;
-import com.nukkitx.protocol.bedrock.BedrockPacket;
-import com.nukkitx.protocol.bedrock.data.AuthoritativeMovementMode;
-import com.nukkitx.protocol.bedrock.data.PlayerActionType;
-import com.nukkitx.protocol.bedrock.data.entity.EntityEventType;
-import com.nukkitx.protocol.bedrock.packet.EntityEventPacket;
-import com.nukkitx.protocol.bedrock.packet.PlayerActionPacket;
+import org.cloudburstmc.math.vector.Vector3i;
+import org.cloudburstmc.protocol.bedrock.data.AuthoritativeMovementMode;
+import org.cloudburstmc.protocol.bedrock.data.PlayerActionType;
+import org.cloudburstmc.protocol.bedrock.data.entity.EntityEventType;
+import org.cloudburstmc.protocol.bedrock.packet.BedrockPacket;
+import org.cloudburstmc.protocol.bedrock.packet.EntityEventPacket;
+import org.cloudburstmc.protocol.bedrock.packet.PlayerActionPacket;
 
 import java.util.*;
 

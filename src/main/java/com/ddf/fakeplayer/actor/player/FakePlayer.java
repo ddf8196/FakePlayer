@@ -25,15 +25,16 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import com.nukkitx.math.vector.Vector2f;
-import com.nukkitx.math.vector.Vector3f;
-import com.nukkitx.math.vector.Vector3i;
-import com.nukkitx.protocol.bedrock.data.ClientPlayMode;
-import com.nukkitx.protocol.bedrock.data.InputMode;
-import com.nukkitx.protocol.bedrock.data.PlayerActionType;
-import com.nukkitx.protocol.bedrock.data.command.CommandOriginData;
-import com.nukkitx.protocol.bedrock.data.command.CommandOriginType;
-import com.nukkitx.protocol.bedrock.packet.*;
+import org.cloudburstmc.math.vector.Vector2f;
+import org.cloudburstmc.math.vector.Vector3f;
+import org.cloudburstmc.math.vector.Vector3i;
+import org.cloudburstmc.protocol.bedrock.data.ClientPlayMode;
+import org.cloudburstmc.protocol.bedrock.data.InputInteractionModel;
+import org.cloudburstmc.protocol.bedrock.data.InputMode;
+import org.cloudburstmc.protocol.bedrock.data.PlayerActionType;
+import org.cloudburstmc.protocol.bedrock.data.command.CommandOriginData;
+import org.cloudburstmc.protocol.bedrock.data.command.CommandOriginType;
+import org.cloudburstmc.protocol.bedrock.packet.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -281,6 +282,8 @@ public class FakePlayer extends LocalPlayer {
         packet.setPlayMode(ClientPlayMode.SCREEN);
         packet.setTick(playerAuthInputTick++);
         packet.setDelta(Vector3f.ZERO);
+        packet.setInputInteractionModel(InputInteractionModel.TOUCH);
+        packet.setAnalogMoveVector(Vector2f.ZERO);
         this.sendNetworkPacket(packet);
     }
 

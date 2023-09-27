@@ -4,31 +4,38 @@ import com.ddf.fakeplayer.util.JwtUtil;
 import com.ddf.fakeplayer.util.KeyUtil;
 import com.google.gson.*;
 
-import java.lang.annotation.*;
 import java.security.KeyPair;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class ChainData {
     private static final Random rand = new Random();
+    private static final Gson gson = new Gson();
 
-    @Stage({0, 1, 2})
-    private long exp;
-    @Stage({0, 1, 2})
-    private long nbf;
-    @Stage({1, 2})
+    private Long exp;
+    private Long nbf;
     private String iss;
-    @Stage({1, 2})
-    private long iat;
+    private Long iat;
 
-    @Stage({0, 1})
-    private boolean certificateAuthority;
-    @Stage({0, 1, 2})
+    private Boolean certificateAuthority;
     private String identityPublicKey;
-    @Stage({1, 2})
-    private long randomNonce;
-    @Stage(2)
+    private Long randomNonce;
     private ExtraData extraData;
+
+    public ChainData() {}
+
+    public ChainData(ChainData chainData) {
+        this.exp = chainData.exp;
+        this.nbf = chainData.nbf;
+        this.iss = chainData.iss;
+        this.iat = chainData.iat;
+        this.certificateAuthority = chainData.certificateAuthority;
+        this.identityPublicKey = chainData.identityPublicKey;
+        this.randomNonce = chainData.randomNonce;
+        this.extraData = chainData.extraData;
+    }
 
     public static ChainData createChainData() {
         ChainData chainData = new ChainData();
@@ -42,49 +49,44 @@ public class ChainData {
         return chainData;
     }
 
-    public static String createFullChainJson(KeyPair clientKeyPair, KeyPair serverKeyPair, ExtraData extraData){
+    public static List<String> createFullChain(KeyPair clientKeyPair, KeyPair serverKeyPair, ExtraData extraData) {
+        List<String> fullChain = new ArrayList<>();
         KeyPair tempKeyPair = KeyUtil.generateKeyPair();
 
-        JsonArray chain = new JsonArray();
-        ChainData chainData = ChainData.createChainData();
-        chainData.extraData = extraData;
-
         //JWT0 sign: clientPrivateKey, verify: clientPublicKey, identityPublicKey: serverPublicKey
+        ChainData chainData = ChainData.createChainData();
         chainData.identityPublicKey = KeyUtil.encodeKeyToBase64(serverKeyPair.getPublic());
-        chain.add(JwtUtil.createJwt(clientKeyPair, chainData.toJsonString(0)));
+        chainData.iss = null;
+        chainData.iat = null;
+        chainData.randomNonce = null;
+        fullChain.add(JwtUtil.createJwt(clientKeyPair, chainData.toJsonString()));
 
         //JWT1 sign: serverPrivateKey, verify: serverPublicKey, identityPublicKey: tempPublicKey
+        chainData = ChainData.createChainData();
         chainData.identityPublicKey = KeyUtil.encodeKeyToBase64(tempKeyPair.getPublic());
-        chain.add(JwtUtil.createJwt(serverKeyPair, chainData.toJsonString(1)));
+        fullChain.add(JwtUtil.createJwt(serverKeyPair, chainData.toJsonString()));
 
         //JWT2 sign: tempPrivateKey, verify: tempPublicKey, identityPublicKey: clientPublicKey
+        chainData = ChainData.createChainData();
         chainData.identityPublicKey = KeyUtil.encodeKeyToBase64(clientKeyPair.getPublic());
-        chain.add(JwtUtil.createJwt(tempKeyPair, chainData.toJsonString(2)));
+        chainData.extraData = extraData;
+        chainData.certificateAuthority = null;
+        fullChain.add(JwtUtil.createJwt(tempKeyPair, chainData.toJsonString()));
 
+        return fullChain;
+    }
+
+    public static String createFullChainJson(KeyPair clientKeyPair, KeyPair serverKeyPair, ExtraData extraData) {
+        List<String> fullChain = createFullChain(clientKeyPair, serverKeyPair, extraData);
+        JsonArray chain = new JsonArray();
+        for (String data : fullChain)
+            chain.add(data);
         JsonObject jsonObject = new JsonObject();
         jsonObject.add("chain", chain);
         return jsonObject.toString();
     }
 
-    public String toJsonString(int stage){
-        Gson gson = new GsonBuilder().addSerializationExclusionStrategy(new ExclusionStrategy() {
-                    @Override
-                    public boolean shouldSkipField(FieldAttributes fieldAttributes) {
-                        if (!fieldAttributes.getDeclaringClass().equals(ChainData.class)) {
-                            return false;
-                        }
-                        Stage s = fieldAttributes.getAnnotation(Stage.class);
-                        if (s != null) {
-                            for (int i : s.value())
-                                if (i == stage) return false;
-                        }
-                        return true;
-                    }
-                    @Override
-                    public boolean shouldSkipClass(Class<?> aClass) {
-                        return stage != 2 && aClass.equals(ExtraData.class);
-                    }
-                }).create();
+    public String toJsonString(){
         return gson.toJson(this);
     }
 
@@ -150,11 +152,5 @@ public class ChainData {
 
     public void setExtraData(ExtraData extraData) {
         this.extraData = extraData;
-    }
-
-    @Target(ElementType.FIELD)
-    @Retention(RetentionPolicy.RUNTIME)
-    @interface Stage {
-        int[] value();
     }
 }

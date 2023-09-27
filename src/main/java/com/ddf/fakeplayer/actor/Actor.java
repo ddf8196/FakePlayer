@@ -27,7 +27,7 @@ import com.ddf.fakeplayer.level.dimension.VanillaDimensions;
 import com.ddf.fakeplayer.nbt.CompoundTag;
 import com.ddf.fakeplayer.util.*;
 import com.ddf.fakeplayer.util.tuple.Tuple2;
-import com.nukkitx.protocol.bedrock.packet.InteractPacket;
+import org.cloudburstmc.protocol.bedrock.packet.InteractPacket;
 
 import java.util.*;
 

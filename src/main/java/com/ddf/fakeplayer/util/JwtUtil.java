@@ -1,25 +1,35 @@
 package com.ddf.fakeplayer.util;
 
-import com.nimbusds.jose.*;
-import com.nimbusds.jose.crypto.ECDSASigner;
+//import com.nimbusds.jose.*;
+//import com.nimbusds.jose.crypto.ECDSASigner;
+import org.jose4j.jws.AlgorithmIdentifiers;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.jwx.HeaderParameterNames;
 
-import java.net.URI;
 import java.security.KeyPair;
-import java.security.interfaces.ECPrivateKey;
 
 public class JwtUtil {
     public static String createJwt(KeyPair keyPair, String payloadString) {
         try {
-            JWSSigner signer = new ECDSASigner((ECPrivateKey) keyPair.getPrivate());
-            JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.ES384)
-                    .x509CertURL(new URI(KeyUtil.encodeKeyToBase64(keyPair.getPublic())))
-                    .build();
-            Payload payload = new Payload(payloadString);
+            JsonWebSignature jws = new JsonWebSignature();
+            jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.ECDSA_USING_P384_CURVE_AND_SHA384);
+            jws.setHeader(HeaderParameterNames.X509_URL, KeyUtil.encodeKeyToBase64(keyPair.getPublic()));
+            jws.setKey(keyPair.getPrivate());
+            jws.setPayload(payloadString);
+            jws.sign();
 
-            JWSObject jws = new JWSObject(header, payload);
-            jws.sign(signer);
+            return jws.getCompactSerialization();
 
-            return jws.serialize();
+//            JWSSigner signer = new ECDSASigner((ECPrivateKey) keyPair.getPrivate());
+//            JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.ES384)
+//                    .x509CertURL(new URI(KeyUtil.encodeKeyToBase64(keyPair.getPublic())))
+//                    .build();
+//            Payload payload = new Payload(payloadString);
+//
+//            JWSObject jws = new JWSObject(header, payload);
+//            jws.sign(signer);
+//
+//            return jws.serialize();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

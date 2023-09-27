@@ -1,6 +1,7 @@
 package com.ddf.fakeplayer.network;
 
-import com.nukkitx.protocol.bedrock.BedrockPacket;
+
+import org.cloudburstmc.protocol.bedrock.packet.BedrockPacket;
 
 public interface PacketObserver {
     void packetSentTo(final NetworkIdentifier target, final BedrockPacket BedrockPacket, int size); //+2

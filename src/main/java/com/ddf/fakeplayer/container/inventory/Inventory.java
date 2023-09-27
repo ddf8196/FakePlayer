@@ -10,7 +10,7 @@ import com.ddf.fakeplayer.item.items.MapItem;
 import com.ddf.fakeplayer.nbt.CompoundTag;
 import com.ddf.fakeplayer.util.DataConverter;
 import com.ddf.fakeplayer.util.NotImplemented;
-import com.nukkitx.protocol.bedrock.packet.InventorySlotPacket;
+import org.cloudburstmc.protocol.bedrock.packet.InventorySlotPacket;
 
 @NotImplemented
 public class Inventory extends FillingContainer {

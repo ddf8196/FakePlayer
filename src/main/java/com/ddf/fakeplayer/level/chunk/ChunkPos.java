@@ -1,7 +1,6 @@
 package com.ddf.fakeplayer.level.chunk;
 
 import com.ddf.fakeplayer.block.BlockPos;
-import com.nukkitx.protocol.PacketHandler;
 
 public class ChunkPos {
     public static final ChunkPos INVALID = new ChunkPos(0x80000000, 0x80000000);

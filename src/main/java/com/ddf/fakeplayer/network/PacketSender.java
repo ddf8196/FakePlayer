@@ -1,6 +1,6 @@
 package com.ddf.fakeplayer.network;
 
-import com.nukkitx.protocol.bedrock.BedrockPacket;
+import org.cloudburstmc.protocol.bedrock.packet.BedrockPacket;
 
 import java.util.ArrayList;
 import java.util.function.Function;

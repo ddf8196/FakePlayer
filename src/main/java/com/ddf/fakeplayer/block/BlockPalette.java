@@ -5,7 +5,7 @@ import com.ddf.fakeplayer.nbt.CompoundTag;
 import com.ddf.fakeplayer.util.DataConverter;
 import com.ddf.fakeplayer.util.NotImplemented;
 import com.ddf.fakeplayer.util.Pair;
-import com.nukkitx.nbt.NbtMap;
+import org.cloudburstmc.nbt.NbtMap;
 
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;

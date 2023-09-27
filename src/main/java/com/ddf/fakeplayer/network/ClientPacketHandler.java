@@ -25,30 +25,33 @@ import com.ddf.fakeplayer.level.MultiPlayerLevel;
 import com.ddf.fakeplayer.level.dimension.ChangeDimensionRequest;
 import com.ddf.fakeplayer.level.generator.GeneratorType;
 import com.ddf.fakeplayer.util.*;
-import com.nimbusds.jwt.SignedJWT;
-import com.nukkitx.math.vector.Vector3f;
-import com.nukkitx.math.vector.Vector3i;
-import com.nukkitx.nbt.NbtMap;
-import com.nukkitx.protocol.bedrock.BedrockPacket;
-import com.nukkitx.protocol.bedrock.data.AttributeData;
-import com.nukkitx.protocol.bedrock.data.AuthoritativeMovementMode;
-import com.nukkitx.protocol.bedrock.data.entity.EntityData;
-import com.nukkitx.protocol.bedrock.data.entity.EntityFlags;
-import com.nukkitx.protocol.bedrock.data.inventory.ItemData;
-import com.nukkitx.protocol.bedrock.handler.BedrockPacketHandler;
-import com.nukkitx.protocol.bedrock.packet.*;
-import com.nukkitx.protocol.bedrock.util.EncryptionUtils;
-import io.netty.util.AsciiString;
+import org.cloudburstmc.math.vector.Vector3f;
+import org.cloudburstmc.math.vector.Vector3i;
+import org.cloudburstmc.nbt.NbtMap;
+import org.cloudburstmc.protocol.bedrock.data.AttributeData;
+import org.cloudburstmc.protocol.bedrock.data.AuthoritativeMovementMode;
+import org.cloudburstmc.protocol.bedrock.data.definitions.BlockDefinition;
+import org.cloudburstmc.protocol.bedrock.data.definitions.ItemDefinition;
+import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataType;
+import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataTypes;
+import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
+import org.cloudburstmc.protocol.bedrock.packet.*;
+import org.cloudburstmc.protocol.bedrock.util.EncryptionUtils;
+import org.cloudburstmc.protocol.common.DefinitionRegistry;
+import org.cloudburstmc.protocol.common.PacketSignal;
+import org.jose4j.json.JsonUtil;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.jwx.HeaderParameterNames;
+import org.jose4j.lang.JoseException;
 
 import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class ClientPacketHandler implements BedrockPacketHandler {
     private Logger logger;
@@ -58,6 +61,8 @@ public class ClientPacketHandler implements BedrockPacketHandler {
     private List<BedrockPacket> unhandledPackets = new ArrayList<>();
     private boolean startGamePacketReceived = false;
 
+    private Consumer<String> disconnectCallback;
+
     public ClientPacketHandler(Client client) {
         this.logger = Logger.getLogger();
         this.client = client;
@@ -66,61 +71,120 @@ public class ClientPacketHandler implements BedrockPacketHandler {
     }
 
     public void handleConnected(){
-        byte[] chainData = ChainData.createFullChainJson(
+        LoginPacket loginPacket = new LoginPacket();
+        loginPacket.setProtocolVersion(client.getPacketCodec().getProtocolVersion());
+        loginPacket.getChain().addAll(ChainData.createFullChain(
                 client.getClientKeyPair(),
                 client.getServerKeyPair(),
                 client.createExtraData()
-        ).getBytes(StandardCharsets.UTF_8);
-
-        byte[] skinData = JwtUtil.createJwt(
+        ));
+        loginPacket.setExtra(JwtUtil.createJwt(
                 client.getClientKeyPair(),
-                client.createSkinData().toJsonString()
-        ).getBytes(StandardCharsets.UTF_8);
-
-        LoginPacket loginPacket = new LoginPacket();
-        loginPacket.setProtocolVersion(client.getPacketCodec().getProtocolVersion());
-        loginPacket.setChainData(new AsciiString(chainData));
-        loginPacket.setSkinData(new AsciiString(skinData));
+                client.createSkinData().toJsonString()));
         client.sendPacket(loginPacket);
     }
 
+    public void setDisconnectCallback(Consumer<String> disconnectCallback) {
+        this.disconnectCallback = disconnectCallback;
+    }
+
     @Override
-    public boolean handle(ServerToClientHandshakePacket packet) {
+    public void onDisconnect(String reason) {
+        if (disconnectCallback != null)
+            disconnectCallback.accept(reason);
+//        client.runOnClientThread(() -> {
+//            client.setState(Client.State.DISCONNECTED);
+//            logger.logI18N("log.client.disconnected", playerName, disconnectReason.name());
+//            reconnectOrStop(address, port);
+//        }));
+    }
+
+    @Override
+    public PacketSignal handlePacket(BedrockPacket packet) {
+        return BedrockPacketHandler.super.handlePacket(packet);
+    }
+
+    @Override
+    public PacketSignal handle(ServerToClientHandshakePacket packet) {
         try {
-            SignedJWT jwt = SignedJWT.parse(packet.getJwt());
-            PublicKey serverPublicKey = KeyUtil.decodePublicKey(jwt.getHeader().getX509CertURL().toASCIIString());
-            byte[] salt = Base64.getDecoder().decode(jwt.getJWTClaimsSet().getStringClaim("salt"));
+            JsonWebSignature jws = (JsonWebSignature) JsonWebSignature.fromCompactSerialization(packet.getJwt());
+            PublicKey serverPublicKey = KeyUtil.decodePublicKey(jws.getHeader(HeaderParameterNames.X509_URL));
+            byte[] salt = Base64.getDecoder().decode(JsonUtil.parseJson(jws.getUnverifiedPayload()).get("salt").toString());
             SecretKey key = EncryptionUtils.getSecretKey(client.getClientKeyPair().getPrivate(), serverPublicKey, salt);
             client.getSession().enableEncryption(key);
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException | ParseException | InvalidKeyException e) {
+//            SignedJWT jwt = SignedJWT.parse(packet.getJwt());
+//            PublicKey serverPublicKey = KeyUtil.decodePublicKey(jwt.getHeader().getX509CertURL().toASCIIString());
+//            byte[] salt = Base64.getDecoder().decode(jwt.getJWTClaimsSet().getStringClaim("salt"));
+//            SecretKey key = EncryptionUtils.getSecretKey(client.getClientKeyPair().getPrivate(), serverPublicKey, salt);
+//            client.getSession().enableEncryption(key);
+        } catch (JoseException | NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException e) {
             throw new RuntimeException(e);
         }
 
         ClientToServerHandshakePacket clientToServerHandshake = new ClientToServerHandshakePacket();
         client.getSession().sendPacketImmediately(clientToServerHandshake);
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(ResourcePacksInfoPacket packet) {
+    public PacketSignal handle(ResourcePacksInfoPacket packet) {
         ResourcePackClientResponsePacket response = new ResourcePackClientResponsePacket();
         response.setStatus(ResourcePackClientResponsePacket.Status.HAVE_ALL_PACKS);
         client.sendPacket(response);
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(ResourcePackStackPacket packet) {
+    public PacketSignal handle(ResourcePackStackPacket packet) {
         ResourcePackClientResponsePacket response = new ResourcePackClientResponsePacket();
         response.setStatus(ResourcePackClientResponsePacket.Status.COMPLETED);
         client.sendPacket(response);
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public boolean handle(StartGamePacket packet) {
-        ItemRegistry.init(packet.getItemEntries());
+    public PacketSignal handle(StartGamePacket packet) {
+        client.getSession().getPeer().getCodecHelper().setItemDefinitions(new DefinitionRegistry<ItemDefinition>() {
+            @Override
+            public ItemDefinition getDefinition(int runtimeId) {
+                return new ItemDefinition() {
+                    @Override
+                    public boolean isComponentBased() {
+                        return false;
+                    }
+
+                    @Override
+                    public String getIdentifier() {
+                        return null;
+                    }
+
+                    @Override
+                    public int getRuntimeId() {
+                        return runtimeId;
+                    }
+                };
+            }
+
+            @Override
+            public boolean isRegistered(ItemDefinition definition) {
+                return false;
+            }
+        });
+
+        client.getSession().getPeer().getCodecHelper().setBlockDefinitions(new DefinitionRegistry<BlockDefinition>() {
+            @Override
+            public BlockDefinition getDefinition(int runtimeId) {
+                return () -> runtimeId;
+            }
+
+            @Override
+            public boolean isRegistered(BlockDefinition definition) {
+                return false;
+            }
+        });
+
+        ItemRegistry.init(packet.getItemDefinitions());
 
         if (packet.getBlockPalette() != null) {
             level.getGlobalBlockPalette().initFromNbtMapList(packet.getBlockPalette());
@@ -142,13 +206,9 @@ public class ClientPacketHandler implements BedrockPacketHandler {
         player.setRot(DataConverter.vec2(packet.getRotation()));
         player._setDimensionId(packet.getDimensionId());
 
-        if (packet.getPlayerMovementSettings() != null) {
-            player.setMovementMode(packet.getPlayerMovementSettings().getMovementMode());
-            level.setServerAuthoritativeMovement(packet.getPlayerMovementSettings().getMovementMode() != AuthoritativeMovementMode.CLIENT);
-        } else if (packet.getAuthoritativeMovementMode() != null){
-            player.setMovementMode(packet.getAuthoritativeMovementMode());
-            level.setServerAuthoritativeMovement(packet.getAuthoritativeMovementMode() != AuthoritativeMovementMode.CLIENT);
-        }
+        player.setMovementMode(packet.getAuthoritativeMovementMode());
+        level.setServerAuthoritativeMovement(packet.getAuthoritativeMovementMode() != AuthoritativeMovementMode.CLIENT);
+
         RequestChunkRadiusPacket response = new RequestChunkRadiusPacket();
         response.setRadius(client.getChunkRadius());
         client.sendPacket(response);
@@ -158,16 +218,16 @@ public class ClientPacketHandler implements BedrockPacketHandler {
             p.handle(this);
         }
         unhandledPackets.clear();
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(LevelChunkPacket packet) {
-        return false;
+    public PacketSignal handle(LevelChunkPacket packet) {
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(PlayStatusPacket packet) {
+    public PacketSignal handle(PlayStatusPacket packet) {
         if (packet.getStatus() == PlayStatusPacket.Status.LOGIN_SUCCESS) {
             ClientCacheStatusPacket packet1 = new ClientCacheStatusPacket();
             packet1.setSupported(false);
@@ -179,14 +239,14 @@ public class ClientPacketHandler implements BedrockPacketHandler {
             client.sendPacket(response);
             player.setInitialSpawnDone(true);
         }
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(InventoryContentPacket packet) {
+    public PacketSignal handle(InventoryContentPacket packet) {
         if (!startGamePacketReceived) {
             unhandledPackets.add(packet);
-            return false;
+            return PacketSignal.UNHANDLED;
         }
         switch (ContainerID.getByValue(packet.getContainerId())) {
             case CONTAINER_ID_INVENTORY: {
@@ -205,104 +265,104 @@ public class ClientPacketHandler implements BedrockPacketHandler {
             case CONTAINER_ID_OFFHAND:
                 break;
         }
-        return false;
+        return PacketSignal.HANDLED;
     }
 
-    public boolean handle(PlayerHotbarPacket packet) {
+    public PacketSignal handle(PlayerHotbarPacket packet) {
         player.getSupplies().selectSlot(packet.getSelectedHotbarSlot(), ContainerID.getByValue(packet.getContainerId()));
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(UpdateBlockPacket packet) {
-        return false;
+    public PacketSignal handle(UpdateBlockPacket packet) {
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(InventoryTransactionPacket packet) {
+    public PacketSignal handle(InventoryTransactionPacket packet) {
         if (!startGamePacketReceived) {
             unhandledPackets.add(packet);
-            return false;
+            return PacketSignal.UNHANDLED;
         }
         ComplexInventoryTransaction complexInventoryTransaction = DataConverter.complexInventoryTransaction(packet);
         //Inventory inventory = player.getSupplies().mInventory;
         if (complexInventoryTransaction != null) {
             InventoryTransactionError error = complexInventoryTransaction.handle(player, true);
             if (error == InventoryTransactionError.NoError) {
-                return false;
+                return PacketSignal.HANDLED;
             }
             logger.log(player.getName(), " InventoryTransaction处理失败: ", error.name());
             player.sendInventoryMismatch();
         }
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(InventorySlotPacket packet) {
+    public PacketSignal handle(InventorySlotPacket packet) {
         if (!startGamePacketReceived) {
             unhandledPackets.add(packet);
-            return false;
+            return PacketSignal.UNHANDLED;
         }
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(TextPacket packet) {
+    public PacketSignal handle(TextPacket packet) {
         if (packet.getType() == TextPacket.Type.CHAT
                 && packet.getSourceName() != null && !packet.getSourceName().isEmpty()
                 && packet.getMessage() != null && !packet.getMessage().isEmpty()){
             this.player.onPlayerChat(packet.getSourceName(), packet.getMessage(), packet.getXuid(), packet.getPlatformChatId());
         }
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(SetDefaultGameTypePacket packet) {
+    public PacketSignal handle(SetDefaultGameTypePacket packet) {
         level.setDefaultGameType(GameType.getByValue(packet.getGamemode()));
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(SetPlayerGameTypePacket packet) {
+    public PacketSignal handle(SetPlayerGameTypePacket packet) {
         player.setPlayerGameType(GameType.getByValue(packet.getGamemode()));
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(UpdatePlayerGameTypePacket packet) {
+    public PacketSignal handle(UpdatePlayerGameTypePacket packet) {
         Player player = level.getPlayer(packet.getEntityId());
         if (player != null) {
             player.setPlayerGameType(DataConverter.gameType(packet.getGameType()));
         }
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(ChangeDimensionPacket packet) {
+    public PacketSignal handle(ChangeDimensionPacket packet) {
         ChangeDimensionRequest request = DataConverter.dimensionRequest(packet);
         request.mFromDimensionId = player.getDimensionId();
         request.mRespawn = false;
         level.requestPlayerChangeDimension(player, request);
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(ShowCreditsPacket packet) {
+    public PacketSignal handle(ShowCreditsPacket packet) {
         if (packet.getStatus() == ShowCreditsPacket.Status.START_CREDITS) {
             ShowCreditsPacket response = new ShowCreditsPacket();
             response.setStatus(ShowCreditsPacket.Status.END_CREDITS);
             response.setRuntimeEntityId(player.getRuntimeID());
             client.sendPacket(response);
         }
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(SetSpawnPositionPacket packet) {
+    public PacketSignal handle(SetSpawnPositionPacket packet) {
         switch (packet.getSpawnType()) {
             case WORLD_SPAWN:
                 level.setDefaultSpawn(DataConverter.blockPos(packet.getBlockPosition()));
-                return false;
+                return PacketSignal.HANDLED;
             case PLAYER_SPAWN:
                 BlockPos blockPos = DataConverter.blockPos(packet.getBlockPosition());
                 BlockPos spawnPos = DataConverter.blockPos(packet.getSpawnPosition());
@@ -315,23 +375,23 @@ public class ClientPacketHandler implements BedrockPacketHandler {
                     player.setRespawnPosition(blockPos, false);
                 }
         }
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(SetHealthPacket packet) {
+    public PacketSignal handle(SetHealthPacket packet) {
         AttributeInstance health = player.getMutableAttribute(SharedAttributes.HEALTH);
         if (health != null && health != BaseAttributeMap.mInvalidInstance) {
             health.setDefaultValue(packet.getHealth(), AttributeOperands.OPERAND_CURRENT);
         }
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(UpdateAttributesPacket packet) {
+    public PacketSignal handle(UpdateAttributesPacket packet) {
         Actor actor = level.getEntityByRuntimeId(packet.getRuntimeEntityId());
         if (actor == null) {
-            return false;
+            return PacketSignal.UNHANDLED;
         }
         for (AttributeData data : packet.getAttributes()) {
             AttributeInstance instance = actor.getMutableAttribute(data.getName());
@@ -340,14 +400,14 @@ public class ClientPacketHandler implements BedrockPacketHandler {
                 instance.setDefaultValue(data.getValue(), AttributeOperands.OPERAND_CURRENT);
             }
         }
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(RespawnPacket packet) {
+    public PacketSignal handle(RespawnPacket packet) {
         PlayerRespawnState state = DataConverter.playerRespawnState(packet.getState());
         if (state == PlayerRespawnState.ClientReadyToSpawn) {
-            return false;
+            return PacketSignal.HANDLED;
         }
         if (state == PlayerRespawnState.ReadyToSpawn) {
             if (Level.isUsableLevel(level)) {
@@ -356,26 +416,26 @@ public class ClientPacketHandler implements BedrockPacketHandler {
                 player.setClientRespawnState(state);
                 player.respawn();
             }
-            return false;
+            return PacketSignal.HANDLED;
         }
         if (state == PlayerRespawnState.SearchingForSpawn) {
             player.setClientRespawnState(state);
             player.setClientRespawnPotentialPosition(DataConverter.vec3(packet.getPosition()));
         }
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(MovePlayerPacket packet) {
+    public PacketSignal handle(MovePlayerPacket packet) {
         if (packet.getRuntimeEntityId() == player.getRuntimeID()) {
             player.setPos(DataConverter.vec3(packet.getPosition()));
             player.setRot(DataConverter.vec2(packet.getRotation()));
             player.setYHeadRot(packet.getRotation().getZ());
-            return false;
+            return PacketSignal.HANDLED;
         }
         Actor actor = level.getEntityByRuntimeId(packet.getRuntimeEntityId());
         if (!(actor instanceof Player))
-            return false;
+            return PacketSignal.UNHANDLED;
         actor.setPos(DataConverter.vec3(packet.getPosition()));
         actor.setRot(DataConverter.vec2(packet.getRotation()));
         ((Player) actor).setYHeadRot(packet.getRotation().getZ());
@@ -384,11 +444,11 @@ public class ClientPacketHandler implements BedrockPacketHandler {
             player.setRot(DataConverter.vec2(packet.getRotation()));
             player.setYHeadRot(packet.getRotation().getZ());
         }
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(AddEntityPacket packet) {
+    public PacketSignal handle(AddEntityPacket packet) {
         Mob mob = new Mob(client.getLevel());
         mob.setEntityType(packet.getEntityType());
         mob.setIdentifier(packet.getIdentifier());
@@ -397,15 +457,15 @@ public class ClientPacketHandler implements BedrockPacketHandler {
                 .set(DataConverter.vec3(packet.getMotion()));
         mob.setPos(DataConverter.vec3(packet.getPosition()));
         mob.setRot(DataConverter.vec2(packet.getRotation()));
-        mob.setYHeadRot(packet.getRotation().getZ());
+        mob.setYHeadRot(packet.getHeadRotation());
         mob.setRuntimeID(packet.getRuntimeEntityId());
         mob.setUniqueID(packet.getUniqueEntityId());
         client.getLevel().addEntity(mob);
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(AddPlayerPacket packet) {
+    public PacketSignal handle(AddPlayerPacket packet) {
         RemotePlayer player = new RemotePlayer(client.getLevel(), packet.getUsername(), packet.getUuid());
         player.setPos(DataConverter.vec3(packet.getMotion()));
         player.moveTo(DataConverter.vec3(packet.getPosition()), DataConverter.vec2(packet.getRotation()));
@@ -415,25 +475,24 @@ public class ClientPacketHandler implements BedrockPacketHandler {
         player.setUniqueID(packet.getUniqueEntityId());
 
         client.getLevel().addEntity(player);
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(SetEntityDataPacket packet) {
+    public PacketSignal handle(SetEntityDataPacket packet) {
         Actor actor = level.getEntityByRuntimeId(packet.getRuntimeEntityId());
         if (actor == null)
-            return false;
-        for (Map.Entry<EntityData, Object> entry : packet.getMetadata().entrySet()) {
+            return PacketSignal.UNHANDLED;
+        for (Map.Entry<EntityDataType<?>, Object> entry : packet.getMetadata().entrySet()) {
             SynchedActorData entityData = actor.getEntityData();
             Object data = entry.getValue();
             ActorDataIDs actorDataIDs = DataConverter.actorDataIDs(entry.getKey());
             if (actorDataIDs == null)
                 continue;
-            if (entry.getKey().isFlags() && data instanceof EntityFlags) {
-
+            if (entry.getKey() == EntityDataTypes.FLAGS || entry.getKey() == EntityDataTypes.FLAGS_2) {
                 continue;
             }
-            switch (DataConverter.dataItemType(entry.getKey().getType())) {
+            switch (DataConverter.dataItemType(entry.getKey())) {
                 case Byte:
                     if (entityData._find(actorDataIDs.ordinal()) != null && data instanceof Byte)
                         entityData.set(actorDataIDs.ordinal(), (Byte) data);
@@ -472,34 +531,34 @@ public class ClientPacketHandler implements BedrockPacketHandler {
                     break;
             }
         }
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(SetEntityLinkPacket packet) {
-        return false;
+    public PacketSignal handle(SetEntityLinkPacket packet) {
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(SetTimePacket packet) {
+    public PacketSignal handle(SetTimePacket packet) {
         level.setTime(packet.getTime());
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(TickSyncPacket packet) {
+    public PacketSignal handle(TickSyncPacket packet) {
         level.getLevelData().setCurrentTick(packet.getResponseTimestamp());
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(RemoveEntityPacket packet) {
+    public PacketSignal handle(RemoveEntityPacket packet) {
         client.getLevel().removeEntity(packet.getUniqueEntityId());
-        return false;
+        return PacketSignal.HANDLED;
     }
 
     @Override
-    public boolean handle(DisconnectPacket packet) {
+    public PacketSignal handle(DisconnectPacket packet) {
         client.disconnect();
         logger.log(player.getName(), " 正在断开连接: ", packet.getKickMessage());
         switch (packet.getKickMessage()) {
@@ -521,6 +580,6 @@ public class ClientPacketHandler implements BedrockPacketHandler {
                 client.stop();
                 break;
         }
-        return false;
+        return PacketSignal.HANDLED;
     }
 }

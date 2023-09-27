@@ -13,23 +13,27 @@ import com.ddf.fakeplayer.item.ItemStack;
 import com.ddf.fakeplayer.level.GameType;
 import com.ddf.fakeplayer.level.dimension.ChangeDimensionRequest;
 import com.ddf.fakeplayer.nbt.*;
-import com.nukkitx.math.vector.Vector2f;
-import com.nukkitx.math.vector.Vector3f;
-import com.nukkitx.math.vector.Vector3i;
-import com.nukkitx.nbt.NbtList;
-import com.nukkitx.nbt.NbtMap;
-import com.nukkitx.nbt.NbtMapBuilder;
-import com.nukkitx.nbt.NbtType;
-import com.nukkitx.protocol.bedrock.data.entity.EntityData;
-import com.nukkitx.protocol.bedrock.data.entity.EntityFlag;
-import com.nukkitx.protocol.bedrock.data.inventory.InventoryActionData;
-import com.nukkitx.protocol.bedrock.data.inventory.ItemData;
-import com.nukkitx.protocol.bedrock.data.inventory.TransactionType;
-import com.nukkitx.protocol.bedrock.packet.ChangeDimensionPacket;
-import com.nukkitx.protocol.bedrock.packet.InventoryTransactionPacket;
-import com.nukkitx.protocol.bedrock.packet.RespawnPacket;
+import org.cloudburstmc.math.vector.Vector2f;
+import org.cloudburstmc.math.vector.Vector3f;
+import org.cloudburstmc.math.vector.Vector3i;
+import org.cloudburstmc.nbt.NbtList;
+import org.cloudburstmc.nbt.NbtMap;
+import org.cloudburstmc.nbt.NbtMapBuilder;
+import org.cloudburstmc.nbt.NbtType;
+import org.cloudburstmc.protocol.bedrock.data.definitions.SimpleBlockDefinition;
+import org.cloudburstmc.protocol.bedrock.data.definitions.SimpleItemDefinition;
+import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataType;
+import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataTypes;
+import org.cloudburstmc.protocol.bedrock.data.entity.EntityFlag;
+import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
+import org.cloudburstmc.protocol.bedrock.data.inventory.transaction.InventoryActionData;
+import org.cloudburstmc.protocol.bedrock.data.inventory.transaction.InventoryTransactionType;
+import org.cloudburstmc.protocol.bedrock.packet.ChangeDimensionPacket;
+import org.cloudburstmc.protocol.bedrock.packet.InventoryTransactionPacket;
+import org.cloudburstmc.protocol.bedrock.packet.RespawnPacket;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -63,7 +67,7 @@ public class DataConverter {
     }
 
     public static ItemStack itemStack(ItemData itemData) {
-        ItemStack itemStack = new ItemStack(itemData.getId(), itemData.getCount(), itemData.getDamage(), compoundTag(itemData.getTag()));
+        ItemStack itemStack = new ItemStack(itemData.getDefinition().getRuntimeId(), itemData.getCount(), itemData.getDamage(), compoundTag(itemData.getTag()));
         itemStack.setBlockingTick(itemData.getBlockingTicks());
         itemStack.clientInitNetId(itemData.getNetId());
         return itemStack;
@@ -71,7 +75,8 @@ public class DataConverter {
 
     public static ItemData itemData(ItemStack itemStack) {
         return ItemData.builder()
-                .id(itemStack.getId())
+                .definition(new SimpleItemDefinition("", itemStack.getId(), false))
+                //.id(itemStack.getId())
                 .damage(itemStack.getAuxValue())
                 .count(itemStack.getStackSize())
                 .tag(nbtMap(itemStack.getUserData()))
@@ -93,16 +98,16 @@ public class DataConverter {
         }
         switch (complexInventoryTransaction.getType()) {
             case NormalTransaction: {
-                packet.setTransactionType(TransactionType.NORMAL);
+                packet.setTransactionType(InventoryTransactionType.NORMAL);
             }
             break;
             case InventoryMismatch_0: {
-                packet.setTransactionType(TransactionType.INVENTORY_MISMATCH);
+                packet.setTransactionType(InventoryTransactionType.INVENTORY_MISMATCH);
             }
             break;
             case ItemUseTransaction: {
                 ItemUseInventoryTransaction transaction = (ItemUseInventoryTransaction) complexInventoryTransaction;
-                packet.setTransactionType(TransactionType.ITEM_USE);
+                packet.setTransactionType(InventoryTransactionType.ITEM_USE);
                 packet.setItemInHand(itemData(transaction.getSelectedItem()));
                 packet.setHotbarSlot(transaction.getSelectedSlot());
                 packet.setBlockPosition(vector3i(transaction.getBlockPosition()));
@@ -110,12 +115,12 @@ public class DataConverter {
                 packet.setClickPosition(vector3f(transaction.getClickPosition()));
                 packet.setPlayerPosition(vector3f(transaction.getFromPosition()));
                 packet.setActionType(transaction.getActionType().ordinal());
-                packet.setBlockRuntimeId(transaction.getTargetBlockId());
+                packet.setBlockDefinition(new SimpleBlockDefinition("", transaction.getTargetBlockId(), NbtMap.EMPTY));
             }
             break;
             case ItemUseOnEntityTransaction: {
                 ItemUseOnActorInventoryTransaction transaction = (ItemUseOnActorInventoryTransaction) complexInventoryTransaction;
-                packet.setTransactionType(TransactionType.ITEM_USE_ON_ENTITY);
+                packet.setTransactionType(InventoryTransactionType.ITEM_USE_ON_ENTITY);
                 packet.setItemInHand(itemData(transaction.getSelectedItem()));
                 packet.setHotbarSlot(transaction.getSelectedSlot());
                 packet.setActionType(transaction.getActionType().ordinal());
@@ -126,7 +131,7 @@ public class DataConverter {
             break;
             case ItemReleaseTransaction: {
                 ItemReleaseInventoryTransaction transaction = (ItemReleaseInventoryTransaction) complexInventoryTransaction;
-                packet.setTransactionType(TransactionType.ITEM_RELEASE);
+                packet.setTransactionType(InventoryTransactionType.ITEM_RELEASE);
                 packet.setItemInHand(itemData(transaction.getSelectedItem()));
                 packet.setHotbarSlot(transaction.getSelectedSlot());
                 packet.setHeadPosition(vector3f(transaction.getFromPosition()));
@@ -183,7 +188,7 @@ public class DataConverter {
                 itemStack(inventoryActionData.getToItem()));
     }
 
-    public static InventorySource inventorySource(com.nukkitx.protocol.bedrock.data.inventory.InventorySource inventorySource) {
+    public static InventorySource inventorySource(org.cloudburstmc.protocol.bedrock.data.inventory.transaction.InventorySource inventorySource) {
         switch (inventorySource.getType()) {
             case INVALID:
                 return InventorySource.fromInvalid();
@@ -204,22 +209,22 @@ public class DataConverter {
         }
     }
 
-    public static com.nukkitx.protocol.bedrock.data.inventory.InventorySource inventorySource(InventorySource inventorySource) {
+    public static org.cloudburstmc.protocol.bedrock.data.inventory.transaction.InventorySource inventorySource(InventorySource inventorySource) {
         switch (inventorySource.getType()) {
             case InvalidInventory:
-                return com.nukkitx.protocol.bedrock.data.inventory.InventorySource.fromInvalid();
+                return org.cloudburstmc.protocol.bedrock.data.inventory.transaction.InventorySource.fromInvalid();
             case ContainerInventory:
-                return com.nukkitx.protocol.bedrock.data.inventory.InventorySource.fromContainerWindowId(inventorySource.getContainerId().getValue());
+                return org.cloudburstmc.protocol.bedrock.data.inventory.transaction.InventorySource.fromContainerWindowId(inventorySource.getContainerId().getValue());
             case GlobalInventory:
-                return com.nukkitx.protocol.bedrock.data.inventory.InventorySource.fromGlobalInventory();
+                return org.cloudburstmc.protocol.bedrock.data.inventory.transaction.InventorySource.fromGlobalInventory();
             case WorldInteraction:
-                return com.nukkitx.protocol.bedrock.data.inventory.InventorySource.fromWorldInteraction(com.nukkitx.protocol.bedrock.data.inventory.InventorySource.Flag.values()[inventorySource.getFlags().ordinal()]);
+                return org.cloudburstmc.protocol.bedrock.data.inventory.transaction.InventorySource.fromWorldInteraction(org.cloudburstmc.protocol.bedrock.data.inventory.transaction.InventorySource.Flag.values()[inventorySource.getFlags().ordinal()]);
             case CreativeInventory:
-                return com.nukkitx.protocol.bedrock.data.inventory.InventorySource.fromCreativeInventory();
+                return org.cloudburstmc.protocol.bedrock.data.inventory.transaction.InventorySource.fromCreativeInventory();
             case UntrackedInteractionUI:
-                return com.nukkitx.protocol.bedrock.data.inventory.InventorySource.fromUntrackedInteractionUI(inventorySource.getContainerId().getValue());
+                return org.cloudburstmc.protocol.bedrock.data.inventory.transaction.InventorySource.fromUntrackedInteractionUI(inventorySource.getContainerId().getValue());
             case NonImplementedFeatureTODO:
-                return com.nukkitx.protocol.bedrock.data.inventory.InventorySource.fromNonImplementedTodo(inventorySource.getContainerId().getValue());
+                return org.cloudburstmc.protocol.bedrock.data.inventory.transaction.InventorySource.fromNonImplementedTodo(inventorySource.getContainerId().getValue());
             default:
                 return null;
         }
@@ -496,15 +501,15 @@ public class DataConverter {
         return listTag;
     }
 
-    public static GameType gameType(com.nukkitx.protocol.bedrock.data.GameType gameType) {
+    public static GameType gameType(org.cloudburstmc.protocol.bedrock.data.GameType gameType) {
         return GameType.getByValue(gameType.ordinal());
     }
 
-    public static com.nukkitx.protocol.bedrock.data.GameType gameType(GameType gameType) {
+    public static org.cloudburstmc.protocol.bedrock.data.GameType gameType(GameType gameType) {
         if (gameType == GameType.Undefined) {
             return null;
         }
-        return com.nukkitx.protocol.bedrock.data.GameType.from(gameType.getValue());
+        return org.cloudburstmc.protocol.bedrock.data.GameType.from(gameType.getValue());
     }
 
     public static PlayerRespawnState playerRespawnState(RespawnPacket.State respawnState) {
@@ -524,19 +529,164 @@ public class DataConverter {
                         changeDimensionPacket.isRespawn());
     }
 
-    public static ActorDataIDs actorDataIDs(EntityData entityData) {
-        if (entityData.ordinal() >= ActorDataIDs.values().length)
-            return null;
-        return ActorDataIDs.values()[entityData.ordinal()];
+    private static final Map<EntityDataType<?>, ActorDataIDs> ENTITY_DATA_TYPE_ACTOR_DATA_IDS_MAP = new HashMap<EntityDataType<?>, ActorDataIDs>() {
+        {
+            put(EntityDataTypes.FLAGS, ActorDataIDs.FLAGS);
+            put(EntityDataTypes.STRUCTURAL_INTEGRITY, ActorDataIDs.STRUCTURAL_INTEGRITY);
+            put(EntityDataTypes.VARIANT, ActorDataIDs.VARIANT);
+            put(EntityDataTypes.COLOR, ActorDataIDs.COLOR_INDEX);
+            put(EntityDataTypes.NAME, ActorDataIDs.NAME);
+//            put(EntityDataTypes.OWNER, ActorDataIDs.OWNER);
+//            put(EntityDataTypes.TARGET, ActorDataIDs.TARGET);
+            put(EntityDataTypes.AIR_SUPPLY, ActorDataIDs.AIR_SUPPLY);
+            put(EntityDataTypes.EFFECT_COLOR, ActorDataIDs.EFFECT_COLOR);
+            put(EntityDataTypes.EFFECT_AMBIENCE, ActorDataIDs.EFFECT_AMBIENCE);
+            put(EntityDataTypes.JUMP_DURATION, ActorDataIDs.JUMP_DURATION);
+//            put(EntityDataTypes.HURT, ActorDataIDs.HURT);
+//            put(EntityDataTypes.HURT_DIR, ActorDataIDs.HURT_DIR);
+            put(EntityDataTypes.ROW_TIME_LEFT, ActorDataIDs.ROW_TIME_LEFT);
+            put(EntityDataTypes.ROW_TIME_RIGHT, ActorDataIDs.ROW_TIME_RIGHT);
+            put(EntityDataTypes.VALUE, ActorDataIDs.VALUE);
+//            put(EntityDataTypes.DISPLAY_TILE_RUNTIME_ID, ActorDataIDs.DISPLAY_TILE_RUNTIME_ID);
+            put(EntityDataTypes.DISPLAY_OFFSET, ActorDataIDs.DISPLAY_OFFSET);
+            put(EntityDataTypes.CUSTOM_DISPLAY, ActorDataIDs.CUSTOM_DISPLAY);
+//            put(EntityDataTypes.SWELL, ActorDataIDs.SWELL);
+            put(EntityDataTypes.OLD_SWELL, ActorDataIDs.OLD_SWELL);
+//            put(EntityDataTypes.SWELL_DIR, ActorDataIDs.SWELL_DIR);
+            put(EntityDataTypes.CHARGE_AMOUNT, ActorDataIDs.CHARGE_AMOUNT);
+//            put(EntityDataTypes.CARRY_BLOCK_RUNTIME_ID, ActorDataIDs.CARRY_BLOCK_RUNTIME_ID);
+            put(EntityDataTypes.CLIENT_EVENT, ActorDataIDs.CLIENT_EVENT);
+            put(EntityDataTypes.USING_ITEM, ActorDataIDs.USING_ITEM);
+            put(EntityDataTypes.PLAYER_FLAGS, ActorDataIDs.PLAYER_FLAGS);
+            put(EntityDataTypes.PLAYER_INDEX, ActorDataIDs.PLAYER_INDEX);
+            put(EntityDataTypes.BED_POSITION, ActorDataIDs.BED_POSITION);
+//            put(EntityDataTypes.X_POWER, ActorDataIDs.X_POWER);
+//            put(EntityDataTypes.Y_POWER, ActorDataIDs.Y_POWER);
+//            put(EntityDataTypes.Z_POWER, ActorDataIDs.Z_POWER);
+            put(EntityDataTypes.AUX_POWER, ActorDataIDs.AUX_POWER);
+//            put(EntityDataTypes.FISHX, ActorDataIDs.FISHX);
+//            put(EntityDataTypes.FISHZ, ActorDataIDs.FISHZ);
+//            put(EntityDataTypes.FISHANGLE, ActorDataIDs.FISHANGLE);
+            put(EntityDataTypes.LEASH_HOLDER, ActorDataIDs.LEASH_HOLDER);
+            put(EntityDataTypes.SCALE, ActorDataIDs.SCALE);
+            put(EntityDataTypes.HAS_NPC, ActorDataIDs.HAS_NPC);
+            put(EntityDataTypes.NPC_DATA, ActorDataIDs.NPC_DATA);
+            put(EntityDataTypes.ACTIONS, ActorDataIDs.ACTIONS);
+            put(EntityDataTypes.AIR_SUPPLY_MAX, ActorDataIDs.AIR_SUPPLY_MAX);
+            put(EntityDataTypes.MARK_VARIANT, ActorDataIDs.MARK_VARIANT);
+            put(EntityDataTypes.CONTAINER_TYPE, ActorDataIDs.CONTAINER_TYPE);
+            put(EntityDataTypes.CONTAINER_SIZE, ActorDataIDs.CONTAINER_SIZE);
+            put(EntityDataTypes.CONTAINER_STRENGTH_MODIFIER, ActorDataIDs.CONTAINER_STRENGTH_MODIFIER);
+//            put(EntityDataTypes.BLOCK_TARGET, ActorDataIDs.BLOCK_TARGET);
+//            put(EntityDataTypes.INV, ActorDataIDs.INV);
+//            put(EntityDataTypes.TARGET_A, ActorDataIDs.TARGET_A);
+//            put(EntityDataTypes.TARGET_B, ActorDataIDs.TARGET_B);
+//            put(EntityDataTypes.TARGET_C, ActorDataIDs.TARGET_C);
+//            put(EntityDataTypes.AERIAL_ATTACK, ActorDataIDs.AERIAL_ATTACK);
+            put(EntityDataTypes.WIDTH, ActorDataIDs.WIDTH);
+            put(EntityDataTypes.HEIGHT, ActorDataIDs.HEIGHT);
+            put(EntityDataTypes.FUSE_TIME, ActorDataIDs.FUSE_TIME);
+            put(EntityDataTypes.SEAT_OFFSET, ActorDataIDs.SEAT_OFFSET);
+            put(EntityDataTypes.SEAT_LOCK_RIDER_ROTATION, ActorDataIDs.SEAT_LOCK_RIDER_ROTATION);
+            put(EntityDataTypes.SEAT_LOCK_RIDER_ROTATION_DEGREES, ActorDataIDs.SEAT_LOCK_RIDER_ROTATION_DEGREES);
+//            put(EntityDataTypes.SEAT_ROTATION_OFFSET, ActorDataIDs.SEAT_ROTATION_OFFSET);
+//            put(EntityDataTypes.DATA_RADIUS, ActorDataIDs.DATA_RADIUS);
+//            put(EntityDataTypes.DATA_WAITING, ActorDataIDs.DATA_WAITING);
+//            put(EntityDataTypes.DATA_PARTICLE, ActorDataIDs.DATA_PARTICLE);
+//            put(EntityDataTypes.PEEK_ID, ActorDataIDs.PEEK_ID);
+//            put(EntityDataTypes.ATTACH_FACE, ActorDataIDs.ATTACH_FACE);
+//            put(EntityDataTypes.ATTACHED, ActorDataIDs.ATTACHED);
+//            put(EntityDataTypes.ATTACH_POS, ActorDataIDs.ATTACH_POS);
+//            put(EntityDataTypes.TRADE_TARGET, ActorDataIDs.TRADE_TARGET);
+            put(EntityDataTypes.CAREER, ActorDataIDs.CAREER);
+//            put(EntityDataTypes.HAS_COMMAND_BLOCK, ActorDataIDs.HAS_COMMAND_BLOCK);
+//            put(EntityDataTypes.COMMAND_NAME, ActorDataIDs.COMMAND_NAME);
+//            put(EntityDataTypes.LAST_COMMAND_OUTPUT, ActorDataIDs.LAST_COMMAND_OUTPUT);
+//            put(EntityDataTypes.TRACK_COMMAND_OUTPUT, ActorDataIDs.TRACK_COMMAND_OUTPUT);
+//            put(EntityDataTypes.CONTROLLING_SEAT_INDEX, ActorDataIDs.CONTROLLING_SEAT_INDEX);
+            put(EntityDataTypes.STRENGTH, ActorDataIDs.STRENGTH);
+            put(EntityDataTypes.STRENGTH_MAX, ActorDataIDs.STRENGTH_MAX);
+//            put(EntityDataTypes.DATA_SPELL_CASTING_COLOR, ActorDataIDs.DATA_SPELL_CASTING_COLOR);
+            put(EntityDataTypes.DATA_LIFETIME_TICKS, ActorDataIDs.DATA_LIFETIME_TICKS);
+//            put(EntityDataTypes.POSE_INDEX, ActorDataIDs.POSE_INDEX);
+//            put(EntityDataTypes.DATA_TICK_OFFSET, ActorDataIDs.DATA_TICK_OFFSET);
+            put(EntityDataTypes.NAMETAG_ALWAYS_SHOW, ActorDataIDs.NAMETAG_ALWAYS_SHOW);
+//            put(EntityDataTypes.COLOR_2_INDEX, ActorDataIDs.COLOR_2_INDEX);
+            put(EntityDataTypes.NAME_AUTHOR, ActorDataIDs.NAME_AUTHOR);
+            put(EntityDataTypes.SCORE, ActorDataIDs.SCORE);
+//            put(EntityDataTypes.BALLOON_ANCHOR, ActorDataIDs.BALLOON_ANCHOR);
+            put(EntityDataTypes.PUFFED_STATE, ActorDataIDs.PUFFED_STATE);
+//            put(EntityDataTypes.BUBBLE_TIME, ActorDataIDs.BUBBLE_TIME);
+//            put(EntityDataTypes.AGENT, ActorDataIDs.AGENT);
+            put(EntityDataTypes.SITTING_AMOUNT, ActorDataIDs.SITTING_AMOUNT);
+            put(EntityDataTypes.SITTING_AMOUNT_PREVIOUS, ActorDataIDs.SITTING_AMOUNT_PREVIOUS);
+            put(EntityDataTypes.EATING_COUNTER, ActorDataIDs.EATING_COUNTER);
+//            put(EntityDataTypes.FLAGS2, ActorDataIDs.FLAGS2);
+            put(EntityDataTypes.LAYING_AMOUNT, ActorDataIDs.LAYING_AMOUNT);
+            put(EntityDataTypes.LAYING_AMOUNT_PREVIOUS, ActorDataIDs.LAYING_AMOUNT_PREVIOUS);
+//            put(EntityDataTypes.DATA_DURATION, ActorDataIDs.DATA_DURATION);
+//            put(EntityDataTypes.DATA_SPAWN_TIME, ActorDataIDs.DATA_SPAWN_TIME);
+//            put(EntityDataTypes.DATA_CHANGE_RATE, ActorDataIDs.DATA_CHANGE_RATE);
+//            put(EntityDataTypes.DATA_CHANGE_ON_PICKUP, ActorDataIDs.DATA_CHANGE_ON_PICKUP);
+//            put(EntityDataTypes.DATA_PICKUP_COUNT, ActorDataIDs.DATA_PICKUP_COUNT);
+            put(EntityDataTypes.INTERACT_TEXT, ActorDataIDs.INTERACT_TEXT);
+            put(EntityDataTypes.TRADE_TIER, ActorDataIDs.TRADE_TIER);
+            put(EntityDataTypes.MAX_TRADE_TIER, ActorDataIDs.MAX_TRADE_TIER);
+            put(EntityDataTypes.TRADE_EXPERIENCE, ActorDataIDs.TRADE_EXPERIENCE);
+            put(EntityDataTypes.SKIN_ID, ActorDataIDs.SKIN_ID);
+            put(EntityDataTypes.SPAWNING_FRAMES, ActorDataIDs.SPAWNING_FRAMES);
+            put(EntityDataTypes.COMMAND_BLOCK_TICK_DELAY, ActorDataIDs.COMMAND_BLOCK_TICK_DELAY);
+            put(EntityDataTypes.COMMAND_BLOCK_EXECUTE_ON_FIRST_TICK, ActorDataIDs.COMMAND_BLOCK_EXECUTE_ON_FIRST_TICK);
+            put(EntityDataTypes.AMBIENT_SOUND_INTERVAL, ActorDataIDs.AMBIENT_SOUND_INTERVAL);
+            put(EntityDataTypes.AMBIENT_SOUND_INTERVAL_RANGE, ActorDataIDs.AMBIENT_SOUND_INTERVAL_RANGE);
+            put(EntityDataTypes.AMBIENT_SOUND_EVENT_NAME, ActorDataIDs.AMBIENT_SOUND_EVENT_NAME);
+            put(EntityDataTypes.FALL_DAMAGE_MULTIPLIER, ActorDataIDs.FALL_DAMAGE_MULTIPLIER);
+            put(EntityDataTypes.NAME_RAW_TEXT, ActorDataIDs.NAME_RAW_TEXT);
+            put(EntityDataTypes.CAN_RIDE_TARGET, ActorDataIDs.CAN_RIDE_TARGET);
+        }
+    };
+
+    public static ActorDataIDs actorDataIDs(EntityDataType<?> entityDataType) {
+        return ENTITY_DATA_TYPE_ACTOR_DATA_IDS_MAP.get(entityDataType);
+//        if (entityDataType == EntityDataTypes.CONTAINER_TYPE) {
+//            return ActorDataIDs.CONTAINER_TYPE;
+//        }
+//        if (entityData.ordinal() >= ActorDataIDs.values().length)
+//            return null;
+//        return ActorDataIDs.values()[entityData.ordinal()];
     }
 
-    public static DataItemType dataItemType(EntityData.Type entityDataType) {
-        if (entityDataType == null)
-            return DataItemType.Unknown_23;
-        int index = entityDataType.ordinal() - 1;
-        if (index < 0)
-            index = DataItemType.values().length - 1;
-        return DataItemType.values()[index];
+    public static DataItemType dataItemType(EntityDataType<?> entityDataType) {
+        switch (entityDataType.getTypeName()) {
+            case "java.lang.Byte":
+                return DataItemType.Byte;
+            case "java.lang.Short":
+                return DataItemType.Short;
+            case "org.cloudburstmc.protocol.bedrock.data.definitions.BlockDefinition":
+            case "java.lang.Integer":
+                return DataItemType.Int_1;
+            case "java.lang.Float":
+                return DataItemType.Float_1;
+            case "java.lang.String":
+                return DataItemType.String_0;
+            case "org.cloudburstmc.nbt.NbtMap":
+                return DataItemType.CompoundTag;
+            case "org.cloudburstmc.math.vector.Vector3i":
+                return DataItemType.Pos;
+            case "java.lang.Long":
+                return DataItemType.Int64;
+            case "org.cloudburstmc.math.vector.Vector3f":
+                return DataItemType.Vec3;
+            default:
+                return DataItemType.Unknown_23;
+        }
+
+//        if (entityDataType == null)
+//            return DataItemType.Unknown_23;
+//        int index = entityDataType.ordinal() - 1;
+//        if (index < 0)
+//            index = DataItemType.values().length - 1;
+//        return DataItemType.values()[index];
     }
 
     @NotImplemented

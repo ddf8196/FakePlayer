@@ -2,7 +2,7 @@ package com.ddf.fakeplayer.network;
 
 import com.ddf.fakeplayer.actor.player.Player;
 import com.ddf.fakeplayer.util.NotImplemented;
-import com.nukkitx.protocol.bedrock.BedrockPacket;
+import org.cloudburstmc.protocol.bedrock.packet.BedrockPacket;
 
 import java.util.ArrayList;
 import java.util.function.Function;
@@ -23,16 +23,16 @@ public class LoopbackPacketSender extends PacketSender {
 
     @Override
     public void send(BedrockPacket packet) {
-        if (this.mNetwork.isServer())
-            this.sendBroadcast(packet);
-        else
-            this.sendToServer(packet);
+//        if (this.mNetwork.isServer())
+//            this.sendBroadcast(packet);
+//        else
+//            this.sendToServer(packet);
     }
 
     @Override
     public void sendToServer(BedrockPacket packet) {
 //        packet.setClientSubId(this.mSenderSubId);
-        this.mNetwork.send(this.mNetwork.getServerId(), packet, (byte) 0);
+//        this.mNetwork.send(this.mNetwork.getServerId(), packet, (byte) 0);
     }
 
     @NotImplemented

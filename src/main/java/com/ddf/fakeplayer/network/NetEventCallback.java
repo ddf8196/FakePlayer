@@ -1,7 +1,7 @@
 package com.ddf.fakeplayer.network;
 
 import com.ddf.fakeplayer.actor.player.Player;
-import com.nukkitx.protocol.bedrock.handler.BedrockPacketHandler;
+import org.cloudburstmc.protocol.bedrock.packet.BedrockPacketHandler;
 
 public interface NetEventCallback extends BedrockPacketHandler {
     default void onPlayerReady(Player player) { //+0

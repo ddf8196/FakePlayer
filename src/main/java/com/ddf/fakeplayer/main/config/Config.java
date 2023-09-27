@@ -2,8 +2,8 @@ package com.ddf.fakeplayer.main.config;
 
 import com.ddf.fakeplayer.util.KeyUtil;
 import com.ddf.fakeplayer.util.ProtocolVersionUtil;
-import com.nukkitx.protocol.bedrock.BedrockPacketCodec;
-import com.nukkitx.protocol.bedrock.v408.Bedrock_v408;
+import org.cloudburstmc.protocol.bedrock.codec.BedrockCodec;
+import org.cloudburstmc.protocol.bedrock.codec.v582.Bedrock_v582;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -26,7 +26,7 @@ public class Config {
 
     private boolean debug = true;
     private boolean configured = false;
-    private int defaultProtocolVersion = 408;
+    private int defaultProtocolVersion = 582;
     private String serverAddress = "localhost";
     private int serverPort = 19132;
     private String serverPublicKey = "";
@@ -41,7 +41,7 @@ public class Config {
     private Map<String, CustomSkinData> customSkins = new LinkedHashMap<>();
     private transient KeyPair serverKeyPair;
     private transient Path configPath;
-    private transient BedrockPacketCodec defaultPacketCodec = Bedrock_v408.V408_CODEC;
+    private transient BedrockCodec defaultPacketCodec = Bedrock_v582.CODEC;
     private transient Locale locale;
 
     private static final Object locker;      //多线程锁
@@ -301,7 +301,7 @@ public class Config {
         this.configPath = configPath;
     }
 
-    public BedrockPacketCodec getDefaultPacketCodec() {
+    public BedrockCodec getDefaultPacketCodec() {
         return defaultPacketCodec;
     }
 

@@ -2,7 +2,6 @@ package com.ddf.fakeplayer.block;
 
 import com.ddf.fakeplayer.nbt.CompoundTag;
 import com.ddf.fakeplayer.util.NotImplemented;
-import com.nukkitx.nbt.NbtMap;
 
 import java.util.Objects;
 

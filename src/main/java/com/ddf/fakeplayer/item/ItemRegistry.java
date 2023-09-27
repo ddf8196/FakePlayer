@@ -5,7 +5,7 @@ import com.ddf.fakeplayer.block.BlockLegacy;
 import com.ddf.fakeplayer.item.items.UnknownItem;
 import com.ddf.fakeplayer.util.JsonUtil;
 import com.ddf.fakeplayer.util.NotImplemented;
-import com.nukkitx.protocol.bedrock.packet.StartGamePacket;
+import org.cloudburstmc.protocol.bedrock.data.definitions.ItemDefinition;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,15 +50,15 @@ public class ItemRegistry {
         return mIdToItemMap.get().get(id);
     }
 
-    public static void init(List<StartGamePacket.ItemEntry> itemEntries) {
-        for (StartGamePacket.ItemEntry itemEntry : itemEntries) {
-            String identifier = itemEntry.getIdentifier();
+    public static void init(List<ItemDefinition> itemDefinitions) {
+        for (ItemDefinition itemDefinition : itemDefinitions) {
+            String identifier = itemDefinition.getIdentifier();
             Item item = mNameToItemMap.get(identifier);
             if (item == null) {
                 item = new UnknownItem(identifier, 0xABCD1234);
                 registerItem(item);
             }
-            short actualId = itemEntry.getId();
+            short actualId = (short) itemDefinition.getRuntimeId();
             mMaxItemID.set((short) Math.max(actualId, mMaxItemID.get()));
             mIdToItemMap.get().put((int) actualId, item);
             itemToIdMap.get().put(item, (int) actualId);

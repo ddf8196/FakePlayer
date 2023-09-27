@@ -17,11 +17,11 @@ repositories {
         url 'https://maven.aliyun.com/repository/public'
     }
     maven {
-        name 'nukkitx-repo-release'
+        name 'opencollab-releases'
         url 'https://repo.opencollab.dev/maven-releases/'
     }
     maven {
-        name 'nukkitx-repo-snapshot'
+        name 'opencollab-snapshots'
         url 'https://repo.opencollab.dev/maven-snapshots/'
     }
     maven {
@@ -31,7 +31,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.nukkitx.protocol:bedrock-v567:2.9.16-SNAPSHOT'
+    implementation 'org.cloudburstmc.protocol:bedrock-connection:3.0.0.Beta1-SNAPSHOT'
     implementation 'com.google.code.gson:gson:2.8.7'
     implementation 'org.yaml:snakeyaml:1.29'
     implementation 'com.formdev:flatlaf:1.5'

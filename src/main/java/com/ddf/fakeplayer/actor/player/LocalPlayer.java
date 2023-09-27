@@ -8,10 +8,10 @@ import com.ddf.fakeplayer.item.ItemStack;
 import com.ddf.fakeplayer.level.GameType;
 import com.ddf.fakeplayer.level.Level;
 import com.ddf.fakeplayer.util.*;
-import com.nukkitx.math.vector.Vector3f;
-import com.nukkitx.protocol.bedrock.BedrockPacket;
-import com.nukkitx.protocol.bedrock.packet.MobEquipmentPacket;
-import com.nukkitx.protocol.bedrock.packet.RespawnPacket;
+import org.cloudburstmc.math.vector.Vector3f;
+import org.cloudburstmc.protocol.bedrock.packet.BedrockPacket;
+import org.cloudburstmc.protocol.bedrock.packet.MobEquipmentPacket;
+import org.cloudburstmc.protocol.bedrock.packet.RespawnPacket;
 
 import java.util.UUID;
 

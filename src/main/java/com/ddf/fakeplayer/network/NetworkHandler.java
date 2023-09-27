@@ -2,17 +2,13 @@ package com.ddf.fakeplayer.network;
 
 import com.ddf.fakeplayer.util.NotImplemented;
 import com.ddf.fakeplayer.util.Scheduler;
-import com.nukkitx.network.raknet.RakNet;
-import com.nukkitx.network.raknet.RakNetServer;
-import com.nukkitx.protocol.bedrock.BedrockPacket;
-import com.nukkitx.protocol.bedrock.BedrockSession;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.Function;
 
 public class NetworkHandler {
-    RakNet mRakNetInstance;
+//    RakNet mRakNetInstance;
 //    Unique<LocalConnector> mLocalConnector;
 //    Unique<RakNetServerLocator> mRakNetServerLocator;
 //    Unique<UPNPInterface> mUPnPInterface;
@@ -41,33 +37,33 @@ public class NetworkHandler {
     public NetworkHandler(Scheduler receiveThread, NetworkHandler.NetworkStatisticsConfig statsConfig) {
     }
 
-    public final boolean isServer() {
-        return this.mRakNetInstance instanceof RakNetServer;
-    }
+//    public final boolean isServer() {
+//        return this.mRakNetInstance instanceof RakNetServer;
+//    }
 
-    public final NetworkIdentifier getLocalNetworkId() {
-        return new NetworkIdentifier(mRakNetInstance.getGuid());
-    }
+//    public final NetworkIdentifier getLocalNetworkId() {
+//        return new NetworkIdentifier(mRakNetInstance.getGuid());
+//    }
 
-    public final NetworkIdentifier getPrimaryNetworkId() {
-        return this.getLocalNetworkId();
-    }
+//    public final NetworkIdentifier getPrimaryNetworkId() {
+//        return this.getLocalNetworkId();
+//    }
 
-    public final NetworkIdentifier getServerId() {
-        if (this.isServer()) {
-            return this.getPrimaryNetworkId();
-        } else if (this.mConnections.isEmpty()) {
-            return new NetworkIdentifier(0xFFFFFFFFFFFFFFFFL);
-        } else {
-            return this.mConnections.get(0).mId;
-        }
-    }
+//    public final NetworkIdentifier getServerId() {
+//        if (this.isServer()) {
+//            return this.getPrimaryNetworkId();
+//        } else if (this.mConnections.isEmpty()) {
+//            return new NetworkIdentifier(0xFFFFFFFFFFFFFFFFL);
+//        } else {
+//            return this.mConnections.get(0).mId;
+//        }
+//    }
 
-    public final void send(final NetworkIdentifier id, final BedrockPacket packet, final  /*uint8_t SubClientId*/byte senderSubId) {
-        if (this.mPacketObserver != null) {
-//            mPacketObserver.packetSentTo(id, packet, data.size());
-        }
-    }
+//    public final void send(final NetworkIdentifier id, final BedrockPacket packet, final  /*uint8_t SubClientId*/byte senderSubId) {
+//        if (this.mPacketObserver != null) {
+////            mPacketObserver.packetSentTo(id, packet, data.size());
+//        }
+//    }
 
     @NotImplemented
     public final void flush(NetworkIdentifier id, Function<Void, Void> callback) {
@@ -83,7 +79,7 @@ public class NetworkHandler {
     public static final class Connection {
         private NetworkIdentifier mId;
         private NetworkHandler.Connection.Type mType;
-        private BedrockSession session;
+//        private BedrockSession session;
 
         public enum Type {
             Remote_0,
