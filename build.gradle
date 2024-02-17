@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'application'
-    id 'com.github.johnrengelman.shadow' version '6.0.0'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group 'com.ddf.fakeplayer'
@@ -32,8 +32,8 @@ repositories {
 
 dependencies {
     implementation 'org.cloudburstmc.protocol:bedrock-connection:3.0.0.Beta1-SNAPSHOT'
-    implementation 'com.google.code.gson:gson:2.8.7'
-    implementation 'org.yaml:snakeyaml:1.29'
+    implementation 'com.google.code.gson:gson:2.9.1'
+    implementation 'org.yaml:snakeyaml:2.2'
     implementation 'com.formdev:flatlaf:1.5'
     implementation 'org.java-websocket:Java-WebSocket:1.5.2'
     implementation 'org.slf4j:slf4j-nop:1.7.32'
@@ -43,8 +43,8 @@ dependencies {
     implementation 'org.mozilla:rhino:1.7.13'
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 compileJava.options.encoding = 'UTF-8'
 compileTestJava.options.encoding = 'UTF-8'
@@ -108,7 +108,8 @@ task getVersion {
 
 task runGUI(type: JavaExec) {
     classpath = run.classpath
-    main = run.main
+    // main = run.main
+    main = 'com.ddf.fakeplayer.main.Main'
     jvmArgs += '-Dfakeplayer.nogui=false'
 }
 

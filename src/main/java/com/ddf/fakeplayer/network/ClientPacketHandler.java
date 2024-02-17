@@ -78,9 +78,10 @@ public class ClientPacketHandler implements BedrockPacketHandler {
                 client.getServerKeyPair(),
                 client.createExtraData()
         ));
+        String skinData = client.createSkinData().toJsonString();
         loginPacket.setExtra(JwtUtil.createJwt(
                 client.getClientKeyPair(),
-                client.createSkinData().toJsonString()));
+                skinData));
         client.sendPacket(loginPacket);
     }
 

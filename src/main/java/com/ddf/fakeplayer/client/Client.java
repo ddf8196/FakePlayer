@@ -137,6 +137,7 @@ public class Client implements Closeable {
                     BedrockPong bedrockPong = PingUtil.ping(addressToConnect, 10, TimeUnit.SECONDS).get(10, TimeUnit.SECONDS);
                     packetCodec = ProtocolVersionUtil.getPacketCodec(bedrockPong.protocolVersion());
                 } catch (Throwable t) {
+                    logger.log(t);
                     packetCodec = defaultPacketCodec;
                     logger.logI18N("log.client.getProtocolVersionFail", playerName, defaultPacketCodec.getProtocolVersion());
                 }
