@@ -13,6 +13,9 @@ import org.cloudburstmc.protocol.bedrock.codec.v582.Bedrock_v582;
 import org.cloudburstmc.protocol.bedrock.codec.v589.Bedrock_v589;
 import org.cloudburstmc.protocol.bedrock.codec.v594.Bedrock_v594;
 import org.cloudburstmc.protocol.bedrock.codec.v618.Bedrock_v618;
+import org.cloudburstmc.protocol.bedrock.codec.v622.Bedrock_v622;
+import org.cloudburstmc.protocol.bedrock.codec.v630.Bedrock_v630;
+import org.cloudburstmc.protocol.bedrock.codec.v649.Bedrock_v649;
 
 
 import java.io.IOException;
@@ -36,6 +39,9 @@ public class ProtocolVersionUtil {
         registerPacketCodec(Bedrock_v589.CODEC, 11, null);
         registerPacketCodec(Bedrock_v594.CODEC, 11, null);
         registerPacketCodec(Bedrock_v618.CODEC, 11, null);
+        registerPacketCodec(Bedrock_v622.CODEC, 11, null);
+        registerPacketCodec(Bedrock_v630.CODEC, 11, null);
+        registerPacketCodec(Bedrock_v649.CODEC, 11, null);
 
         codecMap = Collections.unmodifiableMap(codecMap);
         rakNetVersionMap = Collections.unmodifiableMap(rakNetVersionMap);

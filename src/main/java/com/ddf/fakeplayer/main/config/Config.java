@@ -50,7 +50,7 @@ public class Config {
         locker = new Object();
         LoaderOptions loaderOptions = new LoaderOptions();
         DumperOptions dumperOptions = new DumperOptions();
-        Representer representer = new Representer();
+        Representer representer = new Representer(new DumperOptions());
         PropertyUtils pu = new PropertyUtils() {
             {
                 setBeanAccess(BeanAccess.FIELD);
@@ -69,7 +69,7 @@ public class Config {
             }
         };
         representer.setPropertyUtils(pu);
-        YAML = new Yaml(new Constructor(), representer, dumperOptions, loaderOptions);
+        YAML = new Yaml(new Constructor(new LoaderOptions()), representer, dumperOptions, loaderOptions);
     }
 
     public static Config load(Path path) throws IOException {
